@@ -1,0 +1,203 @@
+---
+title: "Day 8: Panel Models for Limited Outcomes"
+author: "Robert W. Walker"
+date: "07/29/2026"
+categories: [panel data, code, analysis]
+image: "image.jpg"
+---
+
+## Slides
+
+- [A reveal presentation](https://robertwwalker.github.io/Essex-slides/ESSSSDA252W-Day8/)
+
+Two core issues remain: the spatial and the temporal.  There are fewer well worked diagnostics for this than for the pure linear case owing to **partial observability and/or coarse measurement** in some fashion or other.
+
+## Panel GLM Computing
+
+## R
+
+All of the computing will take place in the confines of `pglm`, a package in the spirit of `plm` for linear models.  The help file provides an example of the familiar models.  They are specified to match up with the syntax of R's `glm` functions with family and link arguments.
+
+```
+# install.packages("pglm")
+library(pglm)
+## an ordered probit example
+data('Fairness', package = 'pglm')
+Parking <- subset(Fairness, good == 'parking')
+op <- pglm(as.numeric(answer) ~ education + rule,
+Parking[1:105, ],
+family = ordinal('probit'), R = 5, print.level = 3,
+method = 'bfgs', index = 'id', model = "random")
+## a binomial (probit) example
+data('UnionWage', package = 'pglm')
+anb <- pglm(union ~ wage + exper + rural, UnionWage, family = binomial('probit'),
+model = "pooling", method = "bfgs", print.level = 3, R = 5)
+## a gaussian example on unbalanced panel data
+data(Hedonic, package = "plm")
+ra <- pglm(mv ~ crim + zn + indus + nox + age + rm, Hedonic, family = gaussian,
+model = "random", print.level = 3, method = "nr", index = "townid")
+## some count data models
+data("PatentsRDUS", package="pglm")
+la <- pglm(patents ~ lag(log(rd), 0:5) + scisect + log(capital72) + factor(year), PatentsRDUS,
+family = negbin, model = "within", print.level = 3, method = "nr",
+index = c('cusip', 'year'))
+la <- pglm(patents ~ lag(log(rd), 0:5) + scisect + log(capital72) + factor(year), PatentsRDUS,
+family = poisson, model = "pooling", index = c("cusip", "year"),
+print.level = 0, method="nr")
+## a tobit example
+data("HealthIns", package="pglm")
+HealthIns$med2 <- HealthIns$med / 1000
+HealthIns2 <- HealthIns[-2209, ]
+set.seed(2)
+subs <- sample(1:20186, 200, replace = FALSE)
+HealthIns2 <- HealthIns2[subs, ]
+la <- pglm(med ~ mdu + disease + age, HealthIns2,
+model = 'random', family = 'tobit', print.level = 0,
+method = 'nr', R = 5)
+```
+
+## Stata
+
+Stata separates out the commands by family/link combination.  So there are `xtprobit` and `xtlogit` for binary.  `xtoprobit` for ordered probit models and `xtologit` [with random effects] for ordered outcomes.
+
+## Events
+
+A Stata do file on the box is replicated here.  First, a use of regular old `glm`.
+
+```{r}
+library(haven)
+Patents <- read_dta(url("https://github.com/robertwwalker/Essex-Data/raw/main/Patents.dta"))
+Mod.1 <- glm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5, data=Patents, family="poisson")
+summary(Mod.1)
+```
+
+```{r}
+library(MASS)
+Mod.2 <- glm.nb(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5, data=Patents)
+summary(Mod.2)
+```
+
+```{r}
+library(pglm)
+Patents.pdata <- pdata.frame(Patents, index=c("id","YEAR"))
+Mod.3A <- pglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5+LOGK+SCISECT, Patents.pdata, effect="individual", model="random", family="poisson")
+summary(Mod.3A)
+```
+
+```{r}
+Mod.3B <- pglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5, Patents.pdata, effect="individual", model="random", family="poisson")
+summary(Mod.3B)
+```
+
+```{r}
+Mod.3C <- pglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5+LOGK+SCISECT-1, Patents.pdata, effect="individual", model="random", family="poisson")
+summary(Mod.3C)
+```
+
+```{r}
+Mod.4A <- pglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5+LOGK+SCISECT, Patents.pdata, effect="individual", model="random", family="negbin")
+summary(Mod.4A)
+```
+
+```{r}
+Mod.4B <- pglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5, Patents.pdata, effect="individual", model="random", family="negbin")
+summary(Mod.4B)
+```
+
+```{r}
+Mod.4C <- pglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5+LOGK+SCISECT-1, Patents.pdata, effect="individual", model="random", family="negbin")
+summary(Mod.4C)
+```
+
+## The GEE
+
+```{r}
+library(geepack)
+gee.Mod <- geeglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5, data=Patents, id=id, corstr="exchangeable", family=poisson)
+summary(gee.Mod)
+```
+
+
+![](./img/Screen Shot 2022-08-18 at 2.45.20 AM.png)
+
+
+```{r}
+gee.Mod <- geeglm(PAT~LOGR+LOGR1+LOGR2+LOGR3+LOGR4+LOGR5+dyear2+dyear3+dyear4+dyear5, data=Patents, id=id, corstr="ar1", family=poisson)
+summary(gee.Mod)
+```
+
+And an anova...
+
+```{r}
+anova(gee.Mod)
+```
+
+
+## BKT and Carter-Signorino
+
+Load the data
+
+
+```{r}
+BKT.data <- read_dta(url("https://github.com/robertwwalker/Essex-Data/raw/main/bkt98ajps.dta"))
+Mod.1 <- glm(dispute~ dem+growth+allies+contig+capratio+trade, family=binomial("logit"), data=BKT.data)
+summary(Mod.1)
+```
+
+```{r}
+Mod.1B <- glm(dispute~ dem+growth+allies+contig+capratio+trade+as.factor(py), family=binomial("logit"), data=BKT.data)
+summary(Mod.1B)
+```
+
+```{r}
+Mod.1C <- glm(dispute~ dem+growth+allies+contig+capratio+trade+py+pys1+pys2+pys3, family=binomial("logit"), data=BKT.data)
+summary(Mod.1C)
+```
+
+```{r}
+Mod.2A <- glm(dispute~ dem+growth+allies+contig+capratio+trade, family=binomial("logit"), subset = contdisp!=1, data=BKT.data)
+summary(Mod.2A)
+```
+
+```{r}
+Mod.2B <- glm(dispute~ dem+growth+allies+contig+capratio+trade+py+pys1+pys2+pys3, family=binomial("logit"), subset = contdisp!=1, data=BKT.data)
+summary(Mod.2B)
+```
+
+```{r}
+Mod.3A <- glm(dispute~ dem+growth+allies+contig+capratio+trade+py+pys1+pys2+pys3, family=binomial("logit"), subset = prefail<1, data=BKT.data)
+summary(Mod.3A)
+```
+
+### Carter and Signorino
+
+Use a Taylor series to clean this up with a suggestion that no baseline hazard is more than cubic [two inflection points].
+
+
+```{r}
+Mod.CS <- glm(dispute~ dem+growth+allies+contig+capratio+trade+prefail+py+I(py^2)+I(py^3), family=binomial("logit"), data=BKT.data)
+summary(Mod.CS)
+```
+
+As a technical matter, none of this is exactly equivalent to a Cox model.  That requires the `cloglog`.
+
+```{r}
+Mod.CS <- glm(dispute~ dem+growth+allies+contig+capratio+trade+prefail+py+I(py^2)+I(py^3), family=binomial("cloglog"), data=BKT.data)
+summary(Mod.CS)
+```
+
+
+```{r}
+library(ggplot2)
+Data.Counterfactual <- data.frame(dem=5, growth=0, allies=1, contig=1, capratio=1, trade=0, prefail=0, py=seq(1,41))
+Data.Counterfactual$Pr.Fight <- predict(Mod.CS, newdata=Data.Counterfactual, type="response")
+Data.Counterfactual |> ggplot() + aes(x=py, y=Pr.Fight) + geom_line()
+```
+
+## The Markov Processes
+
+Are the simplest time series models for limited dependent variables.
+
+The idea is simple; the current realization depends on the prior values.
+
+

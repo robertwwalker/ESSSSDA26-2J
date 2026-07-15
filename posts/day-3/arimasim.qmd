@@ -1,0 +1,16 @@
+---
+title: Simulated Time Series and their ACF and PACF
+format: html
+engine: knitr
+filters:
+  - webr
+---
+
+Using `webr` to showcase simulated arima processes, written in the form ARIMA(p, d, q).
+
+```{webr-r}
+ts.sim <- arima.sim(list(order = c(1,1,0), ar = 0.7), n = 200)
+ts.plot(ts.sim)
+acf(ts.sim)
+pacf(ts.sim)
+```

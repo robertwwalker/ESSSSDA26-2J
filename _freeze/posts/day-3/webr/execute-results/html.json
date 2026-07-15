@@ -1,0 +1,15 @@
+{
+  "hash": "c16ebdf4a8778e5a71ec3132f1efc406",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: webR in Quarto HTML Documents\nformat: html\nengine: knitr\nfilters:\n  - webr\n---\n\nThis is a webR-enabled code cell in a Quarto HTML document.\n\n```{webr-r}\nts.sim <- arima.sim(list(order = c(1,1,0), ar = 0.7), n = 200)\nts.plot(ts.sim)\nac(ts.sim)\npac(ts.sim)\n```",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

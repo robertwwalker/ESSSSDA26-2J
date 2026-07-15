@@ -1,0 +1,14 @@
+---
+title: "Two Bits of Very Recent Interesting News"
+author: "Robert W. Walker"
+categories: [time series, code, analysis]
+image: "thumbnail.png"
+---
+
+From the journal **Nature**, how do scientists treat null findings?
+
+[The tweet](https://x.com/Nature/status/1947995614559588770?s=03)
+
+Victor Gomez-Blanco has a paper on trends in top economics journals.  [The paper suggests you made a good choice.](https://x.com/victormgomez89/status/1947209655672778767?s=03)
+
+

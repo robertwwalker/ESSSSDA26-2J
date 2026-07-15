@@ -1,0 +1,150 @@
+---
+title: "Day 4: Cointegration"
+author: "Robert W. Walker"
+date: "07/23/2026"
+categories: [time series, code, analysis]
+image: "image.png"
+---
+
+## Slides
+
+- [A reveal presentation](https://robertwwalker.github.io/Essex-slides/ESSSSDA252W-Day4/)
+
+## A replication
+
+This is an example with an ECM from a model presented by DeBoef and Keele in their excellent paper "Taking Time Seriously: Dynamic Regression." The data come from a paper Gilmour and Wolbrecht.
+
+```
+use "https://github.com/robertwwalker/Essex-Data/raw/main/dgw.dta", clear
+* These data have already been time set:
+tsset
+* The dependent variable in this example is Congressional Approval
+*Table 2
+reg capp l.capp econexp nytavg kg hb vetoes override intrasum mbill 
+bgodfrey, lag(1 2 3)
+```
+
+```{r}
+library(haven); library(tidyverse); library(fpp3)
+dgw.data <- read_stata("https://github.com/robertwwalker/Essex-Data/raw/main/dgw.dta")
+dgw.data <- dgw.data %>% filter(!is.na(year))
+dgw.data <- dgw.data %>% mutate(date = paste0(year," Q",quarter, sep="")) %>% mutate(dateQ = yearquarter(date))
+dgw.ts <- dgw.data %>% as_tsibble(index=dateQ)
+# A dynamic linear model
+dgw.ts %>% model(TSLM(capp~lag(capp,1)+econexp+nytavg+kg+hb+vetoes+override+intrasum+mbills)) %>% report()
+```
+
+```
+*Table 2 with Pres. Approval
+reg capp l.capp p_prap econexp nytavg kg hb vetoes override intrasum mbill 
+bgodfrey, lag(1 2 3)
+```
+
+```{r}
+dgw.ts %>% model(TSLM(capp~lag(capp,1)+p_prap+econexp+nytavg+kg+hb+vetoes+override+intrasum+mbills)) %>% report()
+```
+
+The Breusch-Godfrey test
+
+```{r}
+sapply(c(1:3), function(x) {lmtest::bgtest(lm(capp~lag(capp,1)+p_prap+econexp+nytavg+kg+hb+vetoes+override+intrasum+mbills, data=dgw.ts), order = x)})
+```
+
+```
+* An Alternate Measure
+* ADL
+reg capp l.capp p_prap l.p_prap econexp l.econexp nytavg l.nytavg kg hb vetoes override intrasum mbill 
+fitstat
+bgodfrey, lag(1 2 3)
+```
+
+```{r}
+dgw.ts %>% model(TSLM(capp~lag(capp, 1)+p_prap+lag(p_prap, 1)+econexp+lag(econexp,1)+nytavg+lag(nytavg, 1)+kg+hb+vetoes+override+intrasum+mbills)) %>% gg_tsresiduals()
+```
+
+```
+reg capp l.capp p_prap l.p_prap econexp l.econexp nytavg l.nytavg l2.nytavg kg hb vetoes override intrasum mbill 
+fitstat
+test l.p_prap 
+```
+
+```{r}
+summary(lm(capp~ dplyr::lag(capp, 1)+p_prap+dplyr::lag(p_prap, 1)+econexp+ dplyr::lag(econexp, 1)+ nytavg+ dplyr::lag(nytavg, 1) + dplyr::lag(nytavg, 2)+ kg+hb+vetoes+override+intrasum+mbills, data=dgw.data))
+```
+
+```{r}
+anova(lm(capp~ dplyr::lag(capp, 1)+p_prap+econexp+ dplyr::lag(econexp, 1)+ nytavg+ dplyr::lag(nytavg, 1) + dplyr::lag(nytavg, 2)+ kg+hb+vetoes+override+intrasum+mbills, data=dgw.data), lm(capp~ dplyr::lag(capp, 1)+p_prap+dplyr::lag(p_prap, 1)+econexp+ dplyr::lag(econexp, 1)+ nytavg+ dplyr::lag(nytavg, 1) + dplyr::lag(nytavg, 2)+ kg+hb+vetoes+override+intrasum+mbills, data=dgw.data)) 
+```
+
+```
+*ECM
+reg d.capp l.capp d.p_prap l.p_prap d.econexp l.econexp d.nytavg l.nytavg kg hb vetoes override intrasum mbill 
+bgodfrey, lag(1 2 3)
+```
+
+```{r}
+summary(lm(difference(capp)~dplyr::lag(capp, 1) + difference(p_prap) +  dplyr::lag(p_prap, 1)+ difference(econexp)+lag(econexp, 1)+difference(nytavg) + dplyr::lag(nytavg) +  kg +  hb +  vetoes + override +  intrasum +  mbills, data=dgw.data))
+```
+
+
+```
+*Bewley
+ivreg capp p_prap d.p_prap econexp d.econexp nytavg d.nytavg kg hb vetoes override intrasum mbill (d.capp = l.capp p_prap l.p_prap econexp l.econexp nytavg l.nytavg)
+```
+
+## Cointegration and Error Correction
+
+Studying long-run relationships between two variables $Y_t$ and $X_t$.  
+**Question: do Y and X travel together thru time in dynamic equilibrium?**
+
+Methodology developed by Engle and Granger 1987
+
+1. Determine if $Y_t$ and $X_t$ are nonstationary
+
+2. If $Y_t$ and $X_t$ are nonstationary, regress $Y_t$ on $X_t$ and save residuals.  This is called the cointegrating regression
+
+3. Do unit-root test on residuals - if residuals are stationary, $Y_t$ and $X_t$ cointegrate (travel together over time).  If residuals are not stationary then $Y_t$ and $X_t$ do not cointegrate
+
+Engle and Granger show that if $Y_t$ and $X_t$ cointegrate, then their relationship can be specified as an error correction model:
+
+$$
+(1-L)Y_t = B_0 + B_1(1-L)X_t + a(\underbrace{Y_{t-1} - c_0 - c_1X_{t-1}}_{\textrm{Cointegration residual, lagged}}) + e_t
+$$
+
+In this model $B_1$ captures the short-run effect of X on Y
+
+$(Y_{t-1} -c_0 - c_1X_{t-1})$ is called the error correction mechanism and it captures the long-run effect of X on Y.  In the Engle-Granger "two-step" methodology, the error correction mechanism is measured by the residuals from the cointegrating regression lagged back 1 period
+
+The coefficient $a$ is an adjustment parameter which is expected to be less than 1 in absolute value and to carry a negative sign.  The larger the absolute value of a, the stronger the error correction mechanism.  a indicates the speed with which a shock to Y is eroded by the cointegrating realtionship between Y and X
+
+The error correction model is estimated by OLS regression.
+
+Note that cointegration does not imply causation, and it is up to the investigator to determine if $Y_t$ or $X_t$ is the dependent variable and to defend the implicit assumption of 1-way causation.  
+
+
+## ADL and Cointegration
+
+The error correction model is a restricted autoregressive distributed lag (ADL) (1,1) model (see Hendry, 1995):
+
+$$
+(1-L)Yt = B_0 + B_1(1-L)X_t + a(Y_{t-1} - C_0 - C_1X_{t-1}) + e_t
+$$
+$$
+Y_t - Y_{t-1} = B_0 + B_1X_t - B_1X_{t-1} + aY_{t-1} + aC_0 - aC_1X_{t-1} + e_t
+$$
+$$
+Y_t = B_0 + aC_0 + Y_{t-1} + aY_{t-1} + B_1 X_t - (B_1 + aC_1)X_{t-1} + e_t
+$$
+
+if Y and X cointegrate then a should be less than 1 in absolute value and carry a negative sign
+
+ADL (1,1) model - 1 lag of Y and 1 lag of X
+
+$$
+Y_t = B_0  -aC_0 + (1-a)Y_{t-1} + B_1 X_t - (B_1 -aC_1)X_{t-1} + e_t
+$$
+
+if a = -.5, this implies that the coefficient on aYt-1 = (1-.5) = .5, so 50% of a shock to Y at time t will erode in each subsequent period.
+
+
+Reference: David Hendry. 1995. *Dynamic Econometrics*. Oxford: Oxford University Press

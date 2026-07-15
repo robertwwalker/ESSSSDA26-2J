@@ -1,0 +1,176 @@
+---
+title: "Day 10: Causal Inference in Panels and TWFE"
+author: "Robert W. Walker"
+date: "08/01/2026"
+categories: [panel data, code, analysis]
+image: "image.jpg"
+---
+
+# Research Report: Recent Advances in Difference-in-Differences with Staggered Interventions
+
+**Topic:** Staggered treatment timing, two-way fixed effects (TWFE), and modern robust estimators
+
+## tldr;
+
+The canonical DiD design assumes a single treatment date. In practice, policies and interventions are often adopted at **different times** across units — a *staggered adoption* design. The traditional **two-way fixed effects (TWFE)** estimator, long the default, has been shown to produce a *contaminated* weighted average of underlying treatment effects when timing varies and effects are heterogeneous. A large literature (Goodman-Bacon 2021; Callaway & Sant'Anna 2021; Sun & Abraham 2021; de Chaisemartin & D'Haultfœuille 2020; Borusyak, Jaravel & Spiess 2024; Wooldridge 2021/2023) now provides robust alternatives that estimate **cohort-time average treatment effects (ATTs)** using only clean controls and aggregate them with transparent weights.
+
+**Bottom line:** Abandon naive TWFE under staggered timing unless effects are provably homogeneous. Estimate cohort-time or event-study ATTs with `csdid` / `did2s` / `did_imputation` (or Wooldridge's interaction-weighted framework) and report those instead of a single coefficient.
+
+---
+
+## 1. The Setting: Staggered Adoption
+
+In staggered adoption, units become treated at different calendar times $g \in \{2, \dots, T\}$. A unit $i$ in cohort $G_i = g$ is treated in all periods $t \geq g$ and untreated in $t < g$. This structure is pervasive: state laws adopted in different years, phased trade liberalization, platform feature rollouts.
+
+The estimand of interest is the **ATT**, potentially varying by **cohort** $g$ and by **event time** $k = t - g$.
+
+---
+
+## 2. The TWFE Estimator and Why It Breaks
+
+The workhorse specification:
+
+$$Y_{it} = \alpha_i + \lambda_t + \beta D_{it} + \varepsilon_{it}$$
+
+where $D_{it} = \mathbf{1}(t \geq G_i)$. This is intuitive and easy to estimate, but with staggered timing it is no longer a clean DiD.
+
+<details>
+<summary><strong>Technical derivation: the Goodman–Bacon decomposition</strong></summary>
+
+Goodman-Bacon (2021) showed that the TWFE coefficient is a weighted average of all possible 2×2 DiD estimators comparing pairs of cohorts $(g, g')$:
+
+$$\hat{\beta}_{TWFE} = \sum_{g \neq g'} w_{g,g'} \, \widehat{\text{DiD}}_{g,g'}$$
+
+The weights $w_{g,g'}$ are non-negative in total but **individual comparisons can receive negative weight**. The problematic terms compare an *early-treated* cohort $g$ against a *later-treated* cohort $g'$ that is used as a "control" in windows where $g'$ is *already treated*. These are the **forbidden comparisons** (already-treated-as-control terms).
+
+</details>
+
+The three core failures:
+
+1. **Forbidden comparisons** — Already-treated units serve as controls for later-treated units; their outcomes are post-treatment and contaminated.
+2. **Negative weights** — Even when every underlying ATT is positive and *constant*, $\hat{\beta}_{TWFE}$ can come out negative because forbidden 2×2s receive negative weights.
+3. **Heterogeneity bias** — If effects differ by cohort $g$ or event time $k = t-g$, the contamination is signed and biases $\beta$ in an unspecified direction.
+
+**Important nuance:** TWFE remains consistent under **homogeneous effects** ($\tau_{gt} = \tau$ for all $g,t$), because every 2×2 — forbidden or not — equals $\tau$, so the weighted average is still $\tau$. The problem is entirely about effect heterogeneity interacting with timing.
+
+---
+
+## 3. Wooldridge's Contributions and the TWFE Connection
+
+Jeffrey Wooldridge has been central in clarifying *exactly what* TWFE estimates and how to repair it without abandoning the fixed-effects framework.
+
+### 3.1 Unconditional vs. Conditional TWFE
+
+Wooldridge emphasizes distinguishing the **conditional** TWFE (estimated at the individual level with $D_{it}$) from the **unconditional** formulation written in terms of group-time population averages:
+
+$$\bar{Y}_{gt} = \alpha_g + \lambda_t + \tau_{gt}\,\mathbf{1}(t \geq g) + \bar{\varepsilon}_{gt}$$
+
+For a balanced panel, the two are *numerically identical*, but the unconditional version makes the comparison structure transparent: the TWFE coefficient is revealed as a weighted average of **group-time average treatment effects** (GTATs) $\tau_{gt}$, with weights given by cohort-size shares times pre/post period shares.
+
+### 3.2 The Interaction-Weighted (IW) Estimator
+
+Wooldridge's proposed fix: estimate the GTAT $\tau_{gt}$ for each $(g,t)$ using only **clean controls** (never-treated or not-yet-treated units), then aggregate with economically meaningful weights:
+
+$$\widehat{\text{ATT}}^{IW} = \frac{\sum_{g} \sum_{t \geq g} N_g \, \pi_{gt} \, \hat{\tau}_{gt}}{\sum_{g} \sum_{t \geq g} N_g \, \pi_{gt}}$$
+
+where $N_g$ is the size of cohort $g$ and $\pi_{gt}$ is the post-treatment period weight for that cohort-time cell. The IW weights are $N_g \times (\text{share of post periods for cohort }g)$, so larger cohorts and longer post-treatment windows dominate the aggregate ATT — exactly the policy-relevant weighting. This yields a properly weighted overall ATT robust to heterogeneous effects that excludes forbidden comparisons by construction.
+
+### 3.3 Efficient Estimation and Event Studies
+
+In more recent work (2023–2024), Wooldridge develops **efficient GMM** estimators that exploit the known treatment-timing structure to recover precision while preserving robustness. He also shows how to specify a clean **event-study** (relative-time) model directly at the group-time level, permitting valid pre-trend tests without the contamination that plagues the naive TWFE event study:
+
+$$Y_{it} = \alpha_i + \lambda_t + \sum_{k \neq -1} \delta_k \, \mathbf{1}(t - G_i = k) + \varepsilon_{it}$$
+
+where $k = -1$ is the omitted reference period and the counterfactual is built only from not-yet/never-treated units.
+
+### Details
+
+Wooldridge's IW estimator is conceptually close to **Callaway–Sant'Anna (2021)**: both estimate cohort-time ATTs and aggregate with transparent weights. Differences lie in (i) the exact weighting scheme and (ii) Wooldridge's emphasis on the unconditional FE representation and later efficient GMM extensions. **Sun–Abraham (2021)** instead uses binned relative-time indicators plus a reweighting that zeroes out forbidden comparisons. **de Chaisemartin–D'Haultfœuille (2020)** use only "clean" switch-out 2×2s. **Borusyak–Jaravel–Spiess (2024)** impute counterfactuals from the TWFE residual structure. All share the same diagnosis of the TWFE failure.
+
+
+---
+
+## 4. The Broader Toolkit (Comparison)
+
+| Estimator | Core Strategy | Uses Forbidden Comparisons? | Robust to Hetero. Effects? |
+|-----------|---------------|----------------------------|----------------------------|
+| Naive TWFE | $\alpha_i + \lambda_t + \beta D_{it}$ | **Yes** | No |
+| Callaway–Sant'Anna (2021) | Cohort-time ATT $\to$ aggregate | No | Yes |
+| Sun–Abraham (2021) | Binned event-study + reweight | No | Yes |
+| de Chaisemartin–D'Haultfœuille (2020) | Clean "switch-out" 2×2s | No | Yes |
+| Borusyak–Jaravel–Spiess (2024) | Impute missing counterfactuals | No (implicitly) | Yes |
+| Wooldridge (IW / efficient) | Unconditional GTAT + weighting | No | Yes |
+
+---
+
+## 5. Core Estimation Issues — Summary
+
+
+1. **Negative weighting / contamination** — TWFE mixes treated-vs-treated comparisons; the coefficient can be a weighted average with negative weights.
+2. **Heterogeneous treatment effects** — Variation in ATT across cohorts ($g$) or event time ($k = t-g$) induces bias under TWFE; the sign is generally unknown.
+3. **Dynamic / event-study misspecification** — Naive TWFE event studies attribute pre-trends and post-effects inconsistently when timing varies.
+4. **Choice of control group** — Must use *never-treated* or *not-yet-treated* units; already-treated units are invalid controls.
+5. **Parallel trends assumption** — Required conditionally on the chosen control set; only pre-trends are testable, not post-treatment counterfactuals.
+6. **Attrition / unbalanced panels** — Staggered designs need care in weighting; Wooldridge's unconditional approach helps by working at the group-time level.
+7. **Efficiency vs. robustness trade-off** — Simple aggregation is robust but can lose precision; efficient GMM recovers precision using timing structure.
+
+
+---
+
+## 6. Software Recommendations & Implementation
+
+### 6.1 Recommended Workflow
+
+1. Run **`bacondecomp`** (or `twowayfeweights`) first. If the "timing-of-treatment" weight is small, naive TWFE *may* be acceptable; if large, abandon it.
+2. Estimate **at least two** of: Callaway–Sant'Anna (`csdid` / `did`), Sun–Abraham (`eventstudyinteract` / `did2s` / `fixest`), and Borusyak et al. (`did_imputation`). Convergence across methods builds confidence.
+3. Report **cohort-time or event-study** ATTs, not a single number, whenever effects are likely heterogeneous.
+
+
+### Details
+
+### R
+
+- In `did::att_gt`, **never-treated** units must be coded as `first_treat = 0` (or a value larger than any `time`); `Inf` also works.
+- `fixest::feols` is dramatically faster than `plm`/`lm` for large panels; use `vcov = ~id` for clustered SEs.
+- The Sun–Abraham `fixest` approach and the dedicated `did2s` give very similar event-study coefficients but differ in how they handle never-treated vs. not-yet-treated reference cohorts.
+- Always plot the pre-treatment coefficients (e.g., `ggdid(agg_event)`) to eyeball parallel trends.
+
+### Stata
+
+- `csdid` expects `gvar()` to be `0` for never-treated (not missing). If your never-treated are coded `.`, recode: `replace first_treat = 0 if missing(first_treat)`.
+- `eventstudyinteract` requires a **control_cohort** variable distinguishing never-treated from eventually-treated units.
+- `reghdfe` is the workhorse for fast high-dimensional FE; pair with `vce(cluster id)` for inference.
+- After `csdid`, use `estat event, window(-5 5)` to restrict the plot window.
+- `did_imputation` and `did2s` both exploit the "clean" not-yet/never-treated counterfactual and are good robustness companions to `csdid`.
+
+
+---
+
+## 7. References
+
+| Paper | Venue | Link |
+|-------|-------|------|
+| **Goodman-Bacon, A. (2021)** — "Difference-in-Differences with Variation in Treatment Timing" | *Journal of Econometrics*, 225(2): 254–277 | [doi:10.1016/j.jeconom.2021.03.014](https://doi.org/10.1016/j.jeconom.2021.03.014) |
+| **Callaway, B. & Sant'Anna, P. (2021)** — "Difference-in-Differences with Multiple Time Periods" | *Journal of Econometrics*, 225(2): 200–230 | [doi:10.1016/j.jeconom.2021.03.015](https://doi.org/10.1016/j.jeconom.2021.03.015) |
+| **Sun, L. & Abraham, S. (2021)** — "Estimating Dynamic Treatment Effects in Event Studies with Heterogeneous Treatment Effects" | *Journal of Econometrics*, 225(2): 175–199 | [doi:10.1016/j.jeconom.2021.03.010](https://doi.org/10.1016/j.jeconom.2021.03.010) |
+| **de Chaisemartin, C. & D'Haultfœuille, X. (2020)** — "Two-Way Fixed Effects Estimators with Heterogeneous Treatment Effects" | *American Economic Review*, 110(9): 2964–2996 | [doi:10.1257/aer.20181169](https://doi.org/10.1257/aer.20181169) |
+| **Borusyak, K., Jaravel, X. & Spiess, J. (2024)** — "Revisiting Event Study Designs" *(corrected: JOE, not JEEA)* | *Journal of Econometrics*, 235(2): 425–455 | [doi:10.1016/j.jeconom.2023.03.008](https://doi.org/10.1016/j.jeconom.2023.03.008) |
+| **Gardner, J. (2022)** — "Two-Stage Differences in Differences" | arXiv working paper | [arXiv:2207.05943](https://arxiv.org/abs/2207.05943) |
+| **Wooldridge, J. M. (2021/2023)** — "Two-Way Fixed Effects, the Event Study, and the Pretrends Test" | Working paper (Michigan State) | [msu.edu/~ecwool](https://www.msu.edu/~ecwool/) · related SSRN: [abstract=4189389](https://ssrn.com/abstract=4189389) |
+
+> **Note on Wooldridge's link:** The TWFE/event-study working paper is circulated from his faculty page rather than a DOI'd journal (as of 2024–2026 it remains a widely-cited WP). The SSRN link is to his closely related 2022 paper on *nonlinear* DiD with panel data.
+
+### Software documentation links
+- `did` (R): https://bcallaway11.github.io/did/
+- `fixest` (R): https://lrberge.github.io/fixest/
+- `did2s` (R): https://github.com/kylebutts/did2s
+- `didimputation` (R): https://github.com/kylebutts/didimputation
+- `csdid` (Stata): `help csdid` after `ssc install csdid` (author: Fernando Rios-Avila)
+- `eventstudyinteract` (Stata): `help eventstudyinteract` (Sun & Abraham)
+
+
+## Difference in Difference
+
+- [A nice tracker of DiD packages for R](https://asjadnaqvi.github.io/DiD/)
+
+- [A nice exploration of the two-way Mundlak model by Badi Baltagi](https://surface.syr.edu/cgi/viewcontent.cgi?article=1469&context=cpr)

@@ -1,0 +1,15 @@
+{
+  "hash": "7adbbcb1d6fda3943d8b310b3101f747",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: Simulated Time Series and their ACF and PACF\nformat: html\nengine: knitr\nfilters:\n  - webr\n---\n\nUsing `webr` to showcase simulated arima processes, written in the form ARIMA(p, d, q).\n\n```{webr-r}\nts.sim <- arima.sim(list(order = c(1,1,0), ar = 0.7), n = 200)\nts.plot(ts.sim)\nacf(ts.sim)\npacf(ts.sim)\n```\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

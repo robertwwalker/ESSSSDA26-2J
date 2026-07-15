@@ -1,0 +1,56 @@
+---
+title: "Welcome!"
+subtitle: "2J: Advanced Time Series/Panel"
+author: "Robert W. Walker"
+date: "07/14/2026"
+categories: [news]
+---
+
+# Welcome to 2J: Advanced Time Series/Panel!
+
+I hope you are ready! 
+
+In the next two weeks we will set forth as comprehensive a treatment as we can in time series and panel data in ten sessions.  With coffee in hand and the computer getting ready, let's dig in!
+
+![](thumbnail.jpg)
+
+A *brief* summary for the Instructor's Presentation
+
+- Week 1: Time Series Day 1
+  + Stationarity and Unit Roots
+  + ARMA structures
+  + Dynamic Linear Models and their Interpretation
+  + VAR and Cointegration topics
+  + Equation balance and recent controversies
+
+- Week 2: Panel Data
+  + Fixed and random effects and Within/Between
+  + Estimating Models, xtmixed, xtreg, etc.
+  + STADL Up!
+  + Missing data
+  + GLM Extensions of Panel Models
+  + Dynamic Panel Data
+  + Causal Inference in Panel Data: TWFE/DID
+
+# Digital Resources
+
+Depending upon your software of choice, you will want to have a look over the relevant manuals.  
+
+- For Stata [ts](https://www.stata.com/manuals/ts.pdf) and [xt](https://www.stata.com/manuals/xt.pdf).  
+- For R there is [timetk](https://business-science.github.io/timetk/) and [fpp3](https://otexts.com/fpp3/) and [plm](https://cran.r-project.org/web/packages/plm/vignettes/A_plmPackage.html) along with [panelr](https://cran.r-project.org/web/packages/panelr/vignettes/wbm.html).   
+- [A `github` with the course data.](https://github.com/robertwwalker/Essex-Data).  
+- [A `github` with this website.](https://github.com/robertwwalker/ESSSSDA25-2W/).  
+- [Robert W. Walker's website](https://robertwwalker.work)
+
+## A Useful Model Translator
+
+[The Social Science Computing Cooperative at the University of Wisconsin has a nice, albeit incomplete, rendition of model compatibilities with syntax in R and Stata.](https://www.sscc.wisc.edu/sscc/pubs/Rmisc/panelmodels.html)
+
+
+## Topics of Interest Cut by Time
+
+We will read selections from a broader controversy in *Political Analysis*  on Time Series and error correction models; [the full list of papers can be found here as a large part of the Winter 2016 issue 24(1)](https://www.cambridge.org/core/journals/political-analysis/issue/BEBF2602B7601618A0EA1D40B9AC4DDE).  
+
+There is [a digital special issue of *Political Analysis* on Regression Discontinuity and Time Series Cross-Section data.](https://www.cambridge.org/core/journals/political-analysis/special-collections/panel-data-analysis-and-regression-discontinuity)  For day 6 of the class, [the paper by Plumper and Troeger (2019) about fixed effects regression is definitely worth considering.](https://www.cambridge.org/core/journals/political-analysis/article/not-so-harmless-after-all-the-fixedeffects-model/5DD67D1D95F573B11EB189BA72338854)
+
+Factor augmented dynamic panel data models get an interesting treatment in [Dynamic Panel Analysis under Cross-Sectional Dependence by Khusrav Gaibulloev, Todd Sandler and Donggyu Sul](https://www.cambridge.org/core/journals/political-analysis/article/dynamic-panel-analysis-under-crosssectional-dependence/88101DECF0F2804EF7E8AE2EEC53127F)

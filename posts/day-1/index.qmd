@@ -1,0 +1,148 @@
+---
+title: "Day 1: Time, Decomposition, and Summaries"
+author: "Robert W. Walker"
+date: "07/20/2026"
+categories: [panel data, time series, code, analysis]
+image: "image.jpg"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE)
+```
+
+## Slides
+
+- [A reveal presentation](https://robertwwalker.github.io/Essex-slides/ESSSSDA252W-Day1/)
+
+# The Data
+
+[The data are in Stata format.](https://github.com/robertwwalker/Essex-Data/raw/master/ISQ99-Essex.dta)  The `github` for this course.  There is also [a link here for a local copy](./slides/ISQ99-Essex.dta).
+
+## Basic R commands
+
+Loading the data in R and a summary using `skimr::skim`.
+
+```{r}
+library(haven); library(kableExtra)
+HR.Data <- read_dta(url("https://github.com/robertwwalker/DADMStuff/raw/master/ISQ99-Essex.dta"))
+library(skimr)
+skim(HR.Data) %>% kable() %>% scroll_box(width="80%", height="50%")
+```
+
+## An `xtsum` function for R
+
+A little function that I wrote up on `github`.
+
+```{r}
+library(tidyverse)
+library(plm)
+library(kableExtra)
+source(url("https://raw.githubusercontent.com/robertwwalker/DADMStuff/master/xtsum/xtsum.R"))
+# Be careful with the ID variable, the safest is to make it factor; this can go wildly wrong
+xtsum(IDORIGIN~., data=HR.Data) %>% kable() %>% scroll_box(width="80%", height="50%")
+```
+
+Since I wrote this, a formal package was submitted in 2023; I would suggest using it because of passing checks.  The package is `xtsum`.
+
+```{r}
+xtsum::xtsum(HR.Data, id = "IDORIGIN", t="YEAR", na.rm = TRUE)
+```
+
+## The Core Idea
+
+In R, this is an essential `group_by` calculation in the `tidyverse`.  The between data are a summary table with units constituting the rows.  The within data is the overall data with group means subtracted.
+
+```{r}
+HR.Data %>% 
+  group_by(IDORIGIN) %>% 
+  mutate(DEMOC.Centered = 
+           DEMOC3 - mean(DEMOC3, na.rm=TRUE)) %>%
+  filter(IDORIGIN==42) %>% 
+  select(IDORIGIN, YEAR, DEMOC3, DEMOC.Centered) 
+```
+
+In Stata, the key is to first load and declare the data.
+
+```
+use "https://github.com/robertwwalker/Essex-Data/raw/main/ISQ99-Essex.dta"
+des
+```
+
+![Stata Load](./slides/StataLoad.png)
+
+`xtset` denotes two key features of the data, the $i$ and $t$.
+
+```
+xtset IDORIGIN YEAR
+```
+
+![xtset](./slides/xtset.png)
+
+Stata has internal capabilities for summarising and describing `xt` data.  A between and within summary is given by `xtsum`
+
+```
+xtsum
+```
+
+![xtsum](./slides/xtsum.png)
+
+The description can be deceptive **because the indices are a complete grid.**
+
+```
+xtdes
+```
+
+![xtdes](./slides/xtdes.png)
+
+# Leads and Lags
+
+The core operators in Stata lead with a letter before `.`  With panel data, we will need to be cautious of the grouping.
+
+- F is forward, 
+- L is Lag, 
+- D is difference.
+
+![Operators](./slides/Operators.png)
+
+## Qualitative Variables
+
+### `xttab`
+
+- Between: How many units received each category?
+- Within: Of all observations of units that received that category at least once, what percent of observations take this value?
+
+```
+xttab AINEW
+```
+
+![xttab](./slides/xttab.png)
+
+### The Between
+
+```{r}
+between.tally <- function(x) {
+HR.Data %>% select(IDORIGIN, AINEW) %>% filter(AINEW==x) %$% table(IDORIGIN) %>% length()
+}
+sapply(c(1:5), function(x) {between.tally(x)})
+```
+
+### `xttrans`
+
+A first-order transition matrix.
+
+```
+xttrans AINEW
+```
+
+![xttrans](./slides/xttrans.png)
+I want to rely on the `dplyr` version of lag so I am explicit here.  Take the data, group it by id, calculate the lag, ungroup them, and create a table.  I prefer to keep this explicit with `order_by`.  The `janitor` library provides `tabyl` and it is explicit among missing values.
+
+```{r, warning=FALSE, message=FALSE}
+library(janitor)
+HR.Data %>% 
+  group_by(IDORIGIN) %>% 
+  mutate(Lag.AI = dplyr::lag(AINEW, n=1L, order_by = YEAR)) %>%
+  ungroup() %>%
+  tabyl(Lag.AI, AINEW)
+```
+

@@ -1,0 +1,19 @@
+---
+title: "Day 9: DPD and GMM"
+author: "Robert W. Walker"
+date: "07/30/2026"
+categories: [panel data, code, analysis]
+image: "image.jpg"
+---
+
+## Slides
+
+- [A reveal presentation](https://robertwwalker.github.io/Essex-slides/ESSSSDA252W-Day9/)
+
+## The I() construct
+
+`?formula` gives you insights into the way to structure generic formula objects in R.  The `I()` construct is a consistent and clear way in R's foundations to specify functional operations on variables.
+
+## R and GMM
+
+There are a number of packages for estimating GMM models in R.  `pgmm` does many of the most basic models, though Stata is the industry leader in this.  That said, there is a relatively new and highly customizable package for this: `pdynmc` which is [described here in a pdf vignette](https://cran.r-project.org/web/packages/pdynmc/vignettes/pdynmc-intro.pdf).

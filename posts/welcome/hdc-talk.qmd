@@ -1,0 +1,8 @@
+---
+title: "2025 Wednesday Talk Links"
+author: "Robert W. Walker"
+categories: [code, analysis]
+image: "BigTab.png"
+---
+
+[The talk slides](https://robertwwalker.github.io/Essex-slides/ESSSSDA25-HDCTalk/index.html)
