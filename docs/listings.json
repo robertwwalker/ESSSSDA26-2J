@@ -2,7 +2,6 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/welcome/CharacteristicRoots.html",
       "/posts/welcome/index.html",
       "/posts/day-1/index.html",
       "/posts/day-2/index.html",
@@ -19,7 +18,8 @@
       "/posts/day-3/arimasim.html",
       "/posts/welcome/news-science.html",
       "/posts/welcome/Clarification-Mundlak-etc.html",
-      "/posts/welcome/hdc-talk.html"
+      "/posts/welcome/hdc-talk.html",
+      "/posts/welcome/CharacteristicRoots.html"
     ]
   }
 ]

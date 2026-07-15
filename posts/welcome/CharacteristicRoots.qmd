@@ -1,7 +1,6 @@
 ---
 title: "A Bit More on Characteristic Roots"
 author: "Robert W. Walker"
-date: "07/23/2025"
 categories: [time series, code, analysis]
 image: "thumbnail.png"
 ---
