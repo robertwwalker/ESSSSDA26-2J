@@ -4,6 +4,7 @@ author: "Robert W. Walker"
 date: "08/01/2026"
 categories: [panel data, code, analysis]
 image: "image.jpg"
+draft: true
 ---
 
 **Topic:** Staggered treatment timing, two-way fixed effects (TWFE), and modern robust estimators

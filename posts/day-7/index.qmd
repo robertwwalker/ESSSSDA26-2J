@@ -4,6 +4,7 @@ author: "Robert W. Walker"
 date: "07/28/2026"
 categories: [panel data, code, analysis]
 image: "image.png"
+draft: true
 ---
 
 ## Slides
