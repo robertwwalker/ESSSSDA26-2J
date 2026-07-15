@@ -12,7 +12,7 @@ knitr::opts_chunk$set(message=FALSE, warning=FALSE)
 
 ## Slides
 
-- [A reveal presentation](https://robertwwalker.github.io/Essex-slides/ESSSSDA252W-Day1/)
+- [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day1/)
 
 # The Data
 

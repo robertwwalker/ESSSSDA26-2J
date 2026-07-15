@@ -8,7 +8,7 @@ image: "image.jpg"
 
 ## Slides
 
-- [A reveal presentation](https://robertwwalker.github.io/Essex-slides/ESSSSDA252W-Day9/)
+- [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day9/)
 
 ## The I() construct
 

@@ -203,3 +203,4 @@ coefs_melded <- mi.meld(just_coefs, just_ses)
 coefs_melded
 coefs_melded$q.mi / coefs_melded$se.mi
 ```
+

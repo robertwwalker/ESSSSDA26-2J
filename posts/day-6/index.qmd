@@ -8,7 +8,7 @@ image: "image.png"
 
 ## Slides
 
-- [A reveal presentation](https://robertwwalker.github.io/Essex-slides/ESSSSDA252W-Day6/)
+- [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day6/)
 
 ## `panelr`
 
