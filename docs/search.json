@@ -1,10 +1,10 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "ESSSSDA26-2J",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
     "section": "",
-    "text": "Welcome!\n\n\n2J: Advanced Time Series/Panel\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJul 14, 2026\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nDay 1: Time, Decomposition, and Summaries\n\n\n\n\n\n\npanel data\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJul 20, 2026\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nSimulated Time Series and their ACF and PACF\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nTwo Bits of Very Recent Interesting News\n\n\n\n\n\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nA Clarification on Mundlak and Related Things\n\n\n\n\n\n\npanel data\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\n2025 Wednesday Talk Links\n\n\n\n\n\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nA Bit More on Characteristic Roots\n\n\n\n\n\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\nNo matching items"
+    "text": "Recognizing the legacy of the course and Essex, this was the 2022 About…\nHarold D. Clarke was Ashbel Smith Professor in the School of Economic, Political and Policy Sciences, University of Texas at Dallas, and adjunct Professor, Department of Government, University of Essex. His current research interests focus on the political economy of party support. He has published widely on this topic in journals such as the American Journal of Political Science, American Political Science Review, and British Journal of Political Science. He is chief editor of Electoral Studies. He has been a principal investigator for the 2001, 2005 and 2010 British Election Study (University of Essex and University of Texas at Dallas), the 2011 Political Support in Canada Study, and the 2012 Political Support in America Study. His most recent books are Brexit—Why Britain Voted to Leave the European Union (Cambridge University Press, 2017), Affluence, Austerity and Electoral Change in Britain (Cambridge University Press, 2013), and Austerity and Political Choice in Britain (Palgrave Macmillan, 2015).\nRobert W. Walker is Associate Professor of Quantitative Methods in the Atkinson Graduate School of Management at Willamette University where he teaches statistics and data science. He earned a Ph. D. in political science from the University of Rochester in 2005 and has previously held teaching positions at Dartmouth College, Rice University, Texas A&M University, and Washington University in Saint Louis. He researches distributed lag variants of the between-within model and semi-Markov processes for time-series, cross-section data in international relations and international/comparative political economy. He previously taught four iterations in the U. S. National Science Foundation funded Empirical Implications of Theoretical Models sequence at Washington University in Saint Louis and has been an honorary instructor in panel data at the Essex Summer School since 2010. His work with Curt Signorino and Muhammet Bas was awarded the Miller Prize for the best article in Political Analysis in 2009."
   },
   {
     "objectID": "posts/day-1/index.html",
@@ -79,150 +79,6 @@
     ]
   },
   {
-    "objectID": "posts/day-7/index.html",
-    "href": "posts/day-7/index.html",
-    "title": "Day 7: Missing Data",
-    "section": "",
-    "text": "A reveal presentation",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#slides",
-    "href": "posts/day-7/index.html#slides",
-    "title": "Day 7: Missing Data",
-    "section": "",
-    "text": "A reveal presentation",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#missing-data",
-    "href": "posts/day-7/index.html#missing-data",
-    "title": "Day 7: Missing Data",
-    "section": "Missing Data",
-    "text": "Missing Data\nuse \"https://github.com/robertwwalker/Essex-Data/raw/main/ISQ99-Essex.dta\"\nxtset\ndrop if AINEW==.\nxtset\n* Give consideration to what we should do about the Lagged DV\ndrop if AILAG==.\n* A note about long versus flong\nmi set flong\n* Note that it adds some variables; what are they?\nmi describe\nmi misstable summarize\n* There are some logical restrictions that we are going to want.\n* For example, we have some changes that need to be consistent\n* with levels.  We can deal with that; just calculate the changes\n* after imputation.\nmi register imputed DEMOC3\nmi impute regress DEMOC3 PERCHPCG PERCHPOP LPOP CWARCOW IWARCOW2, add(10) dots force\n* mi impute regress PCGTHOU DEMOC3 PERCHPOP LPOP CWARCOW IWARCOW2, add(20)\nmi estimate: xtreg AINEW AILAG DEMOC3, fe",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#the-data-poe-tate-keith-1999",
-    "href": "posts/day-7/index.html#the-data-poe-tate-keith-1999",
-    "title": "Day 7: Missing Data",
-    "section": "The Data: Poe, Tate, Keith 1999",
-    "text": "The Data: Poe, Tate, Keith 1999\nTwo objectives. Load the data and transform it into a pdata.frame for now.\n\nknitr::opts_chunk$set(warning=FALSE, message=FALSE, comment=NA, prompt=FALSE)\nlibrary(broom)\nlibrary(plm)\nlibrary(foreign)\nlibrary(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.6\n✔ forcats   1.0.1     ✔ stringr   1.6.0\n✔ ggplot2   4.0.1     ✔ tibble    3.3.1\n✔ lubridate 1.9.4     ✔ tidyr     1.3.2\n✔ purrr     1.2.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::between() masks plm::between()\n✖ dplyr::filter()  masks stats::filter()\n✖ dplyr::lag()     masks plm::lag(), stats::lag()\n✖ dplyr::lead()    masks plm::lead()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nISQ99_Essex &lt;- read.dta(\"./img/ISQ99-Essex.dta\")\nISQ99p &lt;- pdata.frame(ISQ99_Essex, c(\"IDORIGIN\", \"YEAR\"))",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#pdata.frame",
-    "href": "posts/day-7/index.html#pdata.frame",
-    "title": "Day 7: Missing Data",
-    "section": "pdata.frame",
-    "text": "pdata.frame\nWill allow R to answer many questions that stata’s xt commands make available. First, some basic summaries to get to balance.\n\nsummary(ISQ99_Essex)\n\n    IDORIGIN          YEAR            AI              SD            POLRT     \n Min.   :  2.0   Min.   :1976   Min.   :1.000   Min.   :1.000   Min.   :1.00  \n 1st Qu.:290.0   1st Qu.:1980   1st Qu.:2.000   1st Qu.:1.000   1st Qu.:2.00  \n Median :435.0   Median :1984   Median :3.000   Median :2.000   Median :3.00  \n Mean   :446.7   Mean   :1984   Mean   :2.753   Mean   :2.241   Mean   :3.81  \n 3rd Qu.:640.0   3rd Qu.:1989   3rd Qu.:3.000   3rd Qu.:3.000   3rd Qu.:6.00  \n Max.   :990.0   Max.   :1993   Max.   :5.000   Max.   :5.000   Max.   :7.00  \n                                NA's   :1061    NA's   :587     NA's   :382   \n      MIL2             LEFT             BRIT            PCGNP      \n Min.   :0.0000   Min.   :0.0000   Min.   :0.0000   Min.   :   52  \n 1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:  390  \n Median :0.0000   Median :0.0000   Median :0.0000   Median : 1112  \n Mean   :0.2725   Mean   :0.1764   Mean   :0.3554   Mean   : 3592  \n 3rd Qu.:1.0000   3rd Qu.:0.0000   3rd Qu.:1.0000   3rd Qu.: 3510  \n Max.   :1.0000   Max.   :1.0000   Max.   :1.0000   Max.   :36670  \n NA's   :382      NA's   :393      NA's   :290      NA's   :443    \n     AINEW           SDNEW           IDGURR          AILAG          SDLAG      \n Min.   :1.000   Min.   :1.000   Min.   :  2.0   Min.   :1.00   Min.   :1.000  \n 1st Qu.:1.000   1st Qu.:1.000   1st Qu.:290.0   1st Qu.:1.00   1st Qu.:1.000  \n Median :2.000   Median :2.000   Median :450.0   Median :2.00   Median :2.000  \n Mean   :2.443   Mean   :2.262   Mean   :455.8   Mean   :2.45   Mean   :2.247  \n 3rd Qu.:3.000   3rd Qu.:3.000   3rd Qu.:663.0   3rd Qu.:3.00   3rd Qu.:3.000  \n Max.   :5.000   Max.   :5.000   Max.   :990.0   Max.   :5.00   Max.   :5.000  \n NA's   :468     NA's   :468                     NA's   :644    NA's   :644    \n    PERCHPCG          PERCHPOP            LPOP          PCGTHOU      \n Min.   :-95.500   Min.   :-48.450   Min.   :11.00   Min.   : 0.050  \n 1st Qu.: -2.545   1st Qu.:  0.910   1st Qu.:14.51   1st Qu.: 0.390  \n Median :  4.615   Median :  2.220   Median :15.59   Median : 1.110  \n Mean   :  4.614   Mean   :  2.193   Mean   :15.48   Mean   : 3.592  \n 3rd Qu.: 11.760   3rd Qu.:  2.940   3rd Qu.:16.64   3rd Qu.: 3.510  \n Max.   :128.570   Max.   :126.010   Max.   :20.89   Max.   :36.670  \n NA's   :618       NA's   :293       NA's   :115     NA's   :443     \n     DEMOC3          CWARCOW           IWARCOW2      \n Min.   : 0.000   Min.   :0.00000   Min.   :0.00000  \n 1st Qu.: 0.000   1st Qu.:0.00000   1st Qu.:0.00000  \n Median : 0.000   Median :0.00000   Median :0.00000  \n Mean   : 3.682   Mean   :0.09201   Mean   :0.08621  \n 3rd Qu.: 9.000   3rd Qu.:0.00000   3rd Qu.:0.00000  \n Max.   :10.000   Max.   :1.00000   Max.   :1.00000  \n NA's   :793      NA's   :407       NA's   :380      \n\ntable(ISQ99_Essex$IDORIGIN)\n\n\n    2    20    31    40    41    42    51    52    53    55    56    57    59 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n   70    90    91    92    93    94    95    96   100   101   110   115   130 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  135   140   145   150   155   160   165   200   205   210   211   212   220 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  225   230   235   260   265   290   305   310   315   316   325   333   339 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  345   346   347   348   349   350   352   355   360   365   366   367   368 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  369   370   371   372   373   374 374.1 374.2 374.3 374.4 374.5   375   380 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  385   390   395   402   403   404   411   420   432   433   434   435   436 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  437   438   439   450   451   452   461   471   475   481   482   483   484 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  490   500   501   510   516   517   520   525   530   531   540   541   551 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  552   553   560   562   570   571   572   580   581   590   591   600   615 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  616   620   625   630   640   645   651   652   660   663   666   670   678 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  680   690   692   694   696   698   700   710   712   713   732   740   750 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  760   770   771   775   780   781   790   800   811   812   815   820   821 \n   18    18    18    18    18    18    18    18    18    18    18    18    18 \n  830   840   850   900   910   911   914   920   950   990 \n   18    18    18    18    18    18    18    18    18    18 \n\ntable(ISQ99_Essex$YEAR)\n\n\n1976 1977 1978 1979 1980 1981 1982 1983 1984 1985 1986 1987 1988 1989 1990 1991 \n 179  179  179  179  179  179  179  179  179  179  179  179  179  179  179  179 \n1992 1993 \n 179  179 \n\nis.pbalanced(ISQ99p)\n\n[1] TRUE\n\n\nIs any variable time invariant?\n\npvar(ISQ99p)\n\nno time variation:       IDORIGIN BRIT IDGURR AILAG SDLAG PERCHPCG PERCHPOP \nno individual variation: YEAR AI SD POLRT MIL2 LEFT BRIT PCGNP AINEW SDNEW AILAG SDLAG PERCHPCG PERCHPOP LPOP PCGTHOU DEMOC3 CWARCOW IWARCOW2 \nall NA in time dimension for at least one individual:  AI SD POLRT MIL2 LEFT BRIT PCGNP AINEW SDNEW AILAG SDLAG PERCHPCG PERCHPOP LPOP PCGTHOU DEMOC3 CWARCOW IWARCOW2 \nall NA in ind. dimension for at least one time period: AI SD POLRT MIL2 LEFT BRIT PCGNP AINEW SDNEW AILAG SDLAG PERCHPCG PERCHPOP LPOP PCGTHOU DEMOC3 CWARCOW IWARCOW2",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#visualizations-of-missingness",
-    "href": "posts/day-7/index.html#visualizations-of-missingness",
-    "title": "Day 7: Missing Data",
-    "section": "Visualizations of Missingness",
-    "text": "Visualizations of Missingness\n\nlibrary(visdat)\nvis_dat(ISQ99_Essex)\n\n\n\n\n\n\n\n\n\nvis_miss(ISQ99_Essex)",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#univariate",
-    "href": "posts/day-7/index.html#univariate",
-    "title": "Day 7: Missing Data",
-    "section": "Univariate",
-    "text": "Univariate\n\nlibrary(ggplot2)\nlibrary(naniar)\nmplot &lt;- gg_miss_var(ISQ99_Essex)\nmplot",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#bivariate",
-    "href": "posts/day-7/index.html#bivariate",
-    "title": "Day 7: Missing Data",
-    "section": "Bivariate",
-    "text": "Bivariate\n\nmplot &lt;- ggplot(ISQ99_Essex, \n       aes(x = DEMOC3, \n           y = POLRT)) + \n  geom_point()\nmplot\n\n\n\n\n\n\n\n\n\nlibrary(naniar)\nmplot &lt;- ggplot(ISQ99_Essex, \n       aes(x = DEMOC3, \n           y = POLRT)) + \n  geom_miss_point()\nmplot",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#multiple-imputation-amelia-ii",
-    "href": "posts/day-7/index.html#multiple-imputation-amelia-ii",
-    "title": "Day 7: Missing Data",
-    "section": "Multiple Imputation: Amelia II",
-    "text": "Multiple Imputation: Amelia II\nA simple multivariate normal is easy as long as the data are well behaved. NB: This uses none of the time series or cross-sectional dimensionality for identification.\n\nlibrary(Amelia)\n#library(Zelig)\n# Shorten the dataset\nISQ99.4MI &lt;- ISQ99_Essex[,c(1,2,5:11,13:21)]\na.out &lt;- amelia(ISQ99.4MI, m=5, ts=\"YEAR\", cs=\"IDORIGIN\", noms=c(\"MIL2\",\"LEFT\",\"BRIT\",\"CWARCOW\",\"IWARCOW2\"), ords = c(\"AINEW\",\"SDNEW\",\"AILAG\",\"SDLAG\",\"POLRT\"))\n\nWarning: There are observations in the data that are completely missing. \n         These observations will remain unimputed in the final datasets. \n-- Imputation 1 --\n\n  1  2  3  4  5  6  7\n\n-- Imputation 2 --\n\n  1  2  3  4  5  6  7  8  9\n\n-- Imputation 3 --\n\n  1  2  3  4  5  6  7  8\n\n-- Imputation 4 --\n\n  1  2  3  4  5  6  7  8  9 10\n\n-- Imputation 5 --\n\n  1  2  3  4  5  6\n\n\nWithout simplifying, it crashes because there are id variables of different sorts and other things hiding in there, perfect multicollinearities exist. Even with them, we need a bit more work.",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#transforms-are-key",
-    "href": "posts/day-7/index.html#transforms-are-key",
-    "title": "Day 7: Missing Data",
-    "section": "Transforms are Key",
-    "text": "Transforms are Key",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#using-the-cs-and-ts-information-with-polytimesplinetime-and-intercs",
-    "href": "posts/day-7/index.html#using-the-cs-and-ts-information-with-polytimesplinetime-and-intercs",
-    "title": "Day 7: Missing Data",
-    "section": "Using the cs and ts information with polytime/splinetime and intercs",
-    "text": "Using the cs and ts information with polytime/splinetime and intercs\n\na.out2 &lt;- amelia(ISQ99.4MI, m=5, ts=\"YEAR\", cs=\"IDORIGIN\", polytime=2, intercs=FALSE, noms=c(\"MIL2\",\"LEFT\",\"BRIT\",\"CWARCOW\",\"IWARCOW2\"), ords = c(\"AINEW\",\"SDNEW\",\"AILAG\",\"SDLAG\",\"POLRT\"), p2s=2, emburn = c(20,50))\n\n\namelia starting\nbeginning prep functions\nVariables used:  POLRT PCGNP AINEW SDNEW AILAG SDLAG PERCHPCG PERCHPOP LPOP PCGTHOU DEMOC3 noms.MIL2.2 noms.LEFT.2 noms.BRIT.2 noms.CWARCOW.2 noms.IWARCOW2.2 time.1 time.2 \nrunning bootstrap\n-- Imputation 1 --\nsetting up EM chain indicies\n\n  1(189)  2(182)  3(155)  4(89)  5(13)  6(9)  7(6)  8(1)  9(0) 10(0) 11(0) 12(0) 13(0) 14(0) 15(0) 16(0) 17(0) 18(0) 19(0) 20\n(0)\n\n saving and cleaning\n\nrunning bootstrap\n-- Imputation 2 --\nsetting up EM chain indicies\n\n  1(189)  2(182)  3(162)  4(87)  5(14)  6(5)  7(1)  8(0)  9(0) 10(0) 11(0) 12(0) 13(0) 14(0) 15(0) 16(0) 17(0) 18(0) 19(0) 20\n(0)\n\n saving and cleaning\n\nrunning bootstrap\n-- Imputation 3 --\nsetting up EM chain indicies\n\n  1(188)  2(183)  3(157)  4(76)  5(29)  6(17)  7(8)  8(0)  9(0) 10(0) 11(0) 12(0) 13(0) 14(0) 15(0) 16(0) 17(0) 18(0) 19(0) 20\n(0)\n\n saving and cleaning\n\nrunning bootstrap\n-- Imputation 4 --\nsetting up EM chain indicies\n\n  1(189)  2(181)  3(153)  4(60)  5(20)  6(13)  7(7)  8(2)  9(0) 10(0) 11(0) 12(0) 13(0) 14(0) 15(0) 16(0) 17(0) 18(0) 19(0) 20\n(0)\n\n saving and cleaning\n\nrunning bootstrap\n-- Imputation 5 --\nsetting up EM chain indicies\n\n  1(189)  2(181)  3(160)  4(90)  5(25)  6(12)  7(3)  8(0)  9(0) 10(0) 11(0) 12(0) 13(0) 14(0) 15(0) 16(0) 17(0) 18(0) 19(0) 20\n(0)\n\n saving and cleaning\n\nsummary(a.out2)\n\n\nAmelia output with 5 imputed datasets.\nReturn code:  1 \nMessage:  Normal EM convergence. \n\nChain Lengths:\n--------------\nImputation 1:  20\nImputation 2:  20\nImputation 3:  20\nImputation 4:  20\nImputation 5:  20\n\nRows after Listwise Deletion:  2144 \nRows after Imputation:  3222 \nPatterns of missingness in the data:  65 \n\nFraction Missing for original variables: \n-----------------------------------------\n\n         Fraction Missing\nIDORIGIN       0.00000000\nYEAR           0.00000000\nPOLRT          0.11855990\nMIL2           0.11855990\nLEFT           0.12197393\nBRIT           0.09000621\nPCGNP          0.13749224\nAINEW          0.14525140\nSDNEW          0.14525140\nAILAG          0.19987585\nSDLAG          0.19987585\nPERCHPCG       0.19180633\nPERCHPOP       0.09093731\nLPOP           0.03569212\nPCGTHOU        0.13749224\nDEMOC3         0.24612042\nCWARCOW        0.12631906\nIWARCOW2       0.11793917\n\n\nNow let’s analyze it.",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
-    "objectID": "posts/day-7/index.html#more-general",
-    "href": "posts/day-7/index.html#more-general",
-    "title": "Day 7: Missing Data",
-    "section": "More General",
-    "text": "More General\n\nall_imputations &lt;- dplyr::bind_rows(unclass(a.out2$imputations), .id = \"m\") %&gt;%\n  group_by(m) %&gt;%\n  nest()\nall_imputations\n\n# A tibble: 5 × 2\n# Groups:   m [5]\n  m     data                 \n  &lt;chr&gt; &lt;list&gt;               \n1 imp1  &lt;tibble [3,222 × 18]&gt;\n2 imp2  &lt;tibble [3,222 × 18]&gt;\n3 imp3  &lt;tibble [3,222 × 18]&gt;\n4 imp4  &lt;tibble [3,222 × 18]&gt;\n5 imp5  &lt;tibble [3,222 × 18]&gt;\n\n\n\nmodels_imputations &lt;- all_imputations %&gt;%\n  mutate(model = data %&gt;% map(~ lm(AINEW ~ AILAG + MIL2 + LEFT + BRIT + CWARCOW + IWARCOW2 + PCGTHOU + PERCHPOP + DEMOC3, data = .)),\n         tidied = model %&gt;% map(~ tidy(., conf.int = TRUE)),\n         glance = model %&gt;% map(~ glance(.)))\n\nmodels_imputations\n\n# A tibble: 5 × 5\n# Groups:   m [5]\n  m     data                  model  tidied            glance           \n  &lt;chr&gt; &lt;list&gt;                &lt;list&gt; &lt;list&gt;            &lt;list&gt;           \n1 imp1  &lt;tibble [3,222 × 18]&gt; &lt;lm&gt;   &lt;tibble [10 × 7]&gt; &lt;tibble [1 × 12]&gt;\n2 imp2  &lt;tibble [3,222 × 18]&gt; &lt;lm&gt;   &lt;tibble [10 × 7]&gt; &lt;tibble [1 × 12]&gt;\n3 imp3  &lt;tibble [3,222 × 18]&gt; &lt;lm&gt;   &lt;tibble [10 × 7]&gt; &lt;tibble [1 × 12]&gt;\n4 imp4  &lt;tibble [3,222 × 18]&gt; &lt;lm&gt;   &lt;tibble [10 × 7]&gt; &lt;tibble [1 × 12]&gt;\n5 imp5  &lt;tibble [3,222 × 18]&gt; &lt;lm&gt;   &lt;tibble [10 × 7]&gt; &lt;tibble [1 × 12]&gt;\n\n\n\nparams &lt;- models_imputations %&gt;%\n  unnest(tidied) %&gt;%\n  select(m, term, estimate, std.error) %&gt;%\n  gather(key, value, estimate, std.error) %&gt;%\n  spread(term, value)\nparams\n\n# A tibble: 10 × 12\n# Groups:   m [5]\n   m     key      `(Intercept)`  AILAG    BRIT CWARCOW   DEMOC3 IWARCOW2    LEFT\n   &lt;chr&gt; &lt;chr&gt;            &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;\n 1 imp1  estimate        1.08   0.607  -0.106   0.583  -0.0314    0.187  -0.0867\n 2 imp1  std.err…        0.0485 0.0136  0.0279  0.0454  0.00380   0.0456  0.0362\n 3 imp2  estimate        1.04   0.623  -0.125   0.520  -0.0334    0.201  -0.114 \n 4 imp2  std.err…        0.0462 0.0129  0.0267  0.0436  0.00364   0.0443  0.0353\n 5 imp3  estimate        0.999  0.637  -0.121   0.537  -0.0281    0.106  -0.0685\n 6 imp3  std.err…        0.0455 0.0128  0.0264  0.0432  0.00364   0.0431  0.0343\n 7 imp4  estimate        1.03   0.625  -0.116   0.503  -0.0313    0.162  -0.0360\n 8 imp4  std.err…        0.0469 0.0132  0.0271  0.0458  0.00373   0.0441  0.0348\n 9 imp5  estimate        1.05   0.615  -0.0938  0.521  -0.0291    0.245  -0.0686\n10 imp5  std.err…        0.0465 0.0130  0.0269  0.0445  0.00367   0.0428  0.0351\n# ℹ 3 more variables: MIL2 &lt;dbl&gt;, PCGTHOU &lt;dbl&gt;, PERCHPOP &lt;dbl&gt;\n\n\n\njust_coefs &lt;- params %&gt;%\n  filter(key == \"estimate\") %&gt;%\n  ungroup() %&gt;%\n  select(-m, -key)\njust_coefs\n\n# A tibble: 5 × 10\n  `(Intercept)` AILAG    BRIT CWARCOW  DEMOC3 IWARCOW2    LEFT   MIL2 PCGTHOU\n          &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;\n1         1.08  0.607 -0.106    0.583 -0.0314    0.187 -0.0867 0.112  -0.0163\n2         1.04  0.623 -0.125    0.520 -0.0334    0.201 -0.114  0.0874 -0.0142\n3         0.999 0.637 -0.121    0.537 -0.0281    0.106 -0.0685 0.133  -0.0162\n4         1.03  0.625 -0.116    0.503 -0.0313    0.162 -0.0360 0.113  -0.0146\n5         1.05  0.615 -0.0938   0.521 -0.0291    0.245 -0.0686 0.106  -0.0193\n# ℹ 1 more variable: PERCHPOP &lt;dbl&gt;\n\n\n\njust_ses &lt;- params %&gt;%\n  filter(key == \"std.error\") %&gt;%\n  ungroup() %&gt;%\n  select(-m, -key)\njust_ses\n\n# A tibble: 5 × 10\n  `(Intercept)`  AILAG   BRIT CWARCOW  DEMOC3 IWARCOW2   LEFT   MIL2 PCGTHOU\n          &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;\n1        0.0485 0.0136 0.0279  0.0454 0.00380   0.0456 0.0362 0.0316 0.00255\n2        0.0462 0.0129 0.0267  0.0436 0.00364   0.0443 0.0353 0.0305 0.00250\n3        0.0455 0.0128 0.0264  0.0432 0.00364   0.0431 0.0343 0.0301 0.00246\n4        0.0469 0.0132 0.0271  0.0458 0.00373   0.0441 0.0348 0.0312 0.00251\n5        0.0465 0.0130 0.0269  0.0445 0.00367   0.0428 0.0351 0.0308 0.00248\n# ℹ 1 more variable: PERCHPOP &lt;dbl&gt;\n\n\n\ncoefs_melded &lt;- mi.meld(just_coefs, just_ses)\ncoefs_melded\n\n$q.mi\n     (Intercept)     AILAG       BRIT  CWARCOW      DEMOC3  IWARCOW2\n[1,]    1.040136 0.6214036 -0.1124235 0.532683 -0.03064904 0.1803708\n            LEFT      MIL2     PCGTHOU      PERCHPOP\n[1,] -0.07470803 0.1102575 -0.01613081 -0.0009362572\n\n$se.mi\n     (Intercept)      AILAG       BRIT    CWARCOW      DEMOC3   IWARCOW2\n[1,]  0.05578001 0.01796531 0.03039278 0.05577991 0.004347858 0.07137014\n           LEFT       MIL2     PCGTHOU    PERCHPOP\n[1,] 0.04696314 0.03575381 0.003344076 0.003508067\n\ncoefs_melded$q.mi / coefs_melded$se.mi\n\n     (Intercept)    AILAG      BRIT  CWARCOW    DEMOC3 IWARCOW2     LEFT\n[1,]    18.64711 34.58908 -3.699019 9.549729 -7.049228 2.527259 -1.59078\n         MIL2   PCGTHOU   PERCHPOP\n[1,] 3.083796 -4.823697 -0.2668869",
-    "crumbs": [
-      "Welcome!",
-      "Week 2",
-      "Day 7: Missing Data"
-    ]
-  },
-  {
     "objectID": "posts/welcome/index.html",
     "href": "posts/welcome/index.html",
     "title": "Welcome!",
@@ -254,20 +110,6 @@
       "Welcome!",
       "Welcome to 2J!"
     ]
-  },
-  {
-    "objectID": "posts/welcome/news-science.html",
-    "href": "posts/welcome/news-science.html",
-    "title": "Two Bits of Very Recent Interesting News",
-    "section": "",
-    "text": "From the journal Nature, how do scientists treat null findings?\nThe tweet\nVictor Gomez-Blanco has a paper on trends in top economics journals. The paper suggests you made a good choice."
-  },
-  {
-    "objectID": "posts/welcome/hdc-talk.html",
-    "href": "posts/welcome/hdc-talk.html",
-    "title": "2025 Wednesday Talk Links",
-    "section": "",
-    "text": "The talk slides"
   },
   {
     "objectID": "posts/welcome/Clarification-Mundlak-etc.html",
@@ -312,10 +154,52 @@
     "text": "Algebraics\n\nCounterfactual &lt;- data.frame(Case=c(1,1,2,2), Time=c(1,2,1,2), x0=c(0,0,0,0), xT=c(1,1,1,0))\nCounterfactual\n\n  Case Time x0 xT\n1    1    1  0  1\n2    1    2  0  1\n3    2    1  0  1\n4    2    2  0  0\n\n\nSuppose a 2 way Mundlak regression or 2 way fixed effects with a regression model setting all regression parameters to 1, the expected value in the first case is 0. When the counterfactual is implemented, we can account for it as follows. What changes? The pooled regression coefficient will increase y by 1. That’s really the easy part.\nThe new unit mean – expected value of \\(x_i\\) – should be 1 because of the change for case 1. As an algerbraic matter, Case 2 is just a shock so perhaps no change in expectation. The new time mean for both increases proportionally by the same \\(\\frac{1}{N}\\) – expected value of x – in that period. The change continues for Case 1 but vanishes for Case 2.\nI am not suggesting that adjustment by the \\(\\frac{1}{N}\\) is justified, justifiable, or otherwise, but am pointing out that the identities have implications and it is worthwhile to think them through."
   },
   {
+    "objectID": "posts/xtsum/index.html",
+    "href": "posts/xtsum/index.html",
+    "title": "Day 1: xtsum equivalents",
+    "section": "",
+    "text": "There’s no single built-in R function that perfectly replicates xtsum’s overall / between / within decomposition, but here are the main options:\n\n\n\nlibrary(plm)\n\npdata &lt;- pdata.frame(df, index = c(\"id\", \"time\"))\n\n# Panel dimensions (like xtdescribe)\npdim(pdata)\n\n# Check between/within variation (flags invariant variables)\npvar(pdata)\n\n# Summary of a panel variable\nsummary(pdata$y)\npvar() will warn you if a variable has no within or between variation — useful for the same diagnostics xtsum provides.\n\n\n\n\nThis is the go-to approach shared widely in the R/Stata community:\nxtsum &lt;- function(data, var, id, time) {\n  library(dplyr)\n  \n  data &lt;- data %&gt;% rename(y = {{var}}, i = {{id}}, t = {{time}})\n  \n  overall &lt;- data %&gt;%\n    summarise(mean = mean(y, na.rm=T), sd = sd(y, na.rm=T),\n              min = min(y, na.rm=T), max = max(y, na.rm=T), n = n())\n  \n  between &lt;- data %&gt;%\n    group_by(i) %&gt;%\n    summarise(y_bar = mean(y, na.rm=T)) %&gt;%\n    ungroup() %&gt;%\n    summarise(mean = mean(y_bar), sd = sd(y_bar),\n              min = min(y_bar), max = max(y_bar), n = n())\n  \n  within &lt;- data %&gt;%\n    group_by(i) %&gt;%\n    mutate(y_within = y - mean(y, na.rm=T) + mean(data$y, na.rm=T)) %&gt;%\n    ungroup() %&gt;%\n    summarise(mean = mean(y_within, na.rm=T), sd = sd(y_within, na.rm=T),\n              min = min(y_within, na.rm=T), max = max(y_within, na.rm=T), n = n())\n  \n  bind_rows(overall, between, within) %&gt;%\n    mutate(component = c(\"overall\", \"between\", \"within\")) %&gt;%\n    select(component, everything())\n}\n\nxtsum(df, var = income, id = person_id, time = year)\n\n\n\n\nlibrary(panelr)\n\npanel_df &lt;- panel_data(df, id = person_id, wave = year)\nsummary(panel_df)\npanel_data objects give structured summaries with some between/within awareness, though less detailed than xtsum.\n\n\n\n\nlibrary(dplyr)\n\n# Between variation (person means)\ndf %&gt;% group_by(id) %&gt;% summarise(y_mean = mean(y))\n\n# Within variation (demeaned)\ndf %&gt;% group_by(id) %&gt;% mutate(y_within = y - mean(y))\n\n\n\n\n\n\n\nGoal\nR approach\n\n\n\n\nPanel dimensions\nplm::pdim()\n\n\nFlag invariant vars\nplm::pvar()\n\n\nFull between/within decomposition\nCustom xtsum function above\n\n\nPanel-aware data structure\npanelr::panel_data()\n\n\n\nThe custom function is the most commonly recommended route when you need output that maps directly onto Stata’s xtsum table."
+  },
+  {
+    "objectID": "posts/xtsum/index.html#r-equivalents-to-statas-xtsum",
+    "href": "posts/xtsum/index.html#r-equivalents-to-statas-xtsum",
+    "title": "Day 1: xtsum equivalents",
+    "section": "",
+    "text": "There’s no single built-in R function that perfectly replicates xtsum’s overall / between / within decomposition, but here are the main options:\n\n\n\nlibrary(plm)\n\npdata &lt;- pdata.frame(df, index = c(\"id\", \"time\"))\n\n# Panel dimensions (like xtdescribe)\npdim(pdata)\n\n# Check between/within variation (flags invariant variables)\npvar(pdata)\n\n# Summary of a panel variable\nsummary(pdata$y)\npvar() will warn you if a variable has no within or between variation — useful for the same diagnostics xtsum provides.\n\n\n\n\nThis is the go-to approach shared widely in the R/Stata community:\nxtsum &lt;- function(data, var, id, time) {\n  library(dplyr)\n  \n  data &lt;- data %&gt;% rename(y = {{var}}, i = {{id}}, t = {{time}})\n  \n  overall &lt;- data %&gt;%\n    summarise(mean = mean(y, na.rm=T), sd = sd(y, na.rm=T),\n              min = min(y, na.rm=T), max = max(y, na.rm=T), n = n())\n  \n  between &lt;- data %&gt;%\n    group_by(i) %&gt;%\n    summarise(y_bar = mean(y, na.rm=T)) %&gt;%\n    ungroup() %&gt;%\n    summarise(mean = mean(y_bar), sd = sd(y_bar),\n              min = min(y_bar), max = max(y_bar), n = n())\n  \n  within &lt;- data %&gt;%\n    group_by(i) %&gt;%\n    mutate(y_within = y - mean(y, na.rm=T) + mean(data$y, na.rm=T)) %&gt;%\n    ungroup() %&gt;%\n    summarise(mean = mean(y_within, na.rm=T), sd = sd(y_within, na.rm=T),\n              min = min(y_within, na.rm=T), max = max(y_within, na.rm=T), n = n())\n  \n  bind_rows(overall, between, within) %&gt;%\n    mutate(component = c(\"overall\", \"between\", \"within\")) %&gt;%\n    select(component, everything())\n}\n\nxtsum(df, var = income, id = person_id, time = year)\n\n\n\n\nlibrary(panelr)\n\npanel_df &lt;- panel_data(df, id = person_id, wave = year)\nsummary(panel_df)\npanel_data objects give structured summaries with some between/within awareness, though less detailed than xtsum.\n\n\n\n\nlibrary(dplyr)\n\n# Between variation (person means)\ndf %&gt;% group_by(id) %&gt;% summarise(y_mean = mean(y))\n\n# Within variation (demeaned)\ndf %&gt;% group_by(id) %&gt;% mutate(y_within = y - mean(y))\n\n\n\n\n\n\n\nGoal\nR approach\n\n\n\n\nPanel dimensions\nplm::pdim()\n\n\nFlag invariant vars\nplm::pvar()\n\n\nFull between/within decomposition\nCustom xtsum function above\n\n\nPanel-aware data structure\npanelr::panel_data()\n\n\n\nThe custom function is the most commonly recommended route when you need output that maps directly onto Stata’s xtsum table."
+  },
+  {
+    "objectID": "posts/day-3/arimasim.html",
+    "href": "posts/day-3/arimasim.html",
+    "title": "Simulated Time Series and their ACF and PACF",
+    "section": "",
+    "text": "Using webr to showcase simulated arima processes, written in the form ARIMA(p, d, q).\n\nPlease enable JavaScript to experience the dynamic code cell content on this page."
+  },
+  {
+    "objectID": "posts/welcome/news-science.html",
+    "href": "posts/welcome/news-science.html",
+    "title": "Two Bits of Very Recent Interesting News",
+    "section": "",
+    "text": "From the journal Nature, how do scientists treat null findings?\nThe tweet\nVictor Gomez-Blanco has a paper on trends in top economics journals. The paper suggests you made a good choice."
+  },
+  {
+    "objectID": "posts/welcome/hdc-talk.html",
+    "href": "posts/welcome/hdc-talk.html",
+    "title": "2025 Wednesday Talk Links",
+    "section": "",
+    "text": "The talk slides"
+  },
+  {
     "objectID": "posts/welcome/CharacteristicRoots.html",
     "href": "posts/welcome/CharacteristicRoots.html",
     "title": "A Bit More on Characteristic Roots",
     "section": "",
     "text": "There are stability conditions for the ar and ma processes that revolve around the roots of the characteristic equations. The so-called stationarity and invertability conditions. They are implemented by default in R’s arima package but they can be checked with relative ease in both stata and R.\nIn particular, having estimated an ar process ar(p), the characteristic equations in the slides give a \\(p^{th}\\) order polynomial that we can solve for the charateristic roots. There is an invertability condition for an ma(q) that gives a \\(q^{th}\\) order polynomial. After estimating an ARIMA(p,d,q) model, they can be easily checked. In both cases, the complex roots should lie outside the unit circle. We more frequently examine the inverse roots and ask whether or not they are inside the unit circle.\nTaking the British government popularity data\n\nlibrary(fpp3)\n\nRegistered S3 method overwritten by 'tsibble':\n  method               from \n  as_tibble.grouped_df dplyr\n\n\n── Attaching packages ──────────────────────────────────────────── fpp3 1.0.2 ──\n\n\n✔ tibble      3.3.1     ✔ tsibble     1.1.6\n✔ dplyr       1.1.4     ✔ tsibbledata 0.4.1\n✔ tidyr       1.3.2     ✔ feasts      0.4.2\n✔ lubridate   1.9.4     ✔ fable       0.4.1\n✔ ggplot2     4.0.1     \n\n\n── Conflicts ───────────────────────────────────────────────── fpp3_conflicts ──\n✖ lubridate::date()    masks base::date()\n✖ dplyr::filter()      masks stats::filter()\n✖ tsibble::intersect() masks base::intersect()\n✖ tsibble::interval()  masks lubridate::interval()\n✖ dplyr::lag()         masks stats::lag()\n✖ tsibble::setdiff()   masks base::setdiff()\n✖ tsibble::union()     masks base::union()\n\nlibrary(haven)\nbr7983 &lt;- read_dta(url(\"https://github.com/robertwwalker/Essex-Data/raw/main/br7983.dta\")) %&gt;% \n  mutate(month = as.character(month)) %&gt;% \n  mutate(month = paste0(\"19\",month, sep=\"\")) %&gt;% \n  mutate(date = yearmonth(month, format=\"%Y%m\"))\nbr7983 &lt;- br7983 %&gt;% as_tsibble(index=date) \nbr7983 %&gt;% autoplot(govpopl) + hrbrthemes::theme_ipsum() + labs(y=\"logged Government Popularity\")\n\n\n\n\n\n\n\n\nThe best model seems to be ar(1) and sma(4).\n\nmod &lt;- arima(br7983$govpopl, order = c(1,0,0), seasonal=list(order=c(0,0,1), period=4))\nmod\n\n\nCall:\narima(x = br7983$govpopl, order = c(1, 0, 0), seasonal = list(order = c(0, 0, \n    1), period = 4))\n\nCoefficients:\n         ar1    sma1  intercept\n      0.8392  0.3350     3.4889\ns.e.  0.0760  0.1316     0.0997\n\nsigma^2 estimated as 0.008444:  log likelihood = 45.47,  aic = -82.95\n\nacf(arima(br7983$govpopl, order = c(1,0,0), seasonal=list(order=c(0,0,1), period=4))$residuals)\n\n\n\n\n\n\n\npacf(arima(br7983$govpopl, order = c(1,0,0), seasonal=list(order=c(0,0,1), period=4))$residuals)\n\n\n\n\n\n\n\n\nWhite noise. Parameters are all likely different from zero. What about the characteristic roots?\n\nforecast::autoplot(mod)\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\n\n\n\n\n\n\n\n\nNote that these are the inverse characteristic roots. And all are inside the unit circle. So this model is stationary and invertible.\nWhat about Stata?\n. arima govpopl, ar(1) ma(4)\n\n(setting optimization to BHHH)\nIteration 0:  Log likelihood =  40.962134  \nIteration 1:  Log likelihood =  44.723724  \nIteration 2:  Log likelihood =  44.866662  \nIteration 3:  Log likelihood =  45.127431  \nIteration 4:  Log likelihood =  45.434671  \n(switching optimization to BFGS)\nIteration 5:  Log likelihood =  45.471498  \nIteration 6:  Log likelihood =  45.472428  \nIteration 7:  Log likelihood =  45.473906  \nIteration 8:  Log likelihood =  45.473963  \nIteration 9:  Log likelihood =  45.474094  \nIteration 10: Log likelihood =  45.474098  \n\nARIMA regression\n\nSample: 0 thru 47                               Number of obs     =         48\n                                                Wald chi2(2)      =      97.18\nLog likelihood = 45.4741                        Prob &gt; chi2       =     0.0000\n\n------------------------------------------------------------------------------\n             |                 OPG\n     govpopl | Coefficient  std. err.      z    P&gt;|z|     [95% conf. interval]\n-------------+----------------------------------------------------------------\ngovpopl      |\n       _cons |   3.488899   .1376348    25.35   0.000      3.21914    3.758658\n-------------+----------------------------------------------------------------\nARMA         |\n          ar |\n         L1. |   .8391349   .0952577     8.81   0.000     .6524332    1.025837\n             |\n          ma |\n         L4. |   .3351339   .1690192     1.98   0.047     .0038624    .6664055\n-------------+----------------------------------------------------------------\n      /sigma |    .091893   .0090176    10.19   0.000     .0742189    .1095671\n------------------------------------------------------------------------------\nNote: The test of the variance against zero is one sided, and the two-sided\n      confidence interval is truncated at zero.\n\n. estat aroots\n\n   Eigenvalue stability condition\n  +----------------------------------------+\n  |        Eigenvalue        |   Modulus   |\n  |--------------------------+-------------|\n  |   .8391349               |   .839135   |\n  +----------------------------------------+\n   All the eigenvalues lie inside the unit circle.\n   AR parameters satisfy stability condition.\n\n   Eigenvalue stability condition\n  +----------------------------------------+\n  |        Eigenvalue        |   Modulus   |\n  |--------------------------+-------------|\n  |  -.5380091 +  .5380091i  |    .76086   |\n  |  -.5380091 -  .5380091i  |    .76086   |\n  |   .5380091 +  .5380091i  |    .76086   |\n  |   .5380091 -  .5380091i  |    .76086   |\n  +----------------------------------------+\n   All the eigenvalues lie inside the unit circle.\n   MA parameters satisfy invertibility condition.\n\nNotice stata tells you how to interpret the result.\n\nAnd to reiterate, these conditions establish that either the MA(q) can be inverted to an infinite AR process with declining dependence through time or the AR(p) can be rewritten as an infinite order MA with each shock declining in weight through time.\nIn R, polyroot can be used to obtain the roots. In this case, for the AR, we obtain\n\n1/polyroot(c(1,.839))\n\n[1] -0.839+0i\n\n\nthe condition that \\(abs(\\rho) &lt; 1\\)\nSimilarly, the MA\n\n1/polyroot(c(1,0,0,0,0.335)) # our MA 4 has 1,2,3 equal zero\n\n[1]  0.5379553-0.5379553i -0.5379553-0.5379553i -0.5379553+0.5379553i\n[4]  0.5379553+0.5379553i"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "ESSSSDA26-2J",
+    "section": "",
+    "text": "Welcome!\n\n\n2J: Advanced Time Series/Panel\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJul 14, 2026\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nDay 1: xtsum equivalents\n\n\n\n\n\n\npanel data\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJul 20, 2026\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nDay 1: Time, Decomposition, and Summaries\n\n\n\n\n\n\npanel data\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJul 20, 2026\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nSimulated Time Series and their ACF and PACF\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nTwo Bits of Very Recent Interesting News\n\n\n\n\n\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nA Clarification on Mundlak and Related Things\n\n\n\n\n\n\npanel data\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\n2025 Wednesday Talk Links\n\n\n\n\n\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\n\n\n\n\n\n\n\nA Bit More on Characteristic Roots\n\n\n\n\n\n\ntime series\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nRobert W. Walker\n\n\n\n\n\nNo matching items"
   }
 ]

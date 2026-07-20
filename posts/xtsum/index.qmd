@@ -1,0 +1,110 @@
+---
+title: "Day 1: xtsum equivalents"
+author: "Robert W. Walker"
+date: "07/20/2026"
+categories: [panel data, code, analysis]
+image: "image.jpg"
+---
+
+## R Equivalents to Stata's `xtsum`
+
+There's no single built-in R function that perfectly replicates `xtsum`'s **overall / between / within** decomposition, but here are the main options:
+
+---
+
+### 1. `plm` package (closest equivalent)
+
+```r
+library(plm)
+
+pdata <- pdata.frame(df, index = c("id", "time"))
+
+# Panel dimensions (like xtdescribe)
+pdim(pdata)
+
+# Check between/within variation (flags invariant variables)
+pvar(pdata)
+
+# Summary of a panel variable
+summary(pdata$y)
+```
+
+`pvar()` will warn you if a variable has no within or between variation — useful for the same diagnostics `xtsum` provides.
+
+---
+
+### 2. Custom `xtsum` function (most faithful replica)
+
+This is the go-to approach shared widely in the R/Stata community:
+
+```r
+xtsum <- function(data, var, id, time) {
+  library(dplyr)
+  
+  data <- data %>% rename(y = {{var}}, i = {{id}}, t = {{time}})
+  
+  overall <- data %>%
+    summarise(mean = mean(y, na.rm=T), sd = sd(y, na.rm=T),
+              min = min(y, na.rm=T), max = max(y, na.rm=T), n = n())
+  
+  between <- data %>%
+    group_by(i) %>%
+    summarise(y_bar = mean(y, na.rm=T)) %>%
+    ungroup() %>%
+    summarise(mean = mean(y_bar), sd = sd(y_bar),
+              min = min(y_bar), max = max(y_bar), n = n())
+  
+  within <- data %>%
+    group_by(i) %>%
+    mutate(y_within = y - mean(y, na.rm=T) + mean(data$y, na.rm=T)) %>%
+    ungroup() %>%
+    summarise(mean = mean(y_within, na.rm=T), sd = sd(y_within, na.rm=T),
+              min = min(y_within, na.rm=T), max = max(y_within, na.rm=T), n = n())
+  
+  bind_rows(overall, between, within) %>%
+    mutate(component = c("overall", "between", "within")) %>%
+    select(component, everything())
+}
+
+xtsum(df, var = income, id = person_id, time = year)
+```
+
+---
+
+### 3. `panelr` package
+
+```r
+library(panelr)
+
+panel_df <- panel_data(df, id = person_id, wave = year)
+summary(panel_df)
+```
+
+`panel_data` objects give structured summaries with some between/within awareness, though less detailed than `xtsum`.
+
+---
+
+### 4. Quick manual approach with `dplyr`
+
+```r
+library(dplyr)
+
+# Between variation (person means)
+df %>% group_by(id) %>% summarise(y_mean = mean(y))
+
+# Within variation (demeaned)
+df %>% group_by(id) %>% mutate(y_within = y - mean(y))
+```
+
+---
+
+### Summary
+
+| Goal | R approach |
+|---|---|
+| Panel dimensions | `plm::pdim()` |
+| Flag invariant vars | `plm::pvar()` |
+| Full between/within decomposition | Custom `xtsum` function above |
+| Panel-aware data structure | `panelr::panel_data()` |
+
+The **custom function** is the most commonly recommended route when you need output that maps directly onto Stata's `xtsum` table.
