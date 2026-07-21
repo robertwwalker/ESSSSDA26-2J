@@ -9,7 +9,7 @@ image: "image.jpg"
 
 [The PDF](http://cfariss.com/documents/ReuningKenwickFariss2019PA.pdf)
 
-## The Core Problem {background-color="#1a1a2e"}
+## The Core Problem 
 
 Political scientists increasingly use **latent variable models** to measure unobservable
 concepts—ideology, democracy, human rights, transparency.
