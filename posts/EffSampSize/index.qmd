@@ -1,0 +1,246 @@
+---
+title: "On Effective Sample Size"
+date: "July 21, 2026"
+format: html
+---
+
+## The Problem with Autocorrelated Data
+
+Standard inference assumes **independent** observations. For $n$ i.i.d. draws:
+
+$$\text{SE}(\bar{X}) = \frac{\sigma}{\sqrt{n}}$$
+
+Time series data violates this. When observations are positively autocorrelated,
+each new value carries **less new information** than an independent draw would.
+
+Treating $n$ autocorrelated observations as $n$ independent ones leads to:
+
+- Standard errors that are **too small**
+- Confidence intervals that are **too narrow**
+- $p$-values that are **too optimistic**
+
+
+## Intuition
+
+Consider a slowly meandering series — say, daily average temperature.
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**High autocorrelation**
+
+If $\rho_1 = 0.95$, tomorrow is nearly predictable from today.  
+Collecting 365 observations gives far less than 365 "bits" of information.
+:::
+
+::: {.column width="50%"}
+**Low autocorrelation**
+
+If $\rho_1 \approx 0$, each observation is essentially fresh.  
+$n_\text{eff} \approx n$.
+:::
+
+::::
+
+The **effective sample size (ESS)** quantifies how many independent
+observations your autocorrelated series is actually worth.
+
+
+## Finite-Sample Correction
+
+The **exact** variance of $\bar{X}$ for a stationary series of length $n$ is:
+
+$$\text{Var}(\bar{X}) = \frac{\sigma^2}{n}\underbrace{\left(1 + 2\sum_{k=1}^{n-1}\left(1 - \frac{k}{n}\right)\rho_k\right)}_{\tau_n}$$
+
+The weights $\bigl(1 - k/n\bigr)$ are **Bartlett weights** — they arise directly
+from the overlapping structure of the sample mean and shrink toward zero
+as lag $k$ approaches $n$.
+
+Setting $\text{Var}(\bar{X}) = \sigma^2 / n_{\text{eff}}$ gives the
+**finite-sample ESS**:
+
+$$\boxed{n_{\text{eff}}^{(n)} = \frac{n}{\tau_n}, \qquad
+\tau_n = 1 + 2\sum_{k=1}^{n-1}\!\left(1-\frac{k}{n}\right)\rho_k}$$
+
+This is exact under stationarity — no approximation yet.
+
+
+## Asymptotic Correction
+
+As $n \to \infty$, the Bartlett weights all $\to 1$ and the upper limit
+of the sum extends to $\infty$, giving the **integrated autocorrelation time**:
+
+$$\tau_{\text{int}} = \lim_{n\to\infty}\tau_n = 1 + 2\sum_{k=1}^{\infty}\rho_k$$
+
+The **asymptotic ESS** is then:
+
+$$\boxed{n_{\text{eff}}^{(\infty)} = \frac{n}{\tau_{\text{int}}}}$$
+
+::: {.callout-note}
+**Summability condition.** This limit exists and is finite if and only if
+$\sum_{k=1}^{\infty}|\rho_k| < \infty$ — satisfied by ARMA processes and
+short-memory series generally, but **not** by long-memory (fractionally
+integrated) processes, where $\tau_{\text{int}} = \infty$.
+:::
+
+This is the version most software implements and most textbooks quote.
+
+
+## How the Two Relate
+
+For $\phi > 0$ the Bartlett weights downweight the higher lags, so:
+
+$$\tau_n \;<\; \tau_{\text{int}} \qquad \Longrightarrow \qquad
+n_{\text{eff}}^{(n)} \;>\; n_{\text{eff}}^{(\infty)}$$
+
+The asymptotic formula is the **more conservative** (pessimistic) estimate.
+The gap closes as $n$ grows or $\phi$ shrinks.
+
+**AR(1) closed forms:**
+
+$$\tau_{\text{int}} = \frac{1+\phi}{1-\phi}, \qquad
+\tau_n = \frac{1+\phi}{1-\phi} - \frac{2\phi\!\left(1-\phi^n\right)}{n(1-\phi)^2}$$
+
+The correction term $\frac{2\phi(1-\phi^n)}{n(1-\phi)^2}$ is the gap;
+it is $O(1/n)$ for fixed $\phi$ and $O\!\bigl(n^{-1}(1-\phi)^{-2}\bigr)$
+near the unit root — largest precisely when $\phi \approx 1$ and $n$ is small.
+
+
+## Comparing the Two: AR(1) Table
+
+$n_{\text{eff}}^{(n)}$ vs.\ $n_{\text{eff}}^{(\infty)}$ for selected $\phi$ and $n$
+
+| $\phi$ | $n = 30$ | | $n = 200$ | | $n = 1000$ | |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| | finite | asymp | finite | asymp | finite | asymp |
+| 0.5  | **10.5** | 10.0 | **67.1** | 66.7 | **333.8** | 333.3 |
+| 0.8  |  **3.9** |  3.3 | **22.7** | 22.2 | **111.6** | 111.1 |
+| 0.9  |  **2.3** |  1.6 | **11.0** | 10.5 |  **53.1** |  52.6 |
+| 0.95 |  **1.6** |  0.8 |  **5.7** |  5.1 |  **26.2** |  25.6 |
+
+::: {.callout-note}
+The two estimates are close in most practical settings — the gap is only
+appreciable when $n$ is small **and** $\phi$ is near 1. The asymptotic
+formula consistently understates $n_{\text{eff}}$ (is more conservative).
+The absolute values are genuinely small: $\phi = 0.9$ with $n = 200$
+really does yield only ~10–11 effective observations.
+:::
+
+
+## AR(1) Closed Forms
+
+For $X_t = \phi X_{t-1} + \varepsilon_t$, $\rho_k = \phi^k$:
+
+**Asymptotic** (infinite sum, weights $= 1$):
+
+$$n_{\text{eff}}^{(\infty)} = n\,\frac{1-\phi}{1+\phi}$$
+
+**Finite-sample** (Bartlett-weighted, exact):
+
+$$n_{\text{eff}}^{(n)} = \frac{n(1-\phi)^2}{\;(1-\phi^2) - \tfrac{2\phi(1-\phi^n)}{n}\;}$$
+
+::: {.callout-note}
+A useful rule of thumb: the two agree to within 5 % when
+$n \gtrsim 10\,/\,(1-\phi)$, i.e.\ when the series is roughly ten
+times longer than the process's characteristic decorrelation length.
+Below that threshold, prefer the finite-sample formula.
+:::
+
+
+## Estimation in Practice
+
+Population autocorrelations $\rho_k$ are unknown; substitute $\hat\rho_k$.
+
+**Finite-sample plug-in** (preferred for small $n$):
+
+$$\hat\tau_n = 1 + 2\sum_{k=1}^{n-1}\!\left(1-\frac{k}{n}\right)\hat\rho_k$$
+
+This is the **Newey–West / Bartlett kernel** HAC variance estimator, widely
+used in econometrics (the $1/n$ correction is built in).
+
+**Asymptotic plug-in** (truncated at lag $K$):
+
+$$\hat\tau_{\text{int}} = 1 + 2\sum_{k=1}^{K}\hat\rho_k$$
+
+Choosing $K$ still requires care: fixed window, automatic noise-threshold
+cutoff $|\hat\rho_k| < c/\sqrt{n}$, batch means, or spectral ($\tau_{\text{int}} = \pi S(0)/\sigma^2$).
+
+::: {.callout-warning}
+The asymptotic estimator without truncation ($K = n-1$ but weights $= 1$)
+is **inconsistent** — use Bartlett weights or a principled truncation.
+:::
+
+
+## Worked Example in R
+
+```{r}
+set.seed(42)
+phi <- 0.90   # true AR parameter (known in simulation)
+n   <- 200
+x   <- arima.sim(model = list(ar = phi), n = n)
+
+# Asymptotic ESS — population closed form
+ess_asymp  <- n * (1 - phi) / (1 + phi)
+
+# Finite-sample ESS — population closed form (exact)
+tau_fs     <- (1 + phi)/(1 - phi) - 2*phi*(1 - phi^n) / (n*(1-phi)^2)
+ess_finite <- n / tau_fs
+
+# Sample-based ESS — fit AR(1), plug phi_hat into finite-sample formula
+phi_hat    <- coef(arima(x, order = c(1, 0, 0)))["ar1"]
+tau_hat    <- (1 + phi_hat)/(1 - phi_hat) -
+              2*phi_hat*(1 - phi_hat^n) / (n*(1 - phi_hat)^2)
+ess_hat    <- n / tau_hat
+
+cat("n                         :", n,                    "\n")
+cat("phi_hat (AR(1) MLE)       :", round(phi_hat, 4),    "\n")
+cat("ESS asymptotic  (pop.)    :", round(ess_asymp,  1),  "\n")
+cat("ESS finite-smpl (pop.)    :", round(ess_finite, 1),  "\n")
+cat("ESS finite-smpl (plug-in) :", round(ess_hat,    1),  "\n")
+```
+
+```
+
+::: {.callout-warning}
+**A common mistake:** summing Bartlett weights over *all* $n-1$ lags without
+truncation is inconsistent — the accumulated noise in the sample ACF dominates
+and can produce ESS $> n$. Always truncate at a principled bandwidth $K$, or
+estimate $\phi$ and use the closed form as above.
+:::
+
+
+## Corrected Inference
+
+Once $n_{\text{eff}}$ is in hand, apply it wherever $n$ normally appears:
+
+| Quantity | Naive (wrong) | Corrected |
+|---|---|---|
+| Standard error of mean | $\hat\sigma / \sqrt{n}$ | $\hat\sigma / \sqrt{n_{\text{eff}}}$ |
+| 95 % CI half-width | $1.96\,\hat\sigma / \sqrt{n}$ | $1.96\,\hat\sigma / \sqrt{n_{\text{eff}}}$ |
+| $t$-statistic d.f. | $n - 1$ | $n_{\text{eff}} - 1$ |
+| Required sample size | $n^*$ | $n^* \cdot \tau$ |
+
+Use $n_{\text{eff}}^{(n)}$ (finite-sample) when $n$ is small or $\phi$ is large;
+$n_{\text{eff}}^{(\infty)}$ (asymptotic) is a safe default for large $n$ and
+is what most software returns.
+
+
+## Key Takeaways
+
+1. **Two distinct corrections exist.** The finite-sample formula
+   uses Bartlett weights $(1-k/n)$; the asymptotic formula takes
+   $n \to \infty$ and drops them. They are not the same thing.
+
+2. **The asymptotic formula is conservative.** It underestimates
+   $n_{\text{eff}}$ relative to the exact formula, especially at
+   high persistence or small $n$.
+
+3. **The gap is $O(1/n)$ but can be large** when $\phi \approx 1$,
+   because the correction term scales as $(1-\phi)^{-2}$.
+
+4. **Rule of thumb:** use the finite-sample correction when
+   $n \lesssim 10/(1-\phi)$; otherwise the asymptotic version
+   suffices.
+
+5. **Both versions use $n_{\text{eff}}$ for all downstream inference** —
+   SEs, CIs, $t$-tests, power calculations.

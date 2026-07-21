@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-07-21">
+
+<title>On Effective Sample Size – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-01c21dad8388d127029aa6ec675015ac.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">ESSSSDA 2026 2J: Time Series and Collections of Them</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../posts/welcome/index.html" aria-current="page"> 
+<span class="menu-text">Welcome!</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/robertwwalker/ESSSSDA26-2J/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/robertwwalker/Essex-Data/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">On Effective Sample Size</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">On Effective Sample Size</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 21, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+      <a href="../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/welcome/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to 2J!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Week 1</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-1/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 1: Time, Decomposition, and Summaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-2/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 2: Time Series, Stationarity, and ARIMA Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-3/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 3: Dynamic Linear, ADL Models, and VARs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-4/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 4: Cointegration</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Week 2</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem-with-autocorrelated-data" id="toc-the-problem-with-autocorrelated-data" class="nav-link active" data-scroll-target="#the-problem-with-autocorrelated-data">The Problem with Autocorrelated Data</a></li>
+  <li><a href="#intuition" id="toc-intuition" class="nav-link" data-scroll-target="#intuition">Intuition</a></li>
+  <li><a href="#finite-sample-correction" id="toc-finite-sample-correction" class="nav-link" data-scroll-target="#finite-sample-correction">Finite-Sample Correction</a></li>
+  <li><a href="#asymptotic-correction" id="toc-asymptotic-correction" class="nav-link" data-scroll-target="#asymptotic-correction">Asymptotic Correction</a></li>
+  <li><a href="#how-the-two-relate" id="toc-how-the-two-relate" class="nav-link" data-scroll-target="#how-the-two-relate">How the Two Relate</a></li>
+  <li><a href="#comparing-the-two-ar1-table" id="toc-comparing-the-two-ar1-table" class="nav-link" data-scroll-target="#comparing-the-two-ar1-table">Comparing the Two: AR(1) Table</a></li>
+  <li><a href="#ar1-closed-forms" id="toc-ar1-closed-forms" class="nav-link" data-scroll-target="#ar1-closed-forms">AR(1) Closed Forms</a></li>
+  <li><a href="#estimation-in-practice" id="toc-estimation-in-practice" class="nav-link" data-scroll-target="#estimation-in-practice">Estimation in Practice</a></li>
+  <li><a href="#worked-example-in-r" id="toc-worked-example-in-r" class="nav-link" data-scroll-target="#worked-example-in-r">Worked Example in R</a></li>
+  <li><a href="#corrected-inference" id="toc-corrected-inference" class="nav-link" data-scroll-target="#corrected-inference">Corrected Inference</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="the-problem-with-autocorrelated-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-with-autocorrelated-data">The Problem with Autocorrelated Data</h2>
+<p>Standard inference assumes <strong>independent</strong> observations. For <span class="math inline">\(n\)</span> i.i.d. draws:</p>
+<p><span class="math display">\[\text{SE}(\bar{X}) = \frac{\sigma}{\sqrt{n}}\]</span></p>
+<p>Time series data violates this. When observations are positively autocorrelated, each new value carries <strong>less new information</strong> than an independent draw would.</p>
+<p>Treating <span class="math inline">\(n\)</span> autocorrelated observations as <span class="math inline">\(n\)</span> independent ones leads to:</p>
+<ul>
+<li>Standard errors that are <strong>too small</strong></li>
+<li>Confidence intervals that are <strong>too narrow</strong></li>
+<li><span class="math inline">\(p\)</span>-values that are <strong>too optimistic</strong></li>
+</ul>
+</section>
+<section id="intuition" class="level2">
+<h2 class="anchored" data-anchor-id="intuition">Intuition</h2>
+<p>Consider a slowly meandering series — say, daily average temperature.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>High autocorrelation</strong></p>
+<p>If <span class="math inline">\(\rho_1 = 0.95\)</span>, tomorrow is nearly predictable from today.<br>
+Collecting 365 observations gives far less than 365 “bits” of information.</p>
+</div><div class="column" style="width:50%;">
+<p><strong>Low autocorrelation</strong></p>
+<p>If <span class="math inline">\(\rho_1 \approx 0\)</span>, each observation is essentially fresh.<br>
+<span class="math inline">\(n_\text{eff} \approx n\)</span>.</p>
+</div>
+</div>
+<p>The <strong>effective sample size (ESS)</strong> quantifies how many independent observations your autocorrelated series is actually worth.</p>
+</section>
+<section id="finite-sample-correction" class="level2">
+<h2 class="anchored" data-anchor-id="finite-sample-correction">Finite-Sample Correction</h2>
+<p>The <strong>exact</strong> variance of <span class="math inline">\(\bar{X}\)</span> for a stationary series of length <span class="math inline">\(n\)</span> is:</p>
+<p><span class="math display">\[\text{Var}(\bar{X}) = \frac{\sigma^2}{n}\underbrace{\left(1 + 2\sum_{k=1}^{n-1}\left(1 - \frac{k}{n}\right)\rho_k\right)}_{\tau_n}\]</span></p>
+<p>The weights <span class="math inline">\(\bigl(1 - k/n\bigr)\)</span> are <strong>Bartlett weights</strong> — they arise directly from the overlapping structure of the sample mean and shrink toward zero as lag <span class="math inline">\(k\)</span> approaches <span class="math inline">\(n\)</span>.</p>
+<p>Setting <span class="math inline">\(\text{Var}(\bar{X}) = \sigma^2 / n_{\text{eff}}\)</span> gives the <strong>finite-sample ESS</strong>:</p>
+<p><span class="math display">\[\boxed{n_{\text{eff}}^{(n)} = \frac{n}{\tau_n}, \qquad
+\tau_n = 1 + 2\sum_{k=1}^{n-1}\!\left(1-\frac{k}{n}\right)\rho_k}\]</span></p>
+<p>This is exact under stationarity — no approximation yet.</p>
+</section>
+<section id="asymptotic-correction" class="level2">
+<h2 class="anchored" data-anchor-id="asymptotic-correction">Asymptotic Correction</h2>
+<p>As <span class="math inline">\(n \to \infty\)</span>, the Bartlett weights all <span class="math inline">\(\to 1\)</span> and the upper limit of the sum extends to <span class="math inline">\(\infty\)</span>, giving the <strong>integrated autocorrelation time</strong>:</p>
+<p><span class="math display">\[\tau_{\text{int}} = \lim_{n\to\infty}\tau_n = 1 + 2\sum_{k=1}^{\infty}\rho_k\]</span></p>
+<p>The <strong>asymptotic ESS</strong> is then:</p>
+<p><span class="math display">\[\boxed{n_{\text{eff}}^{(\infty)} = \frac{n}{\tau_{\text{int}}}}\]</span></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Summability condition.</strong> This limit exists and is finite if and only if <span class="math inline">\(\sum_{k=1}^{\infty}|\rho_k| &lt; \infty\)</span> — satisfied by ARMA processes and short-memory series generally, but <strong>not</strong> by long-memory (fractionally integrated) processes, where <span class="math inline">\(\tau_{\text{int}} = \infty\)</span>.</p>
+</div>
+</div>
+<p>This is the version most software implements and most textbooks quote.</p>
+</section>
+<section id="how-the-two-relate" class="level2">
+<h2 class="anchored" data-anchor-id="how-the-two-relate">How the Two Relate</h2>
+<p>For <span class="math inline">\(\phi &gt; 0\)</span> the Bartlett weights downweight the higher lags, so:</p>
+<p><span class="math display">\[\tau_n \;&lt;\; \tau_{\text{int}} \qquad \Longrightarrow \qquad
+n_{\text{eff}}^{(n)} \;&gt;\; n_{\text{eff}}^{(\infty)}\]</span></p>
+<p>The asymptotic formula is the <strong>more conservative</strong> (pessimistic) estimate. The gap closes as <span class="math inline">\(n\)</span> grows or <span class="math inline">\(\phi\)</span> shrinks.</p>
+<p><strong>AR(1) closed forms:</strong></p>
+<p><span class="math display">\[\tau_{\text{int}} = \frac{1+\phi}{1-\phi}, \qquad
+\tau_n = \frac{1+\phi}{1-\phi} - \frac{2\phi\!\left(1-\phi^n\right)}{n(1-\phi)^2}\]</span></p>
+<p>The correction term <span class="math inline">\(\frac{2\phi(1-\phi^n)}{n(1-\phi)^2}\)</span> is the gap; it is <span class="math inline">\(O(1/n)\)</span> for fixed <span class="math inline">\(\phi\)</span> and <span class="math inline">\(O\!\bigl(n^{-1}(1-\phi)^{-2}\bigr)\)</span> near the unit root — largest precisely when <span class="math inline">\(\phi \approx 1\)</span> and <span class="math inline">\(n\)</span> is small.</p>
+</section>
+<section id="comparing-the-two-ar1-table" class="level2">
+<h2 class="anchored" data-anchor-id="comparing-the-two-ar1-table">Comparing the Two: AR(1) Table</h2>
+<p><span class="math inline">\(n_{\text{eff}}^{(n)}\)</span> vs.&nbsp;<span class="math inline">\(n_{\text{eff}}^{(\infty)}\)</span> for selected <span class="math inline">\(\phi\)</span> and <span class="math inline">\(n\)</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(\phi\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(n = 30\)</span></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"><span class="math inline">\(n = 200\)</span></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"><span class="math inline">\(n = 1000\)</span></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">finite</td>
+<td style="text-align: center;">asymp</td>
+<td style="text-align: center;">finite</td>
+<td style="text-align: center;">asymp</td>
+<td style="text-align: center;">finite</td>
+<td style="text-align: center;">asymp</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0.5</td>
+<td style="text-align: center;"><strong>10.5</strong></td>
+<td style="text-align: center;">10.0</td>
+<td style="text-align: center;"><strong>67.1</strong></td>
+<td style="text-align: center;">66.7</td>
+<td style="text-align: center;"><strong>333.8</strong></td>
+<td style="text-align: center;">333.3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">0.8</td>
+<td style="text-align: center;"><strong>3.9</strong></td>
+<td style="text-align: center;">3.3</td>
+<td style="text-align: center;"><strong>22.7</strong></td>
+<td style="text-align: center;">22.2</td>
+<td style="text-align: center;"><strong>111.6</strong></td>
+<td style="text-align: center;">111.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0.9</td>
+<td style="text-align: center;"><strong>2.3</strong></td>
+<td style="text-align: center;">1.6</td>
+<td style="text-align: center;"><strong>11.0</strong></td>
+<td style="text-align: center;">10.5</td>
+<td style="text-align: center;"><strong>53.1</strong></td>
+<td style="text-align: center;">52.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">0.95</td>
+<td style="text-align: center;"><strong>1.6</strong></td>
+<td style="text-align: center;">0.8</td>
+<td style="text-align: center;"><strong>5.7</strong></td>
+<td style="text-align: center;">5.1</td>
+<td style="text-align: center;"><strong>26.2</strong></td>
+<td style="text-align: center;">25.6</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The two estimates are close in most practical settings — the gap is only appreciable when <span class="math inline">\(n\)</span> is small <strong>and</strong> <span class="math inline">\(\phi\)</span> is near 1. The asymptotic formula consistently understates <span class="math inline">\(n_{\text{eff}}\)</span> (is more conservative). The absolute values are genuinely small: <span class="math inline">\(\phi = 0.9\)</span> with <span class="math inline">\(n = 200\)</span> really does yield only ~10–11 effective observations.</p>
+</div>
+</div>
+</section>
+<section id="ar1-closed-forms" class="level2">
+<h2 class="anchored" data-anchor-id="ar1-closed-forms">AR(1) Closed Forms</h2>
+<p>For <span class="math inline">\(X_t = \phi X_{t-1} + \varepsilon_t\)</span>, <span class="math inline">\(\rho_k = \phi^k\)</span>:</p>
+<p><strong>Asymptotic</strong> (infinite sum, weights <span class="math inline">\(= 1\)</span>):</p>
+<p><span class="math display">\[n_{\text{eff}}^{(\infty)} = n\,\frac{1-\phi}{1+\phi}\]</span></p>
+<p><strong>Finite-sample</strong> (Bartlett-weighted, exact):</p>
+<p><span class="math display">\[n_{\text{eff}}^{(n)} = \frac{n(1-\phi)^2}{\;(1-\phi^2) - \tfrac{2\phi(1-\phi^n)}{n}\;}\]</span></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A useful rule of thumb: the two agree to within 5 % when <span class="math inline">\(n \gtrsim 10\,/\,(1-\phi)\)</span>, i.e.&nbsp;when the series is roughly ten times longer than the process’s characteristic decorrelation length. Below that threshold, prefer the finite-sample formula.</p>
+</div>
+</div>
+</section>
+<section id="estimation-in-practice" class="level2">
+<h2 class="anchored" data-anchor-id="estimation-in-practice">Estimation in Practice</h2>
+<p>Population autocorrelations <span class="math inline">\(\rho_k\)</span> are unknown; substitute <span class="math inline">\(\hat\rho_k\)</span>.</p>
+<p><strong>Finite-sample plug-in</strong> (preferred for small <span class="math inline">\(n\)</span>):</p>
+<p><span class="math display">\[\hat\tau_n = 1 + 2\sum_{k=1}^{n-1}\!\left(1-\frac{k}{n}\right)\hat\rho_k\]</span></p>
+<p>This is the <strong>Newey–West / Bartlett kernel</strong> HAC variance estimator, widely used in econometrics (the <span class="math inline">\(1/n\)</span> correction is built in).</p>
+<p><strong>Asymptotic plug-in</strong> (truncated at lag <span class="math inline">\(K\)</span>):</p>
+<p><span class="math display">\[\hat\tau_{\text{int}} = 1 + 2\sum_{k=1}^{K}\hat\rho_k\]</span></p>
+<p>Choosing <span class="math inline">\(K\)</span> still requires care: fixed window, automatic noise-threshold cutoff <span class="math inline">\(|\hat\rho_k| &lt; c/\sqrt{n}\)</span>, batch means, or spectral (<span class="math inline">\(\tau_{\text{int}} = \pi S(0)/\sigma^2\)</span>).</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The asymptotic estimator without truncation (<span class="math inline">\(K = n-1\)</span> but weights <span class="math inline">\(= 1\)</span>) is <strong>inconsistent</strong> — use Bartlett weights or a principled truncation.</p>
+</div>
+</div>
+</section>
+<section id="worked-example-in-r" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-in-r">Worked Example in R</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>phi <span class="ot">&lt;-</span> <span class="fl">0.90</span>   <span class="co"># true AR parameter (known in simulation)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>n   <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>x   <span class="ot">&lt;-</span> <span class="fu">arima.sim</span>(<span class="at">model =</span> <span class="fu">list</span>(<span class="at">ar =</span> phi), <span class="at">n =</span> n)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Asymptotic ESS — population closed form</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>ess_asymp  <span class="ot">&lt;-</span> n <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> phi) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> phi)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Finite-sample ESS — population closed form (exact)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>tau_fs     <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> phi)<span class="sc">/</span>(<span class="dv">1</span> <span class="sc">-</span> phi) <span class="sc">-</span> <span class="dv">2</span><span class="sc">*</span>phi<span class="sc">*</span>(<span class="dv">1</span> <span class="sc">-</span> phi<span class="sc">^</span>n) <span class="sc">/</span> (n<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>phi)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>ess_finite <span class="ot">&lt;-</span> n <span class="sc">/</span> tau_fs</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample-based ESS — fit AR(1), plug phi_hat into finite-sample formula</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>phi_hat    <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">arima</span>(x, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)))[<span class="st">"ar1"</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>tau_hat    <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> phi_hat)<span class="sc">/</span>(<span class="dv">1</span> <span class="sc">-</span> phi_hat) <span class="sc">-</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>              <span class="dv">2</span><span class="sc">*</span>phi_hat<span class="sc">*</span>(<span class="dv">1</span> <span class="sc">-</span> phi_hat<span class="sc">^</span>n) <span class="sc">/</span> (n<span class="sc">*</span>(<span class="dv">1</span> <span class="sc">-</span> phi_hat)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>ess_hat    <span class="ot">&lt;-</span> n <span class="sc">/</span> tau_hat</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"n                         :"</span>, n,                    <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>n                         : 200 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"phi_hat (AR(1) MLE)       :"</span>, <span class="fu">round</span>(phi_hat, <span class="dv">4</span>),    <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>phi_hat (AR(1) MLE)       : 0.8535 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ESS asymptotic  (pop.)    :"</span>, <span class="fu">round</span>(ess_asymp,  <span class="dv">1</span>),  <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ESS asymptotic  (pop.)    : 10.5 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ESS finite-smpl (pop.)    :"</span>, <span class="fu">round</span>(ess_finite, <span class="dv">1</span>),  <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ESS finite-smpl (pop.)    : 11 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ESS finite-smpl (plug-in) :"</span>, <span class="fu">round</span>(ess_hat,    <span class="dv">1</span>),  <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ESS finite-smpl (plug-in) : 16.3 </code></pre>
+</div>
+</div>
+<p>```</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>A common mistake:</strong> summing Bartlett weights over <em>all</em> <span class="math inline">\(n-1\)</span> lags without truncation is inconsistent — the accumulated noise in the sample ACF dominates and can produce ESS <span class="math inline">\(&gt; n\)</span>. Always truncate at a principled bandwidth <span class="math inline">\(K\)</span>, or estimate <span class="math inline">\(\phi\)</span> and use the closed form as above.</p>
+</div>
+</div>
+</section>
+<section id="corrected-inference" class="level2">
+<h2 class="anchored" data-anchor-id="corrected-inference">Corrected Inference</h2>
+<p>Once <span class="math inline">\(n_{\text{eff}}\)</span> is in hand, apply it wherever <span class="math inline">\(n\)</span> normally appears:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Naive (wrong)</th>
+<th>Corrected</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Standard error of mean</td>
+<td><span class="math inline">\(\hat\sigma / \sqrt{n}\)</span></td>
+<td><span class="math inline">\(\hat\sigma / \sqrt{n_{\text{eff}}}\)</span></td>
+</tr>
+<tr class="even">
+<td>95 % CI half-width</td>
+<td><span class="math inline">\(1.96\,\hat\sigma / \sqrt{n}\)</span></td>
+<td><span class="math inline">\(1.96\,\hat\sigma / \sqrt{n_{\text{eff}}}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(t\)</span>-statistic d.f.</td>
+<td><span class="math inline">\(n - 1\)</span></td>
+<td><span class="math inline">\(n_{\text{eff}} - 1\)</span></td>
+</tr>
+<tr class="even">
+<td>Required sample size</td>
+<td><span class="math inline">\(n^*\)</span></td>
+<td><span class="math inline">\(n^* \cdot \tau\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Use <span class="math inline">\(n_{\text{eff}}^{(n)}\)</span> (finite-sample) when <span class="math inline">\(n\)</span> is small or <span class="math inline">\(\phi\)</span> is large; <span class="math inline">\(n_{\text{eff}}^{(\infty)}\)</span> (asymptotic) is a safe default for large <span class="math inline">\(n\)</span> and is what most software returns.</p>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key Takeaways</h2>
+<ol type="1">
+<li><p><strong>Two distinct corrections exist.</strong> The finite-sample formula uses Bartlett weights <span class="math inline">\((1-k/n)\)</span>; the asymptotic formula takes <span class="math inline">\(n \to \infty\)</span> and drops them. They are not the same thing.</p></li>
+<li><p><strong>The asymptotic formula is conservative.</strong> It underestimates <span class="math inline">\(n_{\text{eff}}\)</span> relative to the exact formula, especially at high persistence or small <span class="math inline">\(n\)</span>.</p></li>
+<li><p><strong>The gap is <span class="math inline">\(O(1/n)\)</span> but can be large</strong> when <span class="math inline">\(\phi \approx 1\)</span>, because the correction term scales as <span class="math inline">\((1-\phi)^{-2}\)</span>.</p></li>
+<li><p><strong>Rule of thumb:</strong> use the finite-sample correction when <span class="math inline">\(n \lesssim 10/(1-\phi)\)</span>; otherwise the asymptotic version suffices.</p></li>
+<li><p><strong>Both versions use <span class="math inline">\(n_{\text{eff}}\)</span> for all downstream inference</strong> — SEs, CIs, <span class="math inline">\(t\)</span>-tests, power calculations.</p></li>
+</ol>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
