@@ -1,0 +1,449 @@
+---
+title: "Kalman Filters and Latent Variables"
+author: "Robert W. Walker"
+date: "07/27/2026"
+categories: [panel data, code, analysis]
+image: "image.jpg"
+---
+
+# Dynamic IRT, Dynamic Factor Models, and the Kalman Filter
+
+## The Common Thread: Latent States Evolving in Time
+
+Dynamic Item Response Theory (IRT), dynamic factor models, and the Kalman filter are all concerned with the same fundamental problem: inferring the evolution of hidden states from a sequence of noisy observations. Once this structural similarity is recognised, the three frameworks fall into a natural hierarchy — the Kalman filter provides exact inference for the linear Gaussian case, dynamic factor models instantiate that case with psychometric/econometric structure, and dynamic IRT generalises it by replacing Gaussian observations with non-linear, non-Gaussian measurement models.
+
+---
+
+## The Kalman Filter: Exact Inference in Linear Gaussian State Space
+
+The Kalman filter operates on the linear Gaussian state-space model (SSM):
+
+```
+State equation:       θ_t = A θ_{t-1} + w_t,     w_t ~ N(0, Q)
+Observation equation: y_t = H θ_t    + v_t,     v_t ~ N(0, R)
+```
+
+At each time step, the filter alternates between two operations. The **prediction step** propagates the current belief about the state forward through the state equation, inflating uncertainty by the process noise Q. The **update step** then corrects this prediction using the new observation, down-weighting it by the observation noise R and producing the **Kalman gain** K_t, which allocates credibility between the prior prediction and the new data point.
+
+The filter is exact under these assumptions: because everything is linear and Gaussian, the posterior over θ_t given all past observations is itself Gaussian, and only its mean and covariance need to be tracked. The Kalman **smoother** (RTS smoother) runs the filter forward and then a backwards pass, computing the posterior over each θ_t given *all* the data — not just past observations. Marginal likelihoods are available as a by-product of the forward pass, enabling maximum likelihood estimation of A, H, Q, and R.
+
+---
+
+## Dynamic Factor Models: A State-Space Model in Disguise
+
+A dynamic factor model (DFM) takes the form:
+
+```
+y_t = Λ f_t + ε_t,    ε_t ~ N(0, Ψ)
+f_t = Φ f_{t-1} + η_t, η_t ~ N(0, Γ)
+```
+
+where y_t is a p-dimensional vector of observed indicators and f_t is a lower-dimensional vector of latent factors. The correspondence with the Kalman SSM is immediate:
+
+| DFM quantity | Kalman quantity |
+|---|---|
+| Latent factors f_t | State vector θ_t |
+| Factor loadings Λ | Observation matrix H |
+| Transition matrix Φ | State transition matrix A |
+| Measurement noise Ψ | Observation noise R |
+| Process noise Γ | State noise Q |
+
+**The DFM is therefore a state-space model with a particular interpretation of the matrices.** Estimation proceeds via the Kalman filter: given current parameter estimates (Λ, Φ, Ψ, Γ), the filter computes the log-likelihood, and an EM algorithm alternates between the E-step (running the Kalman smoother to obtain posterior moments of f_t) and the M-step (updating parameters in closed form). The Kalman smoother is what makes the EM tractable, since the E-step requires not just E[f_t] but also cross-period quantities E[f_t f_{t-1}ᵀ] needed for updating Φ.
+
+The DFM can also be seen as a temporal generalisation of standard confirmatory factor analysis: static CFA is recovered as the special case Φ = 0, i.e., factors that are i.i.d. across time rather than autocorrelated.
+
+---
+
+## Dynamic IRT: Breaking the Gaussian Assumption
+
+Standard IRT models the probability of a binary response x_{it} (person i, item t) via a logistic or probit link:
+
+```
+P(x_{it} = 1 | θ_t) = σ(a_i θ_t − b_i)
+```
+
+where a_i is item discrimination, b_i is item difficulty, and θ_t is the latent trait (ability, attitude, etc.) at time t. **Dynamic IRT** adds a temporal model for the latent trait — most commonly a random walk or AR(1):
+
+```
+θ_t = φ θ_{t-1} + w_t,    w_t ~ N(0, σ²_w)
+```
+
+This has exactly the same state-space skeleton as the Kalman setup. The difference is in the observation model: instead of y_t = H θ_t + v_t with Gaussian noise, we have a *non-linear* link function (logistic/probit) and *non-Gaussian* observations (Bernoulli or ordinal). This breaks the two conditions under which the Kalman filter is exact, and inference becomes harder.
+
+Several strategies recover Kalman-like recursions approximately:
+
+**Extended Kalman Filter (EKF).** Linearise the logistic link around the current state estimate using a first-order Taylor expansion. This yields approximate Gaussian posteriors and lets the standard Kalman recursion proceed, at the cost of potentially poor approximations when the link function curves sharply.
+
+**Unscented Kalman Filter (UKF).** Instead of linearising analytically, propagate a small set of deterministically chosen "sigma points" through the non-linear link and match moments. This is more accurate than the EKF for moderately non-linear models without the complexity of full Monte Carlo.
+
+**Laplace / Expectation Propagation (EP).** At each time step, approximate the non-Gaussian likelihood contribution with a Gaussian (Laplace: match mode and curvature; EP: minimise KL divergence). Embedding these Gaussian approximations into the Kalman recursion gives an efficient marginal inference scheme sometimes called the **Gaussian assumed density filter**.
+
+**Particle Filters / Sequential Monte Carlo (SMC).** When approximations are insufficient — e.g., highly multimodal posteriors — one can represent the state distribution with a weighted set of particles propagated forward at each step. This is exact in the limit of many particles and applies to any non-Gaussian, non-linear SSM, including multidimensional dynamic IRT.
+
+**Data Augmentation (MCMC).** In the probit version of the model, the Albert–Chib auxiliary variable trick introduces latent continuous responses z_{it} such that x_{it} = 1 iff z_{it} > 0. Conditional on these augmented variables, the model *becomes* a linear Gaussian SSM and the Kalman smoother applies exactly within each MCMC iteration. This converts a hard non-Gaussian problem into a series of easy Gaussian ones.
+
+---
+
+## Multidimensional Dynamic IRT
+
+Unidimensional dynamic IRT treats the latent trait as a scalar. Extending it to a **K-dimensional vector** θ_t ∈ ℝ^K brings additional descriptive richness and, crucially, makes the correspondence with dynamic factor models exact and transparent.
+
+The item response model becomes:
+
+```
+P(x_{it} = 1 | θ_t) = σ(aᵢᵀ θ_t − bᵢ)
+```
+
+where aᵢ ∈ ℝ^K is now a vector of item discriminations — one per latent dimension — and bᵢ remains a scalar difficulty. Collecting the discrimination vectors as rows of a p × K matrix A and stacking the difficulties into a p-vector b, the joint response model across all p items at time t is:
+
+```
+P(x_t | θ_t) = ∏ᵢ σ(Aᵢ θ_t − bᵢ)
+```
+
+The state dynamics generalise directly:
+
+```
+θ_t = Φ θ_{t-1} + w_t,    w_t ~ N(0, Q)
+```
+
+where Φ is now a K × K transition matrix and Q a K × K process noise covariance.
+
+The structural correspondence with the dynamic factor model becomes direct once the probit version of the model is in view. Introduce augmented latent responses z_{it} = aᵢᵀ θ_t − bᵢ + ε_{it} (the auxiliary variables of the Albert–Chib scheme, described in Supplement B). Stacking these into a vector:
+
+```
+z_t = A θ_t − b + ε_t,    ε_t ~ N(0, Iₚ)
+```
+
+This is the DFM observation equation y_t = Λ f_t + ε_t exactly, with A in the role of Λ and the item difficulties b absorbed as a constant offset. The state transition equations are already identical in form. The complete correspondence is:
+
+| MIRT quantity | DFM quantity |
+|---|---|
+| Discrimination matrix A (rows aᵢᵀ) | Factor loading matrix Λ |
+| Difficulty vector b | Negative intercept (−μ in a CFA with item means) |
+| Latent trait vector θ_t | Factor vector f_t |
+| K×K transition matrix Φ | K×K transition matrix Φ |
+| Process noise covariance Q | Process noise covariance Γ |
+
+Two practical issues arise in the multidimensional case that are absent from the scalar setting.
+
+**Identifiability.** The factor-model correspondence immediately surfaces the rotation indeterminacy: if A θ_t = (AR)(R⁻¹θ_t) for any invertible K × K matrix R, then A and R⁻¹θ_t yield identical likelihoods. The standard remedy, borrowed directly from confirmatory factor analysis, is to fix the scale of each dimension (e.g., constrain diagonal entries of Q to 1) and impose enough zero constraints on A to pin down orientation. In an exploratory analysis one can instead apply post-hoc rotation criteria such as varimax, exactly as in factor analysis.
+
+**Inference.** All the approximate methods described for the scalar case carry over. Data augmentation MCMC is particularly attractive in the multidimensional setting: once the latent z_{it} are introduced, the model reduces to a K-dimensional linear Gaussian SSM and the standard Kalman smoother applies without modification. Particle filters (SMC) also scale to vector states, though at computational cost that grows with K. The EKF and UKF extend to vector states without structural change; the Jacobian of the observation model with respect to θ_t is simply the discrimination matrix A.
+
+---
+
+## Relating IRT to Factor Models
+
+IRT and factor analysis are more tightly coupled than they first appear. The factor model with binary indicators is essentially IRT: replacing the Gaussian observation equation with a probit link and a threshold recovers the normal-ogive IRT model. Conversely, the linear (Gaussian) factor model can be seen as IRT in the limit where the link function is an identity and responses are continuous. The probit IRT model is sometimes called a "non-linear factor model," and its parameters correspond directly to factor loadings (aᵢ) and intercepts (−bᵢ).
+
+This relationship sharpens considerably in the multidimensional case. As shown in the preceding section, multidimensional dynamic IRT under the probit link and the Albert–Chib augmentation becomes *literally* a dynamic factor model on the augmented data, with the discrimination matrix A playing the exact role of the factor loading matrix Λ. The DFM is therefore not merely an analogy for MIRT but its Gaussian, linear limiting case: moving from a DFM to a dynamic MIRT model is a matter of replacing the Gaussian observation equation with a probit link (and introducing the consequent augmentation), while the state-space skeleton and Kalman-style inference machinery remain the same blueprint throughout.
+
+---
+
+## Summary
+
+| Feature | Kalman Filter | Dynamic Factor Model | Dynamic IRT |
+|---|---|---|---|
+| State dimension | Any | K ≥ 1 | 1 (unidim.) or K (MIRT) |
+| State transition | Linear, Gaussian | Linear, Gaussian | Linear, Gaussian |
+| Observation model | Linear, Gaussian | Linear, Gaussian | Non-linear (logistic/probit), Bernoulli |
+| Response type | Continuous | Continuous | Binary / ordinal |
+| Exact inference? | Yes | Yes (is a Kalman SSM) | No — requires approximation |
+| Estimation | Direct likelihood | EM + Kalman smoother | EKF/UKF, particle filters, MCMC |
+| DFM correspondence | — | — | Exact for MIRT via probit augmentation |
+
+The three frameworks share a common state-space architecture. Dynamic factor models are Kalman SSMs with psychometric/econometric interpretations of the matrices, and the Kalman filter is their exact inference engine. Dynamic IRT relaxes the Gaussian observation assumption to handle categorical data, inheriting the same latent-state dynamics but requiring the Kalman machinery to be replaced by — or approximated by — methods suited to non-linear, non-Gaussian likelihoods. In the multidimensional case (MIRT), the connection closes fully: via the probit link and augmentation, MIRT and the DFM become the same model on different data types, with the discrimination matrix A and the factor loading matrix Λ playing identical structural roles.
+
+# Supplement A: The EM Algorithm and the Kalman Smoother
+
+## Abstract
+
+The EM algorithm for dynamic factor models (DFMs) exploits the fact that the model is a linear Gaussian state-space system: if the latent factors F = {f_1, …, f_T} were observed, parameter estimation would reduce to a pair of multivariate linear regressions. Since F is unobserved, EM alternates between computing the *expected* sufficient statistics of F given the data (the E-step, carried out by the Kalman smoother) and maximising the log-likelihood with those expectations substituted in place of the missing data (the M-step, solved in closed form).
+
+---
+
+## Setup
+
+The DFM is:
+
+```
+Observation equation:  y_t = Λ f_t + ε_t,       ε_t ~ N(0, Ψ)
+State equation:        f_t = Φ f_{t-1} + η_t,    η_t ~ N(0, Γ)
+Initial state:         f_1 ~ N(μ₀, Σ₀)
+```
+
+The parameters to estimate are θ = {Λ, Ψ, Φ, Γ, μ₀, Σ₀}. Write Y = {y_1, …, y_T}.
+
+---
+
+## The Complete-Data Log-Likelihood
+
+If F were known, the log-likelihood factors across the observation and transition equations:
+
+```
+log p(Y, F ; θ) = log p(f_1 ; μ₀, Σ₀)
+                + Σₜ₌₂ᵀ log p(f_t | f_{t-1} ; Φ, Γ)
+                + Σₜ₌₁ᵀ log p(y_t | f_t ; Λ, Ψ)
+```
+
+Each term is a Gaussian log-likelihood. The M-step therefore amounts to three standard multivariate normal problems, each with a closed-form solution.
+
+---
+
+## E-Step: The Kalman Smoother
+
+The E-step computes Q(θ, θ_old) = E[log p(Y, F ; θ) | Y ; θ_old], which requires the posterior moments of F given Y and the current parameter estimates. These are provided by the **Rauch–Tung–Striebel (RTS) smoother**, a forward Kalman filter pass followed by a backward smoothing pass.
+
+### Forward Pass (Kalman Filter)
+
+Initialise: f_{1|0} = μ₀, P_{1|0} = Σ₀.
+
+For t = 1, …, T:
+
+```
+Innovation:          ν_t     = y_t − Λ f_{t|t-1}
+Innovation cov:      S_t     = Λ P_{t|t-1} Λᵀ + Ψ
+Kalman gain:         K_t     = P_{t|t-1} Λᵀ S_t⁻¹
+Filtered mean:       f_{t|t} = f_{t|t-1} + K_t ν_t
+Filtered cov:        P_{t|t} = (I − K_t Λ) P_{t|t-1}
+Predicted mean:      f_{t+1|t} = Φ f_{t|t}
+Predicted cov:       P_{t+1|t} = Φ P_{t|t} Φᵀ + Γ
+```
+
+The log-likelihood is available from the innovations as a by-product:
+
+```
+log p(Y ; θ) = −(Tp/2) log(2π) − (1/2) Σₜ [log|S_t| + νₜᵀ Sₜ⁻¹ νₜ]
+```
+
+This is evaluated at each EM iteration to monitor convergence.
+
+### Backward Pass (RTS Smoother)
+
+Initialise: f_{T|T}, P_{T|T} from the filter.
+
+For t = T−1, …, 1:
+
+```
+Smoother gain:        Jₜ        = P_{t|t} Φᵀ P_{t+1|t}⁻¹
+Smoothed mean:        f_{t|T}   = f_{t|t} + Jₜ (f_{t+1|T} − Φ f_{t|t})
+Smoothed cov:         P_{t|T}   = P_{t|t} + Jₜ (P_{t+1|T} − P_{t+1|t}) Jₜᵀ
+Cross-period cov:     P_{t+1,t|T} = P_{t+1|T} Jₜᵀ
+```
+
+The cross-period smoothed covariance P_{t+1,t|T} = Cov(f_{t+1}, f_t | Y) is needed for updating Φ.
+
+### Sufficient Statistics
+
+Define the following sums, which are all the M-step needs:
+
+```
+S_ff  = Σₜ₌₁ᵀ   E[fₜ fₜᵀ | Y]   = Σₜ (P_{t|T} + f_{t|T} f_{t|T}ᵀ)
+S_yf  = Σₜ₌₁ᵀ   yₜ f_{t|T}ᵀ
+S_ff⁻ = Σₜ₌₂ᵀ   E[f_{t-1} f_{t-1}ᵀ | Y]  (same as S_ff but summing from t=2)
+S_×   = Σₜ₌₂ᵀ   E[fₜ f_{t-1}ᵀ | Y] = Σₜ₌₂ᵀ (P_{t,t-1|T} + f_{t|T} f_{t-1|T}ᵀ)
+```
+
+Note that E[fₜ fₜᵀ | Y] = P_{t|T} + f_{t|T} f_{t|T}ᵀ uses the smoothed covariance to correctly account for posterior uncertainty about the factors — a step that a naive plug-in of the smoothed means would miss.
+
+---
+
+## M-Step: Closed-Form Parameter Updates
+
+Given the sufficient statistics, the M-step solves three standard problems.
+
+**Observation equation (Λ, Ψ).**
+
+The conditional expectation of the observation log-likelihood is maximised by:
+
+```
+Λ_new = S_yf  S_ff⁻¹
+Ψ_new = (1/T) [ Σₜ yₜ yₜᵀ  −  Λ_new S_yf ᵀ ]
+```
+
+Ψ is typically constrained to be diagonal (measurement errors are conditionally independent), in which case only the diagonal of the above expression is retained.
+
+**State equation (Φ, Γ).**
+
+The transition log-likelihood (from t = 2 onward) is maximised by:
+
+```
+Φ_new = S_×  (S_ff⁻)⁻¹
+Γ_new = (1/(T−1)) [ S_ff(t≥2)  −  Φ_new S_×ᵀ ]
+```
+
+where S_ff(t≥2) = S_ff − E[f₁ f₁ᵀ | Y] excludes the first time point to match the t = 2, …, T sum in the transition likelihood.
+
+**Initial conditions (μ₀, Σ₀).** These are updated from the single smoothed posterior at t = 1:
+
+```
+μ₀_new = f_{1|T}
+Σ₀_new = P_{1|T}
+```
+
+In practice, μ₀ and Σ₀ are often fixed (e.g., at zero mean and stationarity covariance) to avoid updating one observation's worth of statistics.
+
+---
+
+## Convergence and Identifiability
+
+The EM algorithm is guaranteed to increase the observed-data log-likelihood at each iteration, converging to a local maximum. Convergence is typically declared when the change in the log-likelihood falls below a threshold (e.g., 10⁻⁶).
+
+As with all factor models, there is a rotation indeterminacy: Λ f_t = (ΛR)(R⁻¹ f_t) for any invertible K × K matrix R gives the same likelihoods. Standard constraints (e.g., Λ lower-triangular with positive diagonal, or factors with identity covariance) must be imposed before running EM; otherwise the M-step updates are non-unique.
+
+---
+
+## Relationship to the Main Text
+
+The EM + Kalman smoother algorithm is the standard estimation engine for dynamic factor models discussed in the main text. Its key structural feature — that the E-step requires not just the smoothed means f_{t|T} but also the smoothed covariances P_{t|T} and P_{t+1,t|T} — illustrates why the full Kalman smoother (rather than just the filter) is needed: only the smoother delivers the posterior uncertainty about all states jointly given all the data, which is required to form unbiased sufficient statistics for the M-step.
+
+# Supplement B: The Albert–Chib Data Augmentation
+
+## Overview
+
+Albert and Chib (1993) introduced an auxiliary variable trick for probit regression that transforms a model with binary responses and a non-linear link into a linear Gaussian model on augmented continuous data. Applied to dynamic (multidimensional) IRT, this trick converts a hard non-Gaussian filtering problem into a sequence of easy Gaussian ones: within each MCMC iteration the latent-trait trajectory can be sampled exactly using the Kalman smoother, and item parameters can be sampled from conjugate normal posteriors.
+
+---
+
+## The Static Probit Model (Motivation)
+
+In the standard probit regression P(xᵢ = 1 | θ) = Φ(aᵢᵀ θ − bᵢ), introduce a latent continuous variable:
+
+```
+zᵢ = aᵢᵀ θ − bᵢ + εᵢ,    εᵢ ~ N(0, 1)
+xᵢ = 1[zᵢ > 0]
+```
+
+Because Φ is the standard normal CDF, this parameterisation is equivalent to the probit: marginalising over εᵢ gives P(xᵢ = 1 | θ) = P(zᵢ > 0 | θ) = Φ(aᵢᵀ θ − bᵢ). The key insight is that **conditional on zᵢ the link between xᵢ and θ is deterministic**, and the regression of zᵢ on θ is linear and Gaussian. The binary observation problem has been re-expressed as a linear regression on augmented data.
+
+---
+
+## Extension to Dynamic Multidimensional IRT
+
+Consider the MIRT model with binary responses:
+
+```
+P(x_{it} = 1 | θ_t) = Φ(aᵢᵀ θ_t − bᵢ),     i = 1, …, p;  t = 1, …, T
+θ_t = Φ θ_{t-1} + w_t,                         w_t ~ N(0, Q)
+```
+
+(We use probit rather than logistic; the notation Φ for the state-transition matrix is distinct from the normal CDF Φ(·) — the meaning is clear from context.)
+
+Introduce augmented variables:
+
+```
+z_{it} = aᵢᵀ θ_t − bᵢ + ε_{it},    ε_{it} ~ N(0, 1)
+x_{it} = 1[z_{it} > 0]
+```
+
+Stacking z_t = (z_{1t}, …, z_{pt})ᵀ and writing A for the p × K discrimination matrix and b for the p-vector of difficulties:
+
+```
+z_t = A θ_t − b + ε_t,    ε_t ~ N(0, Iₚ)
+```
+
+This is a linear Gaussian observation equation with H = A and a constant offset −b — exactly the DFM form. Combined with the Gaussian state transition, the model conditional on Z = {z_{it}} is a completely standard linear Gaussian SSM.
+
+---
+
+## The Gibbs Sampler
+
+The full conditional distributions required for Gibbs sampling are:
+
+### 1. Sample z_{it} | x_{it}, θ_t, aᵢ, bᵢ
+
+The full conditional is a truncated normal:
+
+```
+If x_{it} = 1:   z_{it} | · ~ TN₍₀,∞₎(aᵢᵀ θ_t − bᵢ,  1)
+If x_{it} = 0:   z_{it} | · ~ TN₍₋∞,₀₎(aᵢᵀ θ_t − bᵢ,  1)
+```
+
+where TN₍ₐ,ᵦ₎(μ, σ²) denotes a normal distribution truncated to (a, b). Sampling from truncated normals is straightforward via inverse CDF.
+
+This step is the only place where the binary responses x_{it} enter the sampler; all subsequent steps operate on the continuous z_{it}.
+
+### 2. Sample θ₁, …, θ_T | Z, A, b, Φ, Q (jointly)
+
+Conditional on Z, the model is:
+
+```
+z_t + b = A θ_t + ε_t,    ε_t ~ N(0, Iₚ)       [observation equation]
+θ_t     = Φ θ_{t-1} + w_t, w_t ~ N(0, Q)         [state equation]
+```
+
+This is a K-dimensional linear Gaussian SSM with observation matrix H = A and observation noise R = Iₚ. Run the Kalman smoother (forward filter + RTS backward pass) to obtain the joint posterior:
+
+```
+p(θ₁, …, θ_T | Z, A, b, Φ, Q) = N(f_{1:T|T},  P_{1:T|T})
+```
+
+and sample the entire trajectory jointly by drawing f_{T|T} first, then sampling backwards using the smoother's conditional distributions:
+
+```
+θ_t | θ_{t+1}, Z ~ N(f_{t|t} + Jₜ(θ_{t+1} − f_{t+1|t}),  (I − JₜΦ) P_{t|t})
+```
+
+where Jₜ = P_{t|t} Φᵀ P_{t+1|t}⁻¹ is the smoother gain. This is the **forward-filter backward-sample (FFBS)** algorithm of Carter and Kohn (1994) / Frühwirth-Schnatter (1994). It produces an exact draw from the joint smoothing distribution — not an approximation — because the model is linear Gaussian conditional on Z.
+
+### 3. Sample aᵢ, bᵢ | Z, Θ (item parameters)
+
+Conditional on Θ = {θ_t} and Z, the model for item i is:
+
+```
+z_{it} = aᵢᵀ θ_t − bᵢ + ε_{it},    ε_{it} ~ N(0, 1),    t = 1, …, T
+```
+
+Writing cᵢ = (aᵢᵀ, −bᵢ)ᵀ and the regressor xₜ = (θₜᵀ, 1)ᵀ, this is a standard Bayesian linear regression:
+
+```
+z_i ~ N(X cᵢ,  Iₜ)
+```
+
+where X is the T × (K+1) design matrix with rows xₜᵀ. With a conjugate normal prior cᵢ ~ N(c₀, C₀), the posterior is:
+
+```
+cᵢ | Z, Θ ~ N(c̃ᵢ, C̃ᵢ)
+
+C̃ᵢ = (C₀⁻¹ + XᵀX)⁻¹
+c̃ᵢ = C̃ᵢ (C₀⁻¹ c₀ + Xᵀ z_i)
+```
+
+This is an exact draw from the conjugate posterior. Identifiability constraints on A (see the MIRT section of the main text) are enforced either by fixing elements of c₀ and C₀ (informative priors on zeroed entries) or by post-processing draws with rotation.
+
+### 4. Sample Φ, Q | Θ (state-equation parameters)
+
+Conditional on the sampled trajectory Θ:
+
+```
+θ_t = Φ θ_{t-1} + w_t,    w_t ~ N(0, Q)
+```
+
+is a VAR(1) regression with T − 1 observations. With conjugate matrix-normal inverse-Wishart priors, the posterior is closed form and can be sampled directly.
+
+---
+
+## Summary of the Gibbs Loop
+
+Each iteration cycles through:
+
+```
+1.  z_{it}  | x_{it}, θ_t, aᵢ, bᵢ   →   truncated normal draws
+2.  θ₁:T    | Z, A, b, Φ, Q          →   Kalman smoother + FFBS
+3.  aᵢ, bᵢ | Z, Θ                    →   conjugate linear regression
+4.  Φ, Q    | Θ                       →   conjugate VAR regression
+```
+
+Steps 3 and 4 are straightforward conjugate updates. Steps 1 and 2 together implement the Albert–Chib trick: Step 1 converts the binary data into truncated-normal pseudo-data, and Step 2 exploits the resulting linear Gaussian structure to sample the latent trajectory exactly via the Kalman smoother. The non-Gaussian difficulty of the original problem has been entirely absorbed into Step 1.
+
+---
+
+## Why This Works: The Relationship to Supplement A
+
+Comparing this sampler with the EM algorithm in Supplement A clarifies the structural parallel. Both algorithms centre on the Kalman smoother as their key computational step. In EM (Supplement A), the smoother computes expected sufficient statistics (smoothed means, covariances, cross-covariances) that drive closed-form M-step updates; the observation equation is Gaussian throughout. In the Albert–Chib MCMC, the smoother samples the full trajectory rather than computing its expectation, and the Gaussian observation equation is constructed artificially by the augmentation. Both methods make the same observation: if the observation equation is linear and Gaussian, the latent-trait trajectory can be handled efficiently and exactly.
+
+---
+
+## Reference
+
+Albert, J. H., and Chib, S. (1993). Bayesian analysis of binary and polychotomous response data. *Journal of the American Statistical Association*, 88(422), 669–679.
