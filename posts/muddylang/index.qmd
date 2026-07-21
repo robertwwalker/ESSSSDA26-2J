@@ -1,0 +1,243 @@
+---
+title: "Muddy ARIMA language"
+author: "Robert W. Walker"
+date: "07/20/2026"
+categories: [panel data, code, analysis]
+image: "image.jpg"
+---
+
+There is a great blog post by Rob Hyndman from a while back explaining the confusing and varied usage of language surrounding models with ARMA processes and covariates of various forms.  In this case, it is exclusive to R and particularly `library(TSA)`.  I link it [here.](https://robjhyndman.com/hyndsight/arimax/)
+
+# Box-Jenkins Transfer Function Models
+
+## 1. Conceptual Foundation
+
+Box-Jenkins transfer function (TF) models — introduced in Box & Jenkins (1970), *Time Series Analysis: Forecasting and Control* — generalise the univariate ARIMA framework to describe how one or more **input series** $X_t$ dynamically drive an **output series** $Y_t$, while allowing the residual noise to follow its own ARIMA structure. The key feature is that inputs are permitted to exert effects that are **delayed** and **distributed across time**, not merely contemporaneous.
+
+They are distinct from simple regression-with-ARIMA-errors (which constrains the input effect to a single lag structure) and from VAR models (which treat all variables symmetrically as jointly endogenous).
+
+---
+
+## 2. Mathematical Specification
+
+### 2.1 Backshift Operator
+
+Define the **backshift operator** $B$ such that $B^k X_t = X_{t-k}$. Polynomials in $B$ represent lag polynomials, e.g., $\phi(B) = 1 - \phi_1 B - \cdots - \phi_p B^p$.
+
+### 2.2 The Transfer Function Component
+
+For a single input $X_t$, the dynamic effect on $Y_t$ is expressed via a **rational transfer function**:
+
+$$v(B) = \frac{\omega(B)}{\delta(B)} B^b$$
+
+where:
+
+| Symbol | Name | Definition |
+|--------|------|------------|
+| $b \geq 0$ | **dead time** (delay) | periods before $X_t$ first affects $Y_t$ |
+| $\omega(B) = \omega_0 - \omega_1 B - \cdots - \omega_s B^s$ | **numerator polynomial** | order $s$ |
+| $\delta(B) = 1 - \delta_1 B - \cdots - \delta_r B^r$ | **denominator polynomial** | order $r$ |
+
+A TF model of orders $(r, s, b)$ means the roots of $\delta(B)$ lie outside the unit circle (stationarity of the distributed lag) and encodes an infinite impulse response via the expansion:
+
+$$v(B) = \sum_{j=0}^{\infty} v_j B^j, \qquad v_j = 0 \text{ for } j < b$$
+
+The coefficients $\{v_j\}_{j=b}^{\infty}$ are the **impulse response weights**: $v_j$ measures the effect on $Y_{t+j}$ of a unit pulse in $X_t$. The **steady-state gain** — total output effect of a permanent unit step — is $G = v(1) = \omega(1)/\delta(1)$.
+
+### 2.3 The Full Model
+
+$$Y_t = \mu + \frac{\omega(B)}{\delta(B)} B^b\, X_t + N_t$$
+
+where the **noise model** $N_t$ is a (possibly seasonal) ARIMA process:
+
+$$N_t = \frac{\theta(B)\,\Theta(B^s)}{\phi(B)\,\Phi(B^s)\,(1-B)^d\,(1-B^s)^D}\,\varepsilon_t, \qquad \varepsilon_t \overset{\text{iid}}{\sim}(0,\sigma^2)$$
+
+with $\phi, \theta$ non-seasonal AR/MA polynomials and $\Phi, \Theta$ seasonal AR/MA polynomials of period $s$.
+
+### 2.4 Multiple Inputs
+
+With $m$ inputs:
+
+$$Y_t = \mu + \sum_{i=1}^{m} \frac{\omega_i(B)}{\delta_i(B)} B^{b_i} X_{it} + N_t$$
+
+Each input has its own $(r_i, s_i, b_i)$ orders, independently identified.
+
+---
+
+## 3. The Box-Jenkins Identification Procedure
+
+Model building follows a structured iterative cycle:
+
+### Step 1 — Prewhitening
+
+To isolate the transfer function free of input autocorrelation, fit an ARIMA model to $X_t$:
+
+$$\hat{\pi}(B)\, X_t = \alpha_t$$
+
+where $\hat{\pi}(B) = \hat{\phi}(B)(1-B)^d / \hat{\theta}(B)$ is the estimated inverse filter, yielding white noise residuals $\alpha_t$.
+
+Apply **the same filter** to $Y_t$:
+
+$$\beta_t = \hat{\pi}(B)\, Y_t$$
+
+Because $\alpha_t \perp \varepsilon_{t-k}$ for all $k$, the cross-correlation between $\alpha_t$ and $\beta_t$ directly estimates the scaled impulse response:
+
+$$\hat{\rho}_{\alpha\beta}(k) \approx \frac{\sigma_\alpha}{\sigma_\beta}\, v_k$$
+
+### Step 2 — Transfer Function Identification
+
+Examine the **sample cross-correlation function (CCF)** $\hat{\rho}_{\alpha\beta}(k)$:
+
+- $\hat{\rho}_{\alpha\beta}(k) \approx 0$ for $k < b$ → determines the dead time $b$
+- The pattern of significant CCF values at lags $k \geq b$ guides selection of $r$ and $s$, analogously to how the ACF/PACF guide ARMA order selection
+
+Standard patterns: a pure $(r=0, s)$ model produces a CCF that cuts off; an $(r, s=0)$ model produces a CCF that decays exponentially or sinusoidally.
+
+### Step 3 — Noise Model Identification
+
+Compute the preliminary residuals:
+
+$$\hat{N}_t = Y_t - \frac{\hat{\omega}(B)}{\hat{\delta}(B)} B^b X_t$$
+
+Examine the ACF/PACF of $\hat{N}_t$ to identify the ARIMA$(p,d,q)(P,D,Q)_s$ noise structure.
+
+### Step 4 — Joint Estimation
+
+Estimate all parameters $(\omega, \delta, \phi, \theta, \Phi, \Theta)$ simultaneously by **conditional or exact maximum likelihood** (or nonlinear least squares), treating $\varepsilon_t$ as Gaussian:
+
+$$\hat{\boldsymbol{\psi}} = \arg\max_{\boldsymbol{\psi}} \ell(\boldsymbol{\psi}\mid \mathbf{Y}, \mathbf{X})$$
+
+The likelihood is nonlinear in $\delta$ (denominator) parameters, requiring iterative optimisation (e.g., Marquardt-Levenberg).
+
+### Step 5 — Diagnostic Checking
+
+- **Residual ACF/PACF**: $\hat{\varepsilon}_t$ should be white noise (Ljung-Box test)
+- **Cross-correlation of residuals with input**: $\hat{\rho}_{\varepsilon\alpha}(k) \approx 0$ for all $k$ (no remaining input information in residuals)
+- If either fails, return to Step 2 and revise orders
+
+---
+
+## 4. Relationship to Adjacent Models
+
+| Model | Relationship to BJ-TF |
+|-------|----------------------|
+| **ARIMAX / Reg-ARIMA** | Special case $r=0, s=0, b=0$: single-lag contemporaneous input, ARIMA noise |
+| **Distributed Lag (ADL)** | TF with white noise ($\phi=\theta=1$, $d=0$) |
+| **ARMAX** | Shares noise structure but conflates MA in noise with MA in input effect |
+| **VAR** | Treats all variables as endogenous; no prewhitening identification |
+| **State-space / DLM** | TF models nest within state-space; Kalman filter provides unified estimation |
+| **FIR filter models** | $r=0$ (finite impulse response): purely moving-average transfer function |
+
+A crucial distinction: the **Box-Jenkins TF model** keeps the input $X_t$ strictly **exogenous** (not modelled jointly), whereas VAR models do not.
+
+---
+
+## 5. Software
+
+### Gold-Standard Implementations
+
+**SAS — `PROC ARIMA`**
+The most complete and historically authoritative implementation. The `IDENTIFY`, `ESTIMATE`, and `FORECAST` statements map directly onto the Box-Jenkins procedure. Supports prewhitening (`CROSSCORR=`), CCF output, exact ML estimation, and full diagnostic output. Considered the reference implementation for industrial and regulatory work.
+
+**R — `TSA` package** (Chan, 2010)
+Provides `prewhiten()`, `ccf()` for identification, and `arimax()` for estimation of full transfer function models with rational $(r,s,b)$ structure. Closest to the original BJ methodology in R.
+
+**R — `forecast` / `fable` packages**
+`Arima()` and `auto.arima()` accept `xreg=` but restrict inputs to contemporaneous regression (effectively $r=0, s=0, b=0$). Not a true TF model but widely used.
+
+**Python — `statsmodels.tsa.statespace.SARIMAX`**
+Estimates SARIMAX models with exogenous regressors. Supports distributed lags via manual lag construction in `exog`, but does not natively parameterise the rational $(r,s,b)$ TF form. Estimation via MLE with Kalman filter.
+
+**MATLAB — System Identification Toolbox**
+The `bj()` function fits the **Box-Jenkins model** in its canonical form:
+
+$$Y_t = \frac{B(q)}{F(q)} u_t + \frac{C(q)}{D(q)} e_t$$
+
+which separates the input dynamics ($B/F$, analogous to $\omega/\delta$) from the noise dynamics ($C/D$, analogous to $\theta/\phi$). This is arguably the closest implementation to the theoretical model. Also offers `tfest()` for continuous-time TF estimation.
+
+**EViews**
+Supports ARMAX and distributed lag models (PDL, ADL) with ARIMA noise through the equation interface. Provides CCF tools and iterative estimation. Widely used in econometrics.
+
+**SPSS Forecasting — `TSMODEL` procedure**
+The Expert Modeler identifies and estimates transfer function models automatically, including prewhitening. GUI-driven; suitable for practitioners less familiar with order identification.
+
+### Summary Table
+
+| Software | Package/Proc | True $(r,s,b)$ TF | Prewhitening tools | Estimation method |
+|----------|-------------|:-----------------:|:-----------------:|-------------------|
+| SAS | `PROC ARIMA` | ✓ | ✓ | Exact ML / CLS |
+| R | `TSA::arimax` | ✓ | ✓ | CLS / ML |
+| R | `forecast::Arima` | Partial ($r=0$) | Partial | Exact ML |
+| Python | `statsmodels SARIMAX` | Partial | Manual | ML via Kalman |
+| MATLAB | `bj()` | ✓ | ✓ | PEM / ML |
+| EViews | Equation GUI | Partial | ✓ | NLS / ML |
+| SPSS | `TSMODEL` | ✓ | ✓ (auto) | ML |
+| Gretl | `arima` command | Partial | Manual | ML |
+
+---
+
+## 6. Key Assumptions and Limitations
+
+- **Exogeneity**: $X_t$ must be strictly exogenous (not driven by feedback from $Y_t$); if feedback exists, a VAR or structural model is required.
+- **Linearity**: the TF is linear in the input; nonlinear extensions exist (e.g., bilinear models, threshold TF models) but are not standard Box-Jenkins.
+- **Stationarity of the TF**: requires roots of $\delta(B) = 0$ to lie outside the unit circle.
+- **Identification sensitivity**: CCF-based order identification is sensitive to sample size; small samples make $(r,s,b)$ selection unreliable.
+- **Noise–input separation**: the key innovation of prewhitening is only valid if the prewhitening filter is correctly identified; mis-specification propagates through the procedure.
+
+
+## Stata and Box-Jenkins Transfer Function Models
+
+Stata has **no dedicated transfer function command**. The question often arises as to whether one can estimate a transfer function model using Stata. While Stata does not currently have a convenience command for doing so, estimating such a model can be accomplished quite easily using Stata's `arima` command.
+
+The complete Box-Jenkins procedure can be implemented by orchestrating several existing Stata commands in sequence, following the prewhitening → CCF identification → joint estimation → diagnostic checking cycle exactly.
+
+---
+
+### The Commands Involved
+
+The full procedure maps onto Stata's toolkit as follows:
+
+**Stationarity testing**
+`dfuller`, `pperron`, and `corrgram` are used to assess whether the input and output series need differencing before proceeding.
+
+**Prewhitening the input**
+Fit an ARIMA model to $X_t$ using `arima`, then extract residuals $\alpha_t$ via `predict alpha, resid`. To get the pre-whitened series, you just use the residuals generated by `predict`.
+
+**Filtering the output and computing the CCF**
+Next, apply the same filter to the output series. This requires a little data management — renaming two variables, using `predict` once again to generate the filtered output series, and then returning the variables to their original names. Once both filtered series $\alpha_t$ and $\beta_t$ are in hand, `xcorr alpha beta` produces the cross-correlation function, which is proportional to the impulse response weights $v_k$.
+
+**Identifying the lag structure**
+Under the null hypothesis that there is no cross-correlation between the pre-whitened input series and the filtered output series, Bartlett's formula for the standard errors of the cross-correlations reduces to $1/\sqrt{n}$. You can use zero minus two standard deviations as a cutoff to determine which cross-correlations are significantly different from zero, and use the results to determine the value of $b$, the delay parameter, as well as the finite lag structure of the transfer function to be estimated.
+
+**Estimating the preliminary FIR model**
+With $b$ and the active lags identified, a finite impulse response (FIR) model — i.e. $r=0$ in the rational TF — is estimated first using `arima y l(b/b+s).x`. Residuals are then extracted and their ACF/PACF examined to identify the noise model orders.
+
+**Joint estimation**
+You can include the error term in the model to jointly estimate all parameters via a single `arima` call such as:
+
+```stata
+arima y l(3/7).x, ar(1/2)
+```
+
+This estimates the distributed lag weights on $X_t$ at lags 3–7 and an AR(2) noise process simultaneously by maximum likelihood.
+
+**Diagnostics**
+For diagnostic purposes, you should check the residual to ensure it is a white-noise process and that it is uncorrelated with the filtered input series $\alpha_t$. Failure of either of these tests would indicate an inadequacy of the model. This is done with `corrgram residual` and `xcorr alpha residual`.
+
+---
+
+### The Critical Limitation
+
+The approach above estimates a **finite impulse response (FIR)** transfer function — that is, the $(r=0, s, b)$ case, where the numerator polynomial $\omega(B)$ is estimated as a set of free lag coefficients with no denominator $\delta(B)$. This works when the impulse response dies out quickly enough, as in the furnace example from Box, Jenkins & Reinsel.
+
+**Stata cannot directly estimate the rational $(r>0, s, b)$ form** — i.e. models where the denominator polynomial $\delta(B)$ is present and the impulse response decays geometrically or sinusoidally toward an infinite horizon. To estimate those, one would need to manually construct the nonlinear constraints that link the rational polynomial parameters to an expanded lag structure, which is not straightforward in `arima`.
+
+In practice this means:
+
+| TF structure | Stata support |
+|---|---|
+| FIR: $(r=0, s, b)$ with ARIMA noise | ✓ Fully supported via `arima` |
+| Rational IIR: $(r>0, s, b)$ with ARIMA noise | ✗ Not natively supported |
+| ARIMAX (no delay, no denominator) | ✓ Straightforward via `arima y x, ar(.) ma(.)` |
+
+For rational transfer functions with a non-trivial denominator, SAS `PROC ARIMA`, R's `TSA::arimax`, or MATLAB's `bj()` remain the appropriate tools.
