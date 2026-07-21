@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Robert W. Walker">
+<meta name="dcterms.date" content="2026-07-27">
 
-<title>A Clarification on Mundlak and Related Things – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
+<title>Dynamics in Latent Variables – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,41 +21,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -186,7 +152,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">A Clarification on Mundlak and Related Things</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Dynamics in Latent Variables</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -199,10 +165,10 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">A Clarification on Mundlak and Related Things</h1>
+      <h1 class="title">Dynamics in Latent Variables</h1>
+            <p class="subtitle lead">Reuning, Kenwick &amp; Fariss — <em>Political Analysis</em> (2019)</p>
                                 <div class="quarto-categories">
                 <div class="quarto-category">panel data</div>
-                <div class="quarto-category">time series</div>
                 <div class="quarto-category">code</div>
                 <div class="quarto-category">analysis</div>
               </div>
@@ -219,6 +185,12 @@ window.Quarto = {
             </div>
     </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 27, 2026</p>
+      </div>
+    </div>
     
       
     </div>
@@ -277,12 +249,6 @@ window.Quarto = {
  <span class="menu-text">Day 4: Cointegration</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../posts/day-5/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Day 5: Equation Balance to Wrap Up Week 1</span></a>
-  </div>
-</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -294,36 +260,6 @@ window.Quarto = {
           </a> 
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../posts/day-6/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Day 6: Panel Data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../posts/day-7/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Day 7: Missing Data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../posts/day-8/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Day 8: Panel Models for Limited Outcomes</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../posts/day-9/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Day 9: DPD and GMM</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../posts/day-10/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Day 10: Causal Inference in Panels and TWFE</span></a>
-  </div>
-</li>
       </ul>
   </li>
     </ul>
@@ -336,11 +272,16 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#the-time-series-problem" id="toc-the-time-series-problem" class="nav-link active" data-scroll-target="#the-time-series-problem">The Time Series Problem</a></li>
-  <li><a href="#why-many-criticize-this-approach" id="toc-why-many-criticize-this-approach" class="nav-link" data-scroll-target="#why-many-criticize-this-approach">Why Many Criticize This Approach</a></li>
-  <li><a href="#mundlak-provides-the-reason" id="toc-mundlak-provides-the-reason" class="nav-link" data-scroll-target="#mundlak-provides-the-reason">Mundlak Provides the Reason</a></li>
-  <li><a href="#bringing-in-heterogeneity-and-the-two-way-mundlak-model" id="toc-bringing-in-heterogeneity-and-the-two-way-mundlak-model" class="nav-link" data-scroll-target="#bringing-in-heterogeneity-and-the-two-way-mundlak-model">Bringing in Heterogeneity and the two-way Mundlak model</a></li>
-  <li><a href="#algebraics" id="toc-algebraics" class="nav-link" data-scroll-target="#algebraics">Algebraics</a></li>
+  <li><a href="#the-core-problem" id="toc-the-core-problem" class="nav-link active" data-scroll-target="#the-core-problem">The Core Problem</a></li>
+  <li><a href="#static-models" id="toc-static-models" class="nav-link" data-scroll-target="#static-models">Static Models</a></li>
+  <li><a href="#dynamic-models" id="toc-dynamic-models" class="nav-link" data-scroll-target="#dynamic-models">Dynamic Models</a></li>
+  <li><a href="#the-robust-dynamic-model" id="toc-the-robust-dynamic-model" class="nav-link" data-scroll-target="#the-robust-dynamic-model">The Robust Dynamic Model</a></li>
+  <li><a href="#simulation-design" id="toc-simulation-design" class="nav-link" data-scroll-target="#simulation-design">Simulation Design</a></li>
+  <li><a href="#simulation-results" id="toc-simulation-results" class="nav-link" data-scroll-target="#simulation-results">Simulation Results</a></li>
+  <li><a href="#application-1-judicial-ideology" id="toc-application-1-judicial-ideology" class="nav-link" data-scroll-target="#application-1-judicial-ideology">Application 1 — Judicial Ideology</a></li>
+  <li><a href="#application-2-democracy" id="toc-application-2-democracy" class="nav-link" data-scroll-target="#application-2-democracy">Application 2 — Democracy</a></li>
+  <li><a href="#discussion-takeaways" id="toc-discussion-takeaways" class="nav-link" data-scroll-target="#discussion-takeaways">Discussion &amp; Takeaways</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
     </div>
@@ -351,67 +292,290 @@ window.Quarto = {
 
 
 
-<p>My discussion of two-way fixed effects and the Mundlak estimator on Friday merits backfilling and rendering clear some things I have previously said or noted throughout the last week and to some degree for the two weeks that I should have been more explicit in combining.</p>
-<section id="the-time-series-problem" class="level2">
-<h2 class="anchored" data-anchor-id="the-time-series-problem">The Time Series Problem</h2>
-<p>The focus of the first week is stationarity. Weak stationarity is sufficient. We noticed that virtually all panel data studies ignore this. This is in part because it is complicated. Panel unit root tests are a viable option for assessing this.</p>
-<p>Economists generally adopt a different view of the underlying problem though it is subtly hidden in many discussions. Suppose that I have a process, ignoring heterogeneity within units for now, with</p>
-<p><span class="math display">\[
-y_{it} = \alpha_{t} + X_{it}\beta + \epsilon_{it}
-\]</span></p>
-<p>No matter how the mean of <span class="math inline">\(y_{it}\)</span> varies with respect to time, we can approximate that process with the series of time <code>fixed effects</code> or time dummies, whichever language you prefer, that render <span class="math inline">\(y_{it}\)</span> with a constant conditional mean given <span class="math inline">\(t\)</span>. NB: With a constant, it is <span class="math inline">\(t-1\)</span> fixed effects that measure deviations from the reference period – the omitted dummy.</p>
-<p>Stepping back, in the context of a single time series, there is no way to identify these time dummies/<code>fixed effects</code> because there are no degrees of freedom. Time smooths and such things can reduce them [as can lagged dependent variables approximate them with all the implications therein] but it is only when we may pool information from two or more time series can we use this method for rendering a[n at least mean] stationary series.</p>
-</section>
-<section id="why-many-criticize-this-approach" class="level2">
-<h2 class="anchored" data-anchor-id="why-many-criticize-this-approach">Why Many Criticize This Approach</h2>
-<p>Recalling the Total as the sum of the Within and Between in sum of squares language, we need now apply this along dimension T. The total variation in <span class="math inline">\(y_{it}\)</span> decomposes exactly the same way, algebraically.</p>
-<p>Two parts. The <code>within time</code> deviations – a centered cross-section or notationally <span class="math inline">\(C(t)\)</span> – with deviations described by <span class="math inline">\(y^{C(t)} = y_{it} - \overline{y}_{t}\)</span>. These are the deviations of each unit from the time mean. Applied to all t in the same fashion, these must be mean zero. There is also the <code>between time</code> construct – the variation in those time averages – that are deviations from the overall mean of <span class="math inline">\(y\)</span> as <span class="math inline">\(y^{B(t)} = \overline{y}_{t} - \overline{y}\)</span> that are also mean zero.</p>
-<p>The criticism is that over time changes – the between in this case – are aggregated away and that only static cross-sectional variance is explicitly modeled. The other problem is that the dynamic implications are ignored; what happens because our estimates are applied the time-averaged data which may be impacted? This is accounting. It interacts with the first day arguments about random sampling versus convenience sampling; there are only so many countries. If one country undergoes some permanent change, we might should account for the <span class="math inline">\(\frac{1}{N}\)</span> impact on the mean. With enough countries, it is negligible, or thought so anyway.</p>
-</section>
-<section id="mundlak-provides-the-reason" class="level2">
-<h2 class="anchored" data-anchor-id="mundlak-provides-the-reason">Mundlak Provides the Reason</h2>
-<p>The one-way Mundlak model applied to the unit-heterogeneity case establishes that</p>
-<p><span class="math display">\[
-y_{it} = \alpha + X_{it}\beta + \beta^{B_i}\overline{x}^{B(i)}_{i} + (\nu_{i} + \epsilon_{it})
-\]</span> can be estimated using either OLS or GLS. The only problem is the standard errors which will differ because of the induced correlation structures if the variance of the <span class="math inline">\(\nu_{i}\)</span> is non-zero.</p>
-<p>The same argument applies in exactly the same way when we reverse the indices.</p>
-<p><span class="math display">\[
-y_{it} = \alpha + X_{it}\beta + \beta^{B_{t}}\overline{x}_{t}^{B(t)} + (\nu_{t} + \epsilon_{it})
-\]</span> The coefficients <span class="math inline">\(\beta^{B_{t}}\)</span> describe how the mean of <span class="math inline">\(y_{it}\)</span> varies over time as a function of the (unit-) averaged variables X.</p>
-<p>The model is instructive. If we suppose a counterfactual in some variable <span class="math inline">\(x\)</span>, if permanent over time, has a combined impact of <span class="math inline">\(\beta + \beta^{B_{t}}\)</span> whereas a temporary one-unit shock is <span class="math inline">\(\beta\)</span>.</p>
-</section>
-<section id="bringing-in-heterogeneity-and-the-two-way-mundlak-model" class="level2">
-<h2 class="anchored" data-anchor-id="bringing-in-heterogeneity-and-the-two-way-mundlak-model">Bringing in Heterogeneity and the two-way Mundlak model</h2>
-<p>The most common formulation and estimated functional form of the two-way Mundlak model is given by <a href="https://www.tandfonline.com/doi/pdf/10.1080/07474938.2023.2178139">Baltagi</a>.</p>
-<p>Wooldridge showed that once all the time averaged regressors and all the individual averaged regressors are included in the regression along with the original regressors, the resulting OLS estimator is the two-way Öxed effects or Within estimator.</p>
-<p>The effect we are estimating <code>within</code> is net of the over time and across-unit averages.</p>
-<p><span class="math display">\[
-y_{it} = \alpha + \beta^{B(t)}\overline{x}_{t} + \beta^{B(i)}\overline{x}_{i} + \beta^{W}x_{it} + (\nu_{i} + \nu_{t} + \epsilon_{it})
-\]</span></p>
-<p>The very tricky part of this model is to think about the counterfactual that we wish the model to estimate. The reason why is that we must think about precisely how it manifests in <span class="math inline">\(y_{it}\)</span> because counterfactuals surrouding <span class="math inline">\(x_{it}\)</span> induce variation in two averages and the remaining within.</p>
-<p>If I want to examine how <span class="math inline">\(x\)</span> changes, I must be precise about what is happening. For example, suppose that one <em>country</em> [in a country-year data structure] experiences a time permanent change in <span class="math inline">\(x\)</span> of one unit whereas another <em>country</em> experiences a change of one unit in a given period that reverts immediately thereafter. Beneath the surface, stationarity type considerations are still paramount, what is going to happen to the over time and over country averages because we have a direct measure of <span class="math inline">\(\beta^{W}\)</span>. If we suppose that the data are stationary across units and time generically, then the impact for the first country is given by <span class="math inline">\(\beta^{W}\)</span> plus <span class="math inline">\(\beta^{B(i)}\)</span> because there is a permanent change in <span class="math inline">\(\overline{x}_{i}\)</span> by stipulation. But algebraically, there is also a consequence induced by <span class="math inline">\(\beta^{B(t)}\)</span>.</p>
-<p>In the counterfactual scenario for my first country, <span class="math inline">\(\overline{x}_{t}\)</span> changes by <span class="math inline">\(\frac{1}{N}\)</span> and the impact of this change is <span class="math inline">\(\beta^{B(t)}\)</span>. For the second country, <span class="math inline">\(\overline{x}_{t}\)</span> changes by <span class="math inline">\(\frac{1}{NT}\)</span> with impact <span class="math inline">\(\beta^{B(t)}\)</span>. <span class="math inline">\((T-1)*\beta^{B(t)}\)</span> is the net difference. A complete analysis is explicit about this second effect as well as the first in accounting what we wish to estimate from data.</p>
-<p>Equations 13-15 of Baltagi make this clear. The sixth edition of his text contains this information: Baltagi, B.H., 2021, Econometric Analysis of Panel Data, 6th edition (Springer, Switzerland).</p>
-<p>The two-way within estimator is a transformed regression of</p>
-<p><span class="math inline">\(y_{it} = y_{it} - \overline{y}_{i} - \overline{y}_{t} + \overline{y}\)</span> and <span class="math inline">\(x_{it} = x_{it} - \overline{x}_{i} - \overline{x}_{t} + \overline{x}\)</span></p>
-<p>and changes in <span class="math inline">\(x\)</span> have to be accounted precisely. We will typically (though implicitly) invoke stationarity or limit type arguments to ignore the <span class="math inline">\((T-1)*\beta^{B(t)}\)</span> or the <span class="math inline">\((N-1)*\beta^{B(i)}\)</span> that counterfactuals induce. Most important to note, they are temporal or spatial dependence of a form that we have largely <em>controlled</em> rather than modeled in some explicit form. There are temporal distributed lag models, there are spatial lags and STADL! The question should almost surely determine which are of greatest interest.</p>
-</section>
-<section id="algebraics" class="level2">
-<h2 class="anchored" data-anchor-id="algebraics">Algebraics</h2>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Counterfactual <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Case=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">2</span>), <span class="at">Time=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">x0=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="at">xT=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>))</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>Counterfactual</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>  Case Time x0 xT
-1    1    1  0  1
-2    1    2  0  1
-3    2    1  0  1
-4    2    2  0  0</code></pre>
+<p><a href="http://cfariss.com/documents/ReuningKenwickFariss2019PA.pdf">The PDF</a></p>
+<section id="the-core-problem" class="level2" data-background-color="#1a1a2e">
+<h2 data-background-color="#1a1a2e" class="anchored" data-anchor-id="the-core-problem">The Core Problem</h2>
+<p>Political scientists increasingly use <strong>latent variable models</strong> to measure unobservable concepts—ideology, democracy, human rights, transparency.</p>
+<p>When applied to <strong>time-series cross-sectional (TSCS)</strong> data, researchers face a fundamental tradeoff:</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Static models</strong></p>
+<ul>
+<li>Minimize bias</li>
+<li>Allow rapid change</li>
+<li>❌ Ignore temporal structure</li>
+<li>❌ Lose efficiency</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Dynamic models</strong></p>
+<ul>
+<li>Model temporal dependence</li>
+<li>Leverage time-series information</li>
+<li>❌ Over-smooth rapid changes</li>
+<li>❌ Bias when shocks occur</li>
+</ul>
 </div>
 </div>
-<p>Suppose a 2 way Mundlak regression or 2 way fixed effects with a regression model setting all regression parameters to 1, the expected value in the first case is 0. When the counterfactual is implemented, we can account for it as follows. What changes? The pooled regression coefficient will increase y by 1. That’s really the easy part.</p>
-<p>The new unit mean – expected value of <span class="math inline">\(x_i\)</span> – should be 1 because of the change for case 1. As an algerbraic matter, Case 2 is just a shock so perhaps no change in expectation. The new time mean for both increases proportionally by the same <span class="math inline">\(\frac{1}{N}\)</span> – expected value of x – in that period. The change continues for Case 1 but vanishes for Case 2.</p>
-<p>I am not suggesting that adjustment by the <span class="math inline">\(\frac{1}{N}\)</span> is justified, justifiable, or otherwise, but am pointing out that the identities have implications and it is worthwhile to think them through.</p>
+<blockquote class="blockquote">
+<p><strong>Goal:</strong> A model that handles both stability <em>and</em> sudden change.</p>
+</blockquote>
+<hr>
+</section>
+<section id="static-models" class="level2">
+<h2 class="anchored" data-anchor-id="static-models">Static Models</h2>
+<p>The simplest approach: treat every unit-period as <strong>independent</strong>.</p>
+<p><span class="math display">\[\theta_{it} \sim \mathrm{N}(0, 1) \quad \forall i = 1,\ldots,N \;\; \&amp; \;\; \forall t = 1,\ldots,T\]</span></p>
+<p><strong>How it works</strong></p>
+<ul>
+<li>Estimates for each unit-period depend <em>only</em> on observed manifest variables at that time point</li>
+<li>Allows sudden changes in the latent trait between periods</li>
+</ul>
+<p><strong>Limitations</strong></p>
+<ul>
+<li>Treats observations as independent → violates temporal structure</li>
+<li>Social science indicators are often coarse or missing</li>
+<li>Results in <strong>wide, uninformative credible intervals</strong> when data are sparse</li>
+</ul>
+<hr>
+</section>
+<section id="dynamic-models" class="level2">
+<h2 class="anchored" data-anchor-id="dynamic-models">Dynamic Models</h2>
+<p>The standard solution: model the latent trait as a <strong>random walk</strong>.</p>
+<p><span class="math display">\[\theta_{i1} \sim \mathrm{N}(0,1), \qquad
+  \theta_{it} \sim \mathrm{N}(\theta_{i(t-1)},\, \sigma), \qquad
+  \sigma \sim \mathrm{HN}(0,3)\]</span></p>
+<p><strong>Benefits</strong></p>
+<ul>
+<li>Incorporates temporal autocorrelation as prior information</li>
+<li>Produces tighter (more efficient) credible intervals</li>
+<li>Theoretically sensible when traits are slow-moving</li>
+</ul>
+<p><strong>Critical limitation</strong></p>
+<ul>
+<li>Smoothing induces <strong>bias near shocks</strong></li>
+<li>Rapid institutional collapse, elections, coups appear as <em>gradual transitions</em></li>
+<li>Dynamic model performs poorly in the periods surrounding a sudden change</li>
+</ul>
+<hr>
+</section>
+<section id="the-robust-dynamic-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-robust-dynamic-model">The Robust Dynamic Model</h2>
+<p><strong>Key insight:</strong> Replace the Normal transition prior with a <strong>Student’s <em>t</em> distribution</strong>.</p>
+<p><span class="math display">\[\theta_{i1} \sim \mathrm{N}(0,1), \qquad
+  \theta_{it} \sim \mathrm{T}_4(\theta_{i(t-1)},\, \sigma), \qquad
+  \sigma \sim \mathrm{HN}(0,3)\]</span></p>
+<p>The Student’s <em>t</em> with <strong>4 degrees of freedom</strong> has heavier tails than the Normal:</p>
+<ul>
+<li>During <strong>stability</strong> → behaves like the dynamic model (efficient, smooth)</li>
+<li>During <strong>shocks</strong> → the heavy tails permit large jumps without over-smoothing</li>
+</ul>
+<p>The model retains temporal structure while accommodating extreme values (“outliers” = shocks).</p>
+<blockquote class="blockquote">
+<p>This is equivalent to the standard dynamic model in the absence of volatility, and outperforms it when volatility is present.</p>
+</blockquote>
+<hr>
+</section>
+<section id="simulation-design" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-design">Simulation Design</h2>
+<p>To compare all three models under <strong>known</strong> data-generating conditions:</p>
+<ol type="1">
+<li>Latent trait <span class="math inline">\(\theta_{i1}\)</span> drawn from <span class="math inline">\(\mathrm{N}(0,1)\)</span></li>
+<li>Trait follows a <strong>random walk</strong> thereafter</li>
+<li>With probability <em>p</em>, a unit experiences a <strong>shock</strong> — <span class="math inline">\(\theta_{it}\)</span> re-drawn from <span class="math inline">\(\mathrm{N}(0,1)\)</span></li>
+<li>Binary manifest indicators generated with error from the true latent trait</li>
+</ol>
+<p>Models evaluated on:</p>
+<ul>
+<li>95% credible interval <strong>coverage</strong> around shocks</li>
+<li>Within-unit <strong>rank correlations</strong></li>
+<li><strong>Cross-validated accuracy</strong></li>
+<li>Differences between adjacent time periods</li>
+</ul>
+<p>Benchmark parameters: shock probability = 0.01, innovation SD = 0.05.</p>
+<hr>
+</section>
+<section id="simulation-results" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-results">Simulation Results</h2>
+<div class="columns">
+<div class="column" style="width:60%;">
+<p><strong>For a stable unit (no shock):</strong></p>
+<ul>
+<li>Static: wide, wandering intervals — <em>inefficient</em></li>
+<li>Dynamic &amp; Robust: tight, well-centred intervals — <em>equally good</em></li>
+</ul>
+<p><strong>For a unit experiencing a shock (period 15):</strong></p>
+<ul>
+<li>Static: captures the true value but with very wide intervals</li>
+<li>Dynamic: <strong>over-smooths</strong> the jump; misses the true value for several periods</li>
+<li>Robust: tight intervals that <strong>rapidly adapt</strong> to the new level</li>
+</ul>
+<p><strong>Key finding:</strong> The robust model is never worse than the dynamic model, and is substantially better when shocks occur.</p>
+</div><div class="column" style="width:40%;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/KF19-PA.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Model accuracy in time surrounding shocks. The dynamic model (green) dips sharply at <em>t</em> = 0; the robust model (orange) is substantially better calibrated.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="application-1-judicial-ideology" class="level2">
+<h2 class="anchored" data-anchor-id="application-1-judicial-ideology">Application 1 — Judicial Ideology</h2>
+<p><strong>Data:</strong> US Supreme Court votes, 1937–2015 (Martin &amp; Quinn 2002)</p>
+<ul>
+<li>Items = individual justice votes (affirm/overturn)</li>
+<li>Original model used a dynamic prior</li>
+</ul>
+<p><strong>Posterior predictive accuracy</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Correct Predictions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Dynamic</td>
+<td>72.77%</td>
+</tr>
+<tr class="even">
+<td>Robust</td>
+<td><strong>72.95%</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>WAIC</strong> (lower = better fit)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>WAIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Dynamic</td>
+<td>46,852</td>
+</tr>
+<tr class="even">
+<td>Robust</td>
+<td><strong>46,647</strong> (Δ = 205, SE = 15.6)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Substantive finding:</strong> The robust model detects a sudden shift in Rehnquist’s voting in 1987— his first year as Chief Justice—consistent with strategic incentive changes. The dynamic model smooths this over and misses it entirely.</p>
+<hr>
+</section>
+<section id="application-2-democracy" class="level2">
+<h2 class="anchored" data-anchor-id="application-2-democracy">Application 2 — Democracy</h2>
+<p><strong>Data:</strong> Country-year democracy estimates, 1950–2008 (Pemstein, Meserve &amp; Melton 2010)</p>
+<ul>
+<li>10 ordinal indicators (Polity, Freedom House, Polyarchy, Bollen, Vanhanen, …)</li>
+<li>Original model used a <em>static</em> prior</li>
+</ul>
+<p><strong>WAIC comparison</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>WAIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Static</td>
+<td>93,267</td>
+</tr>
+<tr class="even">
+<td>Dynamic</td>
+<td>79,237</td>
+</tr>
+<tr class="odd">
+<td>Robust</td>
+<td><strong>65,082</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Substantive findings</strong></p>
+<ul>
+<li><strong>Philippines:</strong> Robust model clearly identifies the 1972 imposition of martial law under Marcos and the subsequent recovery after 1981 and 1987 — the dynamic model anticipates these changes too early and underestimates the abruptness.</li>
+<li><strong>Afghanistan:</strong> Only the robust model captures the <em>short-lived</em> Saur Revolution in 1978 (quickly followed by the Soviet invasion in 1979) — invisible in the dynamic and static models.</li>
+</ul>
+<hr>
+</section>
+<section id="discussion-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="discussion-takeaways">Discussion &amp; Takeaways</h2>
+<p><strong>The robust dynamic model is a better default when:</strong></p>
+<ul>
+<li>The latent trait is subject to punctuated equilibria or sudden regime change</li>
+<li>Researchers want efficiency <em>and</em> the ability to detect rapid shifts</li>
+<li>The phenomenon of interest includes institutional collapse, coups, or electoral shocks</li>
+</ul>
+<p><strong>Practical recommendations</strong></p>
+<ol type="1">
+<li>Estimate both dynamic and robust models; compare with WAIC and posterior predictive checks</li>
+<li>Visually inspect well-known historical cases as a validity check</li>
+<li>Estimate <span class="math inline">\(\sigma^2\)</span> directly from data when possible; sensitivity-test fixed values</li>
+<li>Be cautious when <span class="math inline">\(\sigma^2 \to 0\)</span>: the robust model may artificially detect shocks</li>
+</ol>
+<p><strong>Limitations &amp; future work</strong></p>
+<ul>
+<li>Change-point models, mixture models, and continuous-time latent variable models are complementary alternatives worth exploring</li>
+<li>Causal explanation of detected shocks remains outside the scope of measurement models</li>
+</ul>
+<hr>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Static</th>
+<th>Dynamic</th>
+<th><strong>Robust</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Models temporal structure</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Efficient (tight intervals)</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Handles sudden shocks</td>
+<td>✅</td>
+<td>❌</td>
+<td><strong>✅</strong></td>
+</tr>
+<tr class="even">
+<td>Unbiased near shocks</td>
+<td>✅</td>
+<td>❌</td>
+<td><strong>✅</strong></td>
+</tr>
+<tr class="odd">
+<td>Fit (WAIC — democracy)</td>
+<td>worst</td>
+<td>middle</td>
+<td><strong>best</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote class="blockquote">
+<p>Replacing the Normal transition prior with a Student’s <em>t</em>(4) distribution is a simple, theoretically motivated change that substantially improves latent variable estimates for politically volatile phenomena— <strong>at no cost when the world is stable.</strong></p>
+</blockquote>
+<p><em>Replication code &amp; data:</em> <a href="https://doi.org/10.7910/DVN/SSLCFF" class="uri">https://doi.org/10.7910/DVN/SSLCFF</a></p>
 
 
 </section>
