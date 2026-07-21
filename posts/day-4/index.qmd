@@ -4,12 +4,12 @@ author: "Robert W. Walker"
 date: "07/23/2026"
 categories: [time series, code, analysis]
 image: "image.png"
-draft: true
 ---
 
 ## Slides
 
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/)
+- [A reveal presentation without increments](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/index-NI.html)
 
 ## A replication
 

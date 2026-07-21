@@ -4,12 +4,13 @@ author: "Robert W. Walker"
 date: "07/21/2026"
 categories: [time series, code, analysis]
 image: "image1.png"
-draft: true
 ---
 
 ## Slides
 
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day2/)
+- [A reveal presentation without increments](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day2/index-NI.html)
+
 
 ## Simulating ARIMA processes
 

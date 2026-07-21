@@ -4,16 +4,16 @@ author: "Robert W. Walker"
 date: "07/22/2026"
 categories: [time series, code, analysis]
 image: "image.png"
-draft: true
 ---
 
 ## Slides
 
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day3/)
+- [A reveal presentation without increment](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day3/index-NI.html)
 
 ## An Arima Simulator
 
-[On the web](https://essssda25-2w.netlify.app/day-3/arimasim.html)
+[On the web](https://robertwwalker.github.io/ESSSSDA26-2J/day-3/arimasim.html)
 
 ## Dynamic Regression
 
