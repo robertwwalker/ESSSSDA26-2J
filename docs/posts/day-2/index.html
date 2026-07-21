@@ -306,7 +306,9 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#slides" id="toc-slides" class="nav-link active" data-scroll-target="#slides">Slides</a></li>
+  <li><a href="#the-day-plan" id="toc-the-day-plan" class="nav-link active" data-scroll-target="#the-day-plan">The Day Plan</a>
+  <ul class="collapse">
+  <li><a href="#slides" id="toc-slides" class="nav-link" data-scroll-target="#slides">Slides</a></li>
   <li><a href="#simulating-arima-processes" id="toc-simulating-arima-processes" class="nav-link" data-scroll-target="#simulating-arima-processes">Simulating ARIMA processes</a></li>
   <li><a href="#nonsense-regressions-of-i1-series" id="toc-nonsense-regressions-of-i1-series" class="nav-link" data-scroll-target="#nonsense-regressions-of-i1-series">Nonsense Regressions of I(1) Series</a></li>
   <li><a href="#an-example-of-time-series-troubles" id="toc-an-example-of-time-series-troubles" class="nav-link" data-scroll-target="#an-example-of-time-series-troubles">An Example of Time Series Troubles</a></li>
@@ -319,6 +321,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#seasonal" id="toc-seasonal" class="nav-link" data-scroll-target="#seasonal">Seasonal</a></li>
   <li><a href="#spurious-regressions" id="toc-spurious-regressions" class="nav-link" data-scroll-target="#spurious-regressions">Spurious Regressions</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -329,6 +332,20 @@ window.Quarto = {
 
 
 
+<section id="the-day-plan" class="level1">
+<h1>The Day Plan</h1>
+<ul>
+<li>A bit on Berk and Freedman.<br>
+</li>
+<li><a href="https://robertwwalker.github.io/ESSSSDA26-2J/posts/xtsum/">Panel data summary.</a>.<br>
+</li>
+<li>Today’s slides.<br>
+</li>
+<li><a href="https://robertwwalker.github.io/ESSSSDA26-2J/posts/EffSampSize/">Effective Sample Size</a></li>
+<li><a href="http://robertwwalker.github.io/ESSSSDA26-2J/posts/day-3/arimasim.html">A <code>webr</code> simulation tool. We also have R and stata files on box.</a><br>
+</li>
+<li><a href="https://robertwwalker.github.io/ESSSSDA26-2J/posts/welcome/CharacteristicRoots.html">On Characteristic Roots</a></li>
+</ul>
 <section id="slides" class="level2">
 <h2 class="anchored" data-anchor-id="slides">Slides</h2>
 <ul>
@@ -471,7 +488,7 @@ Attaching package: 'magrittr'</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 FALSE  TRUE 
-  743   257 </code></pre>
+  775   225 </code></pre>
 </div>
 </div>
 <p>The above table should show about 950 TRUE and 50 FALSE but because each is trended and they share variation from trend, the actual frequency of rejecting the claim of no relationship is far more common than 5%.</p>
@@ -744,6 +761,7 @@ table((beta.ts&lt;0.05))</code></pre>
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

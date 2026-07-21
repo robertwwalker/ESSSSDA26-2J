@@ -6,6 +6,16 @@ categories: [time series, code, analysis]
 image: "image1.png"
 ---
 
+# The Day Plan
+
+- A bit on Berk and Freedman.  
+- [Panel data summary.](https://robertwwalker.github.io/ESSSSDA26-2J/posts/xtsum/).   
+- Today's slides.  
+- [Effective Sample Size](https://robertwwalker.github.io/ESSSSDA26-2J/posts/EffSampSize/)
+- [A `webr` simulation tool. We also have R and stata files on box.](http://robertwwalker.github.io/ESSSSDA26-2J/posts/day-3/arimasim.html)   
+- [On Characteristic Roots](https://robertwwalker.github.io/ESSSSDA26-2J/posts/welcome/CharacteristicRoots.html)
+
+
 ## Slides
 
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day2/)

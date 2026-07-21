@@ -1,10 +1,12 @@
 ---
-title: "Day 1: xtsum equivalents"
+title: "xtsum equivalents"
 author: "Robert W. Walker"
 date: "07/20/2026"
 categories: [panel data, code, analysis]
 image: "image.jpg"
 ---
+
+This has been implemented in a host of user libraries, e.g. [this](https://github.com/Macosso/xtsum)
 
 ## R Equivalents to Stata's `xtsum`
 
