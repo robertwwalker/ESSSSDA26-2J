@@ -44,3 +44,55 @@ $$
 
 $$\sigma^2_{t} = w + \underbrace{\Sigma_{i=1}^{q} a_i e^{2}_{t-i}}_{(ARCH components)} + \underbrace{\Sigma_{i=1}^{p} B_i \sigma^{2}_{t-i}}_{(GARCH components)}
 $$
+Here's a consolidated reference table. The `rugarch` package covers the widest range of these models in R — I've noted where `fGarch` or other packages offer cleaner alternatives, and flagged the few models with no direct R equivalent.
+
+## Computing: Variance Model Types
+
+| Stata Keyword | Description | R Model Specification (`rugarch::ugarchspec`) | Alt. Package |
+|---|---|---|---|
+| `arch` | ARCH | `variance.model = list(model = "sGARCH", garchOrder = c(q, 0))` | `fGarch::garchFit(~garch(q,0))` |
+| `garch` | GARCH | `variance.model = list(model = "sGARCH", garchOrder = c(p, q))` | `fGarch::garchFit(~garch(p,q))`; `tseries::garch()` |
+| `saarch` | Simple asymmetric ARCH | `variance.model = list(model = "fGARCH", submodel = "AVGARCH")` | — |
+| `tarch` | Threshold ARCH | `variance.model = list(model = "gjrGARCH")` | — |
+| `aarch` | Asymmetric ARCH | `variance.model = list(model = "apARCH")` with power fixed at 2 | `fGarch::garchFit(~aparch(p,q))` |
+| `narch` | Nonlinear ARCH | `variance.model = list(model = "fGARCH", submodel = "NGARCH")` | — |
+| `narchk` | Nonlinear ARCH with single shift | `variance.model = list(model = "fGARCH", submodel = "NAGARCH")` | — |
+| `abarch` | Absolute value ARCH | `variance.model = list(model = "fGARCH", submodel = "AVGARCH")` | — |
+| `atarch` | Absolute threshold ARCH | `variance.model = list(model = "fGARCH", submodel = "TGARCH")` | — |
+| `sdgarch` | Lags of $\sigma_t$ | `variance.model = list(model = "fGARCH", submodel = "TGARCH")` | — |
+| `earch` | News terms — Nelson (1991) EGARCH | `variance.model = list(model = "eGARCH")` | — |
+| `egarch` | Lags of $\ln(\sigma_t^2)$ | `variance.model = list(model = "eGARCH")` | — |
+| `parch` | Power ARCH | `variance.model = list(model = "apARCH")` with `η = 0` (no asymmetry) | `fGarch::garchFit(~aparch(p,q))` |
+| `tparch` | Threshold power ARCH | `variance.model = list(model = "apARCH")` with GJR-type asymmetry | — |
+| `aparch` | Asymmetric power ARCH | `variance.model = list(model = "apARCH")` | `fGarch::garchFit(~aparch(p,q))` |
+| `nparch` | Nonlinear power ARCH | No direct equivalent; closest: `fGARCH` submodel `"NGARCH"` | — |
+| `nparchk` | Nonlinear power ARCH with single shift | No direct equivalent in standard R packages | — |
+| `pgarch` | Power GARCH | `variance.model = list(model = "apARCH")` (includes lagged power variance terms) | — |
+
+---
+
+### Model Options
+
+| Stata Option | Description | R Equivalent |
+|---|---|---|
+| `archm` | ARCH-in-mean term in mean equation | `mean.model = list(archm = TRUE, archpow = 2)` — set `archpow = 1` for $\sigma_t$ instead of $\sigma_t^2$ |
+| `arima` | ARIMA(p,d,q) for mean equation | `mean.model = list(armaOrder = c(p, q))` for the ARMA part; integrate the series manually beforehand with `diff()` for the *d* component |
+| `het` | Include regressors in conditional variance | `variance.model = list(external.regressors = X)` where `X` is a `T × k` matrix |
+
+---
+
+**A note on workflow.** In R, `ugarchspec()` builds the model specification and `ugarchfit()` estimates it:
+
+```r
+library(rugarch)
+
+spec <- ugarchspec(
+  variance.model = list(model = "gjrGARCH", garchOrder = c(1, 1)),
+  mean.model     = list(armaOrder = c(1, 0), archm = FALSE),
+  distribution.model = "norm"
+)
+
+fit <- ugarchfit(spec, data = y)
+```
+
+The key difference from Stata is that Stata's `arch` command lets you mix components additively (e.g. combine `garch` and `tarch` terms in one call), whereas `rugarch` requires you to select a single named model family that bundles the equivalent terms together.

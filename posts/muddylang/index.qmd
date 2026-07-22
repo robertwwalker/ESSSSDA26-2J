@@ -1,5 +1,5 @@
 ---
-title: "Muddy ARIMA language"
+title: "Muddy ARIMA language and Estimation of ARIMA Models"
 author: "Robert W. Walker"
 date: "07/20/2026"
 categories: [panel data, code, analysis]
@@ -184,7 +184,7 @@ The Expert Modeler identifies and estimates transfer function models automatical
 - **Identification sensitivity**: CCF-based order identification is sensitive to sample size; small samples make $(r,s,b)$ selection unreliable.
 - **Noise–input separation**: the key innovation of prewhitening is only valid if the prewhitening filter is correctly identified; mis-specification propagates through the procedure.
 
-
+  
 ## Stata and Box-Jenkins Transfer Function Models
 
 Stata has **no dedicated transfer function command**. The question often arises as to whether one can estimate a transfer function model using Stata. While Stata does not currently have a convenience command for doing so, estimating such a model can be accomplished quite easily using Stata's `arima` command.
