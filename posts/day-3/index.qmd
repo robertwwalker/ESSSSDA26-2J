@@ -15,6 +15,7 @@ image: "image.png"
 
 [On the web](https://robertwwalker.github.io/ESSSSDA26-2J/day-3/arimasim.html)
 
+
 ## Dynamic Regression
 
 Regression techniques can be reexamined through the lens of dynamic linear models and systems of linear equations.  Whether autoregressive distributed lag models or VAR systems and structural time series, regression approaches to time series almost inevitably culminate in thinking about causation as conceived by Clive Granger -- Granger causality.

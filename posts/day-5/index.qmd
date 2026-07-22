@@ -4,7 +4,6 @@ author: "Robert W. Walker"
 date: "07/24/2026"
 categories: [time series, code, analysis]
 image: "image.jpg"
-draft: true
 ---
 
 ## Slides
