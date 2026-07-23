@@ -924,7 +924,7 @@ Figure&nbsp;4: Logged Iraq War casualties over time.
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="co"># In R, we pre-compute each transformed column explicitly.</span></span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>blair <span class="ot">&lt;-</span> blair <span class="sc">%&gt;%</span></span>
 <span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">d_appd         =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(appd)),      <span class="co"># d.appd  — dependent variable</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">d_app         =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(app)),      <span class="co"># d.appd  — dependent variable</span></span>
 <span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">d_labecman     =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(labecman)),  <span class="co"># d.labecman</span></span>
 <span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">L_ecm_labecman =</span> <span class="fu">lag</span>(ecm_labecman, <span class="dv">1</span>),  <span class="co"># L.ecm_labecman (error correction term)</span></span>
 <span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">d_casl         =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(casl)),      <span class="co"># D.casl (intermediate)</span></span>
@@ -955,7 +955,7 @@ Figure&nbsp;4: Logged Iraq War casualties over time.
 <div id="tabset-14-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-14-1-tab">
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>ecm_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(</span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  d_appd <span class="sc">~</span> d_labecman <span class="sc">+</span> L_ecm_labecman <span class="sc">+</span> v911d <span class="sc">+</span> petrold <span class="sc">+</span> L2D_casl,</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  d_app <span class="sc">~</span> d_labecman <span class="sc">+</span> L_ecm_labecman <span class="sc">+</span> v911d <span class="sc">+</span> petrold <span class="sc">+</span> L2D_casl,</span>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> blair</span>
 <span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a></span>
@@ -963,28 +963,28 @@ Figure&nbsp;4: Logged Iraq War casualties over time.
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
-lm(formula = d_appd ~ d_labecman + L_ecm_labecman + v911d + petrold + 
+lm(formula = d_app ~ d_labecman + L_ecm_labecman + v911d + petrold + 
     L2D_casl, data = blair)
 
 Residuals:
-     Min       1Q   Median       3Q      Max 
--12.7475  -3.3181   0.0247   2.9801  13.7652 
+    Min      1Q  Median      3Q     Max 
+-9.1334 -2.1822  0.0344  1.7863 12.1770 
 
 Coefficients:
-                Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)      0.01473    0.55347   0.027  0.97882    
-d_labecman      -0.01067    0.14772  -0.072  0.94256    
-L_ecm_labecman  -0.24398    0.08409  -2.901  0.00464 ** 
-v911d           18.31781    3.89408   4.704 8.85e-06 ***
-petrold        -17.47232    4.14539  -4.215 5.79e-05 ***
-L2D_casl        -2.96452    1.67475  -1.770  0.07998 .  
+               Estimate Std. Error t value Pr(&gt;|t|)   
+(Intercept)    -0.24650    0.38719  -0.637  0.52592   
+d_labecman      0.34247    0.10334   3.314  0.00131 **
+L_ecm_labecman -0.14981    0.05883  -2.547  0.01252 * 
+v911d           9.14158    2.72413   3.356  0.00115 **
+petrold        -5.62531    2.89994  -1.940  0.05543 . 
+L2D_casl       -1.95711    1.17158  -1.670  0.09819 . 
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 5.448 on 93 degrees of freedom
+Residual standard error: 3.811 on 93 degrees of freedom
   (3 observations deleted due to missingness)
-Multiple R-squared:  0.3953,    Adjusted R-squared:  0.3628 
-F-statistic: 12.16 on 5 and 93 DF,  p-value: 4.503e-09</code></pre>
+Multiple R-squared:  0.3263,    Adjusted R-squared:  0.2901 
+F-statistic:  9.01 on 5 and 93 DF,  p-value: 5.198e-07</code></pre>
 </div>
 </div>
 </div>

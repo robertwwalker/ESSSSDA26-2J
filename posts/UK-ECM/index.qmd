@@ -529,7 +529,7 @@ variable before passing it to `lm()`.
 # In R, we pre-compute each transformed column explicitly.
 blair <- blair %>%
   mutate(
-    d_appd         = c(NA, diff(appd)),      # d.appd  — dependent variable
+    d_app         = c(NA, diff(app)),      # d.appd  — dependent variable
     d_labecman     = c(NA, diff(labecman)),  # d.labecman
     L_ecm_labecman = lag(ecm_labecman, 1),  # L.ecm_labecman (error correction term)
     d_casl         = c(NA, diff(casl)),      # D.casl (intermediate)
@@ -564,7 +564,7 @@ blair <- blair %>%
 #| label: ecm-model
 
 ecm_model <- lm(
-  d_appd ~ d_labecman + L_ecm_labecman + v911d + petrold + L2D_casl,
+  d_app ~ d_labecman + L_ecm_labecman + v911d + petrold + L2D_casl,
   data = blair
 )
 
