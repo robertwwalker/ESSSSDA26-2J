@@ -1,0 +1,15 @@
+{
+  "hash": "937343dddf1d96341319eb8257061a24",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Long-Run Effects in an ARDL(1,1) Model\"\nauthor: \"Robert W. Walker\"\ndate: \"07/23/2026\"\ncategories: [panel data, code, analysis]\nimage: \"image.png\"\n---\n\n## The model\n\nAn autoregressive distributed lag model of order (1,1) takes the form\n\n$$\ny_t = \\alpha + \\beta_0 x_t + \\beta_1 x_{t-1} + \\gamma y_{t-1} + \\varepsilon_t\n$$\n\nwhere $\\beta_0$ and $\\beta_1$ capture the immediate and one-period lagged effects of $x$ on $y$, and $\\gamma$ is the autoregressive coefficient governing the persistence of $y$.\n\n## Derivation\n\nIn the long run the system settles to a steady state in which $y$ and $x$ no longer change between periods. Imposing $y_t = y_{t-1} = \\bar{y}$, $x_t = x_{t-1} = \\bar{x}$, and $\\mathrm{E}[\\varepsilon_t] = 0$ gives\n\n$$\n\\bar{y} = \\alpha + \\beta_0 \\bar{x} + \\beta_1 \\bar{x} + \\gamma \\bar{y}\n$$\n\nBecause $x_t$ and $x_{t-1}$ both equal $\\bar{x}$, the two $x$ terms combine. Collecting $\\bar{y}$ on the left and factoring:\n\n$$\n\\bar{y}(1 - \\gamma) = \\alpha + (\\beta_0 + \\beta_1)\\bar{x}\n$$\n\nDividing through by $(1 - \\gamma)$, which requires the stability condition $|\\gamma| < 1$:\n\n$$\n\\bar{y} = \\frac{\\alpha}{1 - \\gamma} + \\frac{\\beta_0 + \\beta_1}{1 - \\gamma} \\cdot \\bar{x}\n$$\n\n## Long-run multiplier\n\nThe coefficient on $\\bar{x}$ is the long-run effect of a one-unit permanent change in $x$ on $y$:\n\n$$\n\\boxed{\\frac{\\partial \\bar{y}}{\\partial \\bar{x}} = \\frac{\\beta_0 + \\beta_1}{1 - \\gamma}}\n$$\n\nThe numerator sums all direct effects of $x$ — immediate and lagged. The denominator amplifies this through $y$'s own persistence: as $\\gamma \\to 1$ the multiplier grows without bound.\n\n## Numerical example\n\n\n::: {#tbl-multiplier .cell tbl-cap='Long-run multiplier for selected values of γ (β₀ = 0.4, β₁ = 0.3)'}\n\n```{.r .cell-code}\nlr_mult <- function(beta0, beta1, gamma) (beta0 + beta1) / (1 - gamma)\n\ngammas  <- c(-0.5, 0.0, 0.25, 0.50, 0.75, 0.90)\n\nknitr::kable(\n  data.frame(gamma = gammas, lr = lr_mult(0.4, 0.3, gammas)),\n  digits    = 3,\n  col.names = c(\"γ\", \"Long-run multiplier\"),\n  align     = \"cc\"\n)\n```\n\n::: {.cell-output-display}\n\n\n|   γ   | Long-run multiplier |\n|:-----:|:-------------------:|\n| -0.50 |        0.467        |\n| 0.00  |        0.700        |\n| 0.25  |        0.933        |\n| 0.50  |        1.400        |\n| 0.75  |        2.800        |\n| 0.90  |        7.000        |\n\n\n:::\n:::\n\n\nWith $\\beta_0 + \\beta_1 = 0.7$ fixed, the multiplier rises from\n0.47 at $\\gamma = -0.5$ to\n7 at $\\gamma = 0.9$, illustrating\nthe amplification role of the autoregressive term.\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

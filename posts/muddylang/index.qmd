@@ -1,7 +1,7 @@
 ---
 title: "Muddy ARIMA language and Estimation of ARIMA Models"
 author: "Robert W. Walker"
-date: "07/20/2026"
+date: "07/22/2026"
 categories: [panel data, code, analysis]
 image: "image.jpg"
 ---

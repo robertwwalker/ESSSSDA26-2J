@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Robert W. Walker">
+<meta name="dcterms.date" content="2026-07-23">
+
+<title>Stationary ARDL(1,1) as Cointegration? – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-01c21dad8388d127029aa6ec675015ac.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">ESSSSDA 2026 2J: Time Series and Collections of Them</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../posts/welcome/index.html" aria-current="page"> 
+<span class="menu-text">Welcome!</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/robertwwalker/ESSSSDA26-2J/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/robertwwalker/Essex-Data/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Stationary ARDL(1,1) as Cointegration?</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Stationary ARDL(1,1) as Cointegration?</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">panel data</div>
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">analysis</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Robert W. Walker </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 23, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+      <a href="../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/welcome/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to 2J!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Week 1</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-1/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 1: Time, Decomposition, and Summaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-2/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 2: Time Series, Stationarity, and ARIMA Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-3/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 3: Dynamic Linear, ADL Models, and VARs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-4/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 4: Cointegration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-5/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 5: Equation Balance to Wrap Up Week 1</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Week 2</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-deboef-keele-argument" id="toc-the-deboef-keele-argument" class="nav-link active" data-scroll-target="#the-deboef-keele-argument">The DeBoef-Keele Argument</a></li>
+  <li><a href="#the-grant-lebo-response" id="toc-the-grant-lebo-response" class="nav-link" data-scroll-target="#the-grant-lebo-response">The Grant-Lebo Response</a></li>
+  <li><a href="#what-the-reparametrization-actually-buys-you" id="toc-what-the-reparametrization-actually-buys-you" class="nav-link" data-scroll-target="#what-the-reparametrization-actually-buys-you">What the Reparametrization Actually Buys You</a></li>
+  <li><a href="#the-recent-history" id="toc-the-recent-history" class="nav-link" data-scroll-target="#the-recent-history">The Recent History</a></li>
+  <li><a href="#on-that-alternative" id="toc-on-that-alternative" class="nav-link" data-scroll-target="#on-that-alternative">On that Alternative</a>
+  <ul class="collapse">
+  <li><a href="#implementation-guide-webb-linn-lebo-2020" id="toc-implementation-guide-webb-linn-lebo-2020" class="nav-link" data-scroll-target="#implementation-guide-webb-linn-lebo-2020">Implementation Guide: Webb, Linn &amp; Lebo (2020)</a>
+  <ul class="collapse">
+  <li><a href="#the-core-problem-this-solves" id="toc-the-core-problem-this-solves" class="nav-link" data-scroll-target="#the-core-problem-this-solves">The Core Problem This Solves</a></li>
+  <li><a href="#why-the-standard-gecm-error-correction-coefficient-fails" id="toc-why-the-standard-gecm-error-correction-coefficient-fails" class="nav-link" data-scroll-target="#why-the-standard-gecm-error-correction-coefficient-fails">Why the Standard GECM Error Correction Coefficient Fails</a></li>
+  <li><a href="#the-key-estimand-the-long-run-multiplier-lrm" id="toc-the-key-estimand-the-long-run-multiplier-lrm" class="nav-link" data-scroll-target="#the-key-estimand-the-long-run-multiplier-lrm">The Key Estimand: The Long-Run Multiplier (LRM)</a></li>
+  <li><a href="#step-by-step-implementation" id="toc-step-by-step-implementation" class="nav-link" data-scroll-target="#step-by-step-implementation">Step-by-Step Implementation</a></li>
+  <li><a href="#what-this-procedure-does-not-solve" id="toc-what-this-procedure-does-not-solve" class="nav-link" data-scroll-target="#what-this-procedure-does-not-solve">What This Procedure Does Not Solve</a></li>
+  <li><a href="#the-papers-revised-blueprint-in-summary" id="toc-the-papers-revised-blueprint-in-summary" class="nav-link" data-scroll-target="#the-papers-revised-blueprint-in-summary">The Paper’s Revised Blueprint in Summary</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<p>This is a really substantive methodological debate. Let me work through the core tension you’re identifying.</p>
+<section id="the-deboef-keele-argument" class="level2">
+<h2 class="anchored" data-anchor-id="the-deboef-keele-argument">The DeBoef-Keele Argument</h2>
+<p>Their 2008 AJPS piece argues that the ECM is just an algebraic reparametrization of an ARDL(1,1):</p>
+<p>Taking: &gt; y_t = α + β₀x_t + β₁x_{t-1} + γy_{t-1} + ε_t</p>
+<p>Subtract y_{t-1} from both sides and add/subtract β₀x_{t-1}:</p>
+<blockquote class="blockquote">
+<p>Δy_t = α + β₀Δx_t + (β₀+β₁)x_{t-1} + (γ−1)y_{t-1} + ε_t</p>
+</blockquote>
+<p>This is a pure algebraic identity, they claim the reparametrization is always valid regardless of the integration order of x and y. That is not really up for debate.</p>
+<hr>
+<p>The problem is that <strong>algebraic equivalence ≠ interpretive equivalence</strong>. The ECM framework derives its theoretical content from the Granger Representation Theorem, which ties error correction <em>specifically</em> to cointegration between I(1) series. When you strip out that foundation, several things unravel:</p>
+<p><strong>1. The “error correction” coefficient is trivially negative for any stationary process</strong></p>
+<p>For I(0) data, a stable AR(1) requires |γ| &lt; 1 by definition, so (γ−1) is <em>always</em> negative. You haven’t discovered error correction — you’ve just confirmed stationarity. Every stationary autoregressive process will produce a negative “error correction” coefficient when written in ECM form, making the coefficient’s sign uninformative.</p>
+<p><strong>2. The long-run multiplier loses its theoretical referent</strong></p>
+<p>With cointegrated I(1) data, (β₀+β₁)/(1−γ) estimates a genuine cointegrating vector — a stable attractor in the Granger sense, with super-consistent estimation. With I(0) data, it’s just the steady-state of an ADL model. These are not the same concept, even if they share notation. The former describes a persistent equilibrium relationship the data are “pulled toward”; the latter is just the unconditional mean relationship.</p>
+<p><strong>3. The disequilibrium concept doesn’t transfer</strong></p>
+<p>The whole substantive story of an ECM — that agents/systems accumulate disequilibrium errors that they subsequently correct — requires that disequilibrium be persistent enough to accumulate. That’s precisely what integration (and cointegration) provides. With I(0) data, the series are already reverting to their means; the “error” at t−1 isn’t a substantively meaningful accumulated deviation, it’s just the lagged residual of a stationary process.</p>
+<p><strong>4. The bounds testing alternative they ignore</strong></p>
+<p>Pesaran, Shin &amp; Smith (2001) actually provides a principled framework for cases where integration order is uncertain — the ARDL bounds test. It’s more honest about what’s being tested. DeBoef &amp; Keele’s approach tends to paper over this uncertainty rather than confront it.</p>
+<hr>
+</section>
+<section id="the-grant-lebo-response" class="level2">
+<h2 class="anchored" data-anchor-id="the-grant-lebo-response">The Grant-Lebo Response</h2>
+<p>Grant and Lebo (2016) made similar criticisms with simulation evidence, showing that applying ECMs to stationary data can produce misleading inference — particularly that researchers may interpret the ECM coefficient as substantively meaningful “adjustment speed” when it’s largely just reflecting the degree of autocorrelation in a stationary series.</p>
+<hr>
+</section>
+<section id="what-the-reparametrization-actually-buys-you" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-reparametrization-actually-buys-you">What the Reparametrization Actually Buys You</h2>
+<p>There’s a narrower, more defensible version of the DeBoef-Keele position: the ECM form of an ARDL can be a convenient way to <strong>separately estimate short-run and long-run effects</strong> in a single model, and this <em>parameterization</em> can be useful for presentation even with stationary data. That’s true. But it requires being explicit that you’re not making claims about error correction in the Granger sense — you’re just reporting the implied steady-state relationship alongside the dynamics.</p>
+<p>When D&amp;K slide from “this parameterization is useful” to “this is an error correction model with an error correction process,” that’s where the overreach occurs.</p>
+</section>
+<section id="the-recent-history" class="level1">
+<h1>The Recent History</h1>
+<p><strong>The foundational critique pair (2016):</strong></p>
+<p>Grant, Taylor and Matthew J. Lebo. 2016. “Error Correction Methods with Political Time Series.” <em>Political Analysis</em> 24(1): 3–30. This is the core paper raising concerns about GECM application in political science and introducing PSS bounds testing to that audience.</p>
+<p>Lebo, Matthew and Taylor Grant. 2016. “Equation Balance and Dynamic Political Modeling.” <em>Political Analysis</em> 24(1). The companion piece in the same issue, focusing on the equation balance problem that we will examine tomorrow.</p>
+<p><strong>The Enns et al.&nbsp;response and Lebo’s rejoinder (2017):</strong></p>
+<p>Lebo, Matthew and Patrick Kraft. 2017. “The General Error Correction Model in Practice.” <em>Research and Politics</em> 4(2): 2053168017713059. This is a direct response to Enns, Kelly, Masaki, and Wohlfarth’s defence of the GECM. Lebo and Kraft demonstrate the crucial differences between having <em>evidence</em> of a unit root from Dickey-Fuller tests versus actually having a unit root, using simulations to show how overblown findings of error correction await the uncareful researcher.</p>
+<p><strong>The LRM bounds procedure (2019):</strong></p>
+<p>Webb, Clayton, Suzanna Linn, and Matthew Lebo. 2019. “A Bounds Approach to Inference Using the Long Run Multiplier.” <em>Political Analysis</em> 27(3): 281–301. This is the key methodological contribution. The paper proposes the long run multiplier (LRM) test statistic as a means of testing for long-run relationships without needing to know whether the series are stationary or unit roots — directly addressing the limitation in PSS (2001) that the dependent variable still had to be treated as definitively I(1).</p>
+<p><strong>The extension (2020):</strong></p>
+<p>Webb, Clayton, Suzanna Linn, and Matthew Lebo. 2020. “Beyond the Unit Root Question: Uncertainty and Inference.” <em>American Journal of Political Science</em> 64(2): 275–292. This extends the WLL bounds procedure, showing how it can be applied to any fully specified regression model and presenting a general set of critical value bounds for applied work.</p>
+<hr>
+<p>The intellectual arc is worth noting: the 2016 papers critique the misuse of the GECM; the 2017 Lebo-Kraft paper battles out the unit root testing uncertainty problem in practice; and the 2019/2020 Webb-Linn-Lebo papers provide a positive alternative that sidesteps the sharp I(0)/I(1) classification requirement entirely — which is precisely the problem that makes the DeBoef-Keele “it’s just a reparametrization” argument so dangerous in applied work.</p>
+</section>
+<section id="on-that-alternative" class="level1">
+<h1>On that Alternative</h1>
+<p>Good — I have the full paper. Here is a detailed implementation guide drawn directly from the text.</p>
+<hr>
+<section id="implementation-guide-webb-linn-lebo-2020" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-guide-webb-linn-lebo-2020">Implementation Guide: Webb, Linn &amp; Lebo (2020)</h2>
+<section id="the-core-problem-this-solves" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-problem-this-solves">The Core Problem This Solves</h3>
+<p>The paper’s starting point is that unit root pretests are unreliable for four compounding reasons: low power (optimal tests correctly reject the unit root null less than 20% of the time with T=50 and ρ=.85); sensitivity to correct specification of the deterministic component Dₜ (trend vs.&nbsp;constant vs.&nbsp;neither); sensitivity to lag length, bandwidth, and truncation choices; and knife-edge categorisation decisions that hinge on chosen significance levels. Since existing methods — GECM, ADL, PSS bounds — all require correct classification of at least the dependent variable, uncertainty in pretesting propagates into false conclusions about long-run relationships. WLL (2020) provides a procedure that bypasses this requirement entirely.</p>
+<hr>
+</section>
+<section id="why-the-standard-gecm-error-correction-coefficient-fails" class="level3">
+<h3 class="anchored" data-anchor-id="why-the-standard-gecm-error-correction-coefficient-fails">Why the Standard GECM Error Correction Coefficient Fails</h3>
+<p>Before implementing, it’s critical to understand the flaw being corrected. In the GECM:</p>
+<blockquote class="blockquote">
+<p>Δyₜ = γ₀ + α₀<em>Δxₜ + α₁</em>yₜ₋₁ + β₁*xₜ₋₁ + eₜ</p>
+</blockquote>
+<p>The error correction coefficient is α₁<em>. The problem is that α₁</em> will be non-zero for <strong>any</strong> stationary y, regardless of whether y is actually related to x. When y is stationary with autocorrelation ρ, α₁* centres on −(1−ρ) — it is just capturing mean reversion. With ρ=0.5, α₁* centres on −0.5; with ρ=0.9, on −0.1. This means you will almost always reject H₀: α₁<em>=0 for stationary series simply because the series is stationary, not because there is a genuine long-run relationship with x. Tests on α₁</em> cannot distinguish between an unconditional stationary equilibrium (y mean-reverts to its own long-run mean regardless of x) and a conditional equilibrium (y’s equilibrium is determined by x). The PSS (2001) approach partially addresses this by providing bounds over the uncertainty in the regressors, but it still assumes the analyst knows y is I(1). WLL (2020) addresses both.</p>
+<hr>
+</section>
+<section id="the-key-estimand-the-long-run-multiplier-lrm" class="level3">
+<h3 class="anchored" data-anchor-id="the-key-estimand-the-long-run-multiplier-lrm">The Key Estimand: The Long-Run Multiplier (LRM)</h3>
+<p>The LRM, λ, is the total effect of a unit change in x on y distributed over time. The critical insight is:</p>
+<ul>
+<li>If both y and x are I(1), λ is only defined and non-zero if there is <strong>cointegration</strong> between them.</li>
+<li>If y is stationary, λ is only non-zero if y’s long-run equilibrium is <strong>conditional on x</strong> (rather than just mean-reverting on its own).</li>
+</ul>
+<p>In either case, λ=0 iff there is no long-run relationship, and λ≠0 iff there is one. This is the test you want, and it is valid regardless of integration order.</p>
+<p><strong>LRM formulas by model:</strong></p>
+<p>From the ADL: <code>λ = (β₀ + β₁) / (1 − γ₁)</code></p>
+<p>From the GECM: <code>λ = −β₁* / α₁*</code></p>
+<p>Note that λ is estimated <em>separately</em> for each regressor, which is an additional advantage over testing α₁* alone — with multiple regressors, rejecting H₀: α₁<em>=0 in the GECM only tells you that y has an LRR with </em>at least one* element of X, without specifying which.</p>
+<hr>
+</section>
+<section id="step-by-step-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-implementation">Step-by-Step Implementation</h3>
+<section id="step-1-model-specification-theory-first" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-model-specification-theory-first">Step 1: Model Specification (Theory-First)</h4>
+<p>Do not begin with unit root tests. Begin with theory. Theory determines which variables belong in the model. Specify a model general enough to encompass your theoretical hypotheses — either an ADL(1,1) or GECM form is fine since they are algebraically equivalent.</p>
+<p><strong>ADL form:</strong> &gt; yₜ = γ₀ + γ₁yₜ₋₁ + β₀xₜ + β₁xₜ₋₁ + εₜ</p>
+<p><strong>GECM form:</strong> &gt; Δyₜ = γ₀ + α₀<em>Δxₜ + α₁</em>yₜ₋₁ + β₁*xₜ₋₁ + eₜ</p>
+<p>If there is a visible downward or upward trend in y, include a trend term. If multiple regressors, include all of them in a single model.</p>
+<p>Check for serial correlation in the residuals (Breusch-Godfrey test). If serial correlation is present, add lagged differences of y or x until it is cleared. The model must be dynamically complete before proceeding.</p>
+</section>
+<section id="step-2-estimate-the-lrm-and-its-standard-error" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-estimate-the-lrm-and-its-standard-error">Step 2: Estimate the LRM and its Standard Error</h4>
+<p>You have two equivalent routes. The Bewley transformation is generally preferred as it gives the LRM and its standard error directly.</p>
+<p><strong>Route A — Delta Method</strong></p>
+<p>Estimate the ADL or GECM by OLS. Compute λ from the formula above. Then use the delta method to propagate uncertainty through the nonlinear ratio. In R, <code>deltaMethod()</code> from the <code>car</code> package handles this. This is what the paper does for the Supreme Court application.</p>
+<p><strong>Route B — Bewley (IV) Transformation (recommended)</strong></p>
+<p>Reparametrise the ADL as:</p>
+<blockquote class="blockquote">
+<p>yₜ = δ₀ − δ₁Δyₜ + λxₜ − φΔxₜ + ηₜ</p>
+</blockquote>
+<p>where λ is now the LRM estimated directly as a coefficient. Because Δyₜ is endogenous (correlated with ηₜ), estimate by instrumental variables using {1, yₜ₋₁, xₜ, xₜ₋₁} as instruments. The coefficient on xₜ is the LRM, and its IV standard error is obtained directly. If a trend is part of the DGP, include it in the Bewley regression as well.</p>
+<p>In R: use <code>ivreg()</code> from the <code>AER</code> or <code>ivreg</code> package. In Stata: use <code>ivregress</code>. The Bewley transformation is what the paper uses for the Labour Party application.</p>
+</section>
+<section id="step-3-compute-the-lrm-t-statistic" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-compute-the-lrm-t-statistic">Step 3: Compute the LRM t-Statistic</h4>
+<p>For each regressor k:</p>
+<blockquote class="blockquote">
+<p>LRM_t,k = λ_k / SE(λ_k)</p>
+</blockquote>
+<p>Take the <strong>absolute value</strong> for comparison with the bounds.</p>
+</section>
+<section id="step-4-look-up-the-critical-value-bounds" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-look-up-the-critical-value-bounds">Step 4: Look Up the Critical Value Bounds</h4>
+<p>Use <strong>Table 2</strong> from the paper, reproduced here for the most common significance level (α=.05):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>T</th>
+<th>k=1</th>
+<th>k=2</th>
+<th>k=3</th>
+<th>k=4</th>
+<th>k=5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>25</td>
+<td>[1.25, 3.79]</td>
+<td>[1.27, 3.72]</td>
+<td>[1.29, 3.68]</td>
+<td>[1.33, 3.57]</td>
+<td>[1.39, 3.50]</td>
+</tr>
+<tr class="even">
+<td>50</td>
+<td>[1.09, 3.72]</td>
+<td>[1.10, 3.68]</td>
+<td>[1.10, 3.64]</td>
+<td>[1.11, 3.57]</td>
+<td>[1.11, 3.52]</td>
+</tr>
+<tr class="odd">
+<td>75</td>
+<td>[1.06, 3.73]</td>
+<td>[1.06, 3.70]</td>
+<td>[1.06, 3.65]</td>
+<td>[1.06, 3.62]</td>
+<td>[1.07, 3.59]</td>
+</tr>
+<tr class="even">
+<td>150</td>
+<td>[1.01, 3.68]</td>
+<td>[1.02, 3.67]</td>
+<td>[1.01, 3.65]</td>
+<td>[1.01, 3.63]</td>
+<td>[1.01, 3.61]</td>
+</tr>
+<tr class="odd">
+<td>500</td>
+<td>[0.99, 3.66]</td>
+<td>[0.99, 3.66]</td>
+<td>[0.99, 3.65]</td>
+<td>[0.99, 3.64]</td>
+<td>[0.99, 3.64]</td>
+</tr>
+<tr class="even">
+<td>1000</td>
+<td>[0.99, 3.62]</td>
+<td>[0.99, 3.62]</td>
+<td>[0.99, 3.62]</td>
+<td>[0.99, 3.61]</td>
+<td>[0.99, 3.62]</td>
+</tr>
+</tbody>
+</table>
+<p>Where T is your sample size and k is the number of independent variables. The table also provides bounds for α=.01 and α=.10. Use the T row closest to your actual sample size.</p>
+<p>Note: The lower bound is the minimum critical value across all possible integration scenarios; the upper bound is the maximum. The zone between them is the region of genuine uncertainty given pretest ambiguity.</p>
+</section>
+<section id="step-5-apply-the-decision-rule" class="level4">
+<h4 class="anchored" data-anchor-id="step-5-apply-the-decision-rule">Step 5: Apply the Decision Rule</h4>
+<p>For each regressor, compare |LRM_t,k| to the bounds [LB, UB]:</p>
+<ul>
+<li><strong>|t| &lt; LB</strong> → <strong>Below.</strong> Fail to reject H₀. Conclude no long-run relationship between xₖ and y, regardless of integration properties.</li>
+<li><strong>LB ≤ |t| ≤ UB</strong> → <strong>Between.</strong> Indeterminate. You cannot draw a firm conclusion about the existence of an LRR without additional knowledge of the univariate properties. The indeterminacy is not a failure of the test — it honestly reflects the pretest uncertainty inherent in your data.</li>
+<li><strong>|t| &gt; UB</strong> → <strong>Beyond.</strong> Reject H₀. Conclude a long-run relationship exists between xₖ and y, with confidence that does not depend on knowing integration properties.</li>
+</ul>
+</section>
+<section id="step-6-classification-optional-and-cautious" class="level4">
+<h4 class="anchored" data-anchor-id="step-6-classification-optional-and-cautious">Step 6: Classification (Optional and Cautious)</h4>
+<p>If the test statistic is beyond the upper bound, you have confirmed a long-run relationship exists, but you <strong>cannot</strong> determine from the LRM test alone whether it is a cointegrating relationship (both I(1)) or a conditional stationary equilibrium (both I(0)). The test is agnostic between these.</p>
+<p>If you wish to classify the type of equilibrium, this requires that you: have a long time series, run a battery of unit root tests (ADF, PP, DF-GLS, KPSS) across multiple lag lengths and Dₜ specifications, obtain consistent results, and have theoretical reasons to expect one property over the other. Do not treat any single test result as definitive. Report the full battery of results and be explicit about which Dₜ specification you are using and why.</p>
+</section>
+<section id="step-7-reporting" class="level4">
+<h4 class="anchored" data-anchor-id="step-7-reporting">Step 7: Reporting</h4>
+<p>The paper recommends reporting:</p>
+<ol type="1">
+<li>The LRM estimate and standard error for each regressor.</li>
+<li>The LRM t-statistic for each regressor.</li>
+<li>The specific bounds used (T, k, α).</li>
+<li>Whether each result falls <strong>Below / Between / Beyond</strong> the bounds.</li>
+<li>If unit root tests are reported at all, report multiple tests across multiple lag lengths and Dₜ specifications — not a single convenient result.</li>
+<li>The Breusch-Godfrey test for residual serial correlation to verify dynamic completeness.</li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="what-this-procedure-does-not-solve" class="level3">
+<h3 class="anchored" data-anchor-id="what-this-procedure-does-not-solve">What This Procedure Does Not Solve</h3>
+<p>WLL (2020) are candid about three limitations:</p>
+<p><strong>Power costs.</strong> The indeterminate zone means some relationships that would be detectable with known integration properties will be inconclusive here. This is the honest price of genuine uncertainty. Applying standard critical values when integration is uncertain is not more powerful — it is just wrong more often.</p>
+<p><strong>Type of equilibrium.</strong> Beyond the upper bound, you know a long-run relationship exists but cannot distinguish cointegration from a conditional stationary equilibrium without further analysis.</p>
+<p><strong>Type II error when y is actually known to be I(0).</strong> If y is genuinely and certainly stationary, using the upper bound as the threshold is more conservative than the standard normal critical value (~1.96) and will correctly reject the null less often than would be appropriate. The authors note the standard approach is still valid when the analyst has genuine certainty about the data properties — the bounds are for the common case where that certainty is lacking.</p>
+<hr>
+</section>
+<section id="the-papers-revised-blueprint-in-summary" class="level3">
+<h3 class="anchored" data-anchor-id="the-papers-revised-blueprint-in-summary">The Paper’s Revised Blueprint in Summary</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Stage</th>
+<th>Instruction</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Theory</strong></td>
+<td>Derive hypotheses about LRRs from substantive theory; select variables on that basis</td>
+</tr>
+<tr class="even">
+<td><strong>Estimation</strong></td>
+<td>Estimate ADL or GECM; verify dynamic completeness via Breusch-Godfrey</td>
+</tr>
+<tr class="odd">
+<td><strong>LRM</strong></td>
+<td>Calculate LRM for each regressor via delta method or Bewley IV</td>
+</tr>
+<tr class="even">
+<td><strong>Inference</strong></td>
+<td>Compare</td>
+</tr>
+<tr class="odd">
+<td><strong>Classification</strong></td>
+<td>Only if genuinely needed; requires long T, consistent battery of tests, and strong theory</td>
+</tr>
+<tr class="even">
+<td><strong>Reporting</strong></td>
+<td>Full battery of any unit root tests used; explicit Dₜ specification; LRM t-statistics against stated bounds</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -11,6 +11,10 @@ image: "image.png"
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/)
 - [A reveal presentation without increments](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/index-NI.html)
 
+- [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-SE/)
+
+
+
 ## A replication
 
 This is an example with an ECM from a model presented by DeBoef and Keele in their excellent paper "Taking Time Seriously: Dynamic Regression." The data come from a paper Gilmour and Wolbrecht.

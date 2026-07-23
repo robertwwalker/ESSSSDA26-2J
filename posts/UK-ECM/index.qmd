@@ -1,0 +1,619 @@
+---
+title: "Error Correction Modelling: Tony Blair Approval Ratings"
+author: "Robert W. Walker"
+date: "07/23/2026"
+categories: [panel data, code, analysis]
+image: "image.png"
+---
+
+
+# Introduction
+
+This document walks through an **Error Correction Model (ECM)** applied to
+Tony Blair's approval ratings. The goal is to understand how approval ratings
+respond to the public's perceptions of Labour's economic management, while
+also accounting for short-run shocks (the 9/11 attacks, the petrol crisis,
+and Iraq War casualties).  The published paper this is drawn from can be found [here.](https://www.cambridge.org/core/journals/american-political-science-review/article/abs/new-models-for-new-labour-the-political-economy-of-labour-party-support-january-1992april-1997/5DD3CA7786230F3C681B3E434543428B)
+
+Each section presents both the **R code** (which is executed to produce the
+output below it) and the equivalent **Stata code** for reference. Stata users
+can follow the same analytical steps using the Stata tab in each section.
+
+## What is an Error Correction Model?
+
+Many political and economic time series are *non-stationary* — they trend,
+drift, and do not return to a fixed mean on their own. Classical regression
+on non-stationary series risks **spurious results**: the model finds a
+relationship simply because both variables happen to move in the same
+direction over time, not because one actually causes the other.
+
+An ECM is designed to handle this problem. It works in two stages:
+
+1. **Cointegration test.** If two non-stationary series share a common
+   long-run equilibrium, they are said to be *cointegrated*. We verify this
+   by regressing one series on the other and checking whether the residuals
+   are stationary.
+
+2. **ECM estimation.** Having established cointegration, we model *changes*
+   in the dependent variable as a function of (a) short-run changes in the
+   predictors and (b) an **error correction term** — the lagged residual from
+   step 1. The error correction term captures how quickly the system adjusts
+   back to its long-run equilibrium after a shock.
+
+In essence, the ECM allows us to separate the short-run dynamics from the
+long-run relationship, while avoiding the pitfalls of regressing
+non-stationary series directly.
+
+---
+
+# Setup
+
+We use five packages. `haven` reads Stata's `.dta` format; `dplyr` handles
+data manipulation; `ggplot2` produces the plots; `tseries` provides the
+Augmented Dickey-Fuller (ADF) test; and `zoo` gives us a convenient monthly
+date class.
+
+In Stata, all commands used in this analysis (`tsset`, `dfuller`, `twoway`,
+`pwcorr`, `reg`, `predict`) are part of the base installation and require no
+imports.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: setup
+
+library(haven)    # read_dta()
+library(dplyr)    # data wrangling
+library(ggplot2)  # plots
+library(tseries)  # adf.test()
+library(zoo)      # as.yearmon() for monthly dates
+```
+
+## Stata
+
+```stata
+* No package loading is required in Stata.
+* All commands used (tsset, dfuller, twoway, pwcorr, reg, predict)
+* are built into Stata's base installation.
+
+* If you do not have the dataset's working directory set already,
+* you can install community-contributed packages with:
+*   ssc install <packagename>
+* None are needed for this analysis.
+```
+
+:::
+
+---
+
+# Data Preparation
+
+## Loading the data
+
+The dataset contains monthly observations of Blair approval ratings and
+related political/economic variables, beginning in June 1997.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: load-data
+
+# Update this path to wherever tonyapp4.dta lives on your machine
+blair <- read_dta("./data/tonyapp4.dta")
+```
+
+## Stata
+
+```stata
+use "tonyapp4.dta", clear
+```
+
+:::
+
+## Creating the time index
+
+Stata's `%tm` (monthly) date format counts months elapsed since January 1960.
+The data begin in June 1997, which is month 450 (12 × 37 + 6 = 450). We
+replicate this mapping in R using `zoo::as.yearmon`, which represents a month
+as a decimal year (e.g. June 1997 = 1997.417).
+
+In Stata, `tsset` declares the dataset as a time series, which activates the
+`d.`, `L.`, and other time-series operators used later in the analysis. R
+does not require an equivalent declaration — lag and difference operations
+are applied directly to vectors.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: time-index
+
+blair <- blair %>%
+  mutate(
+    # Stata's egen counter=fill(0 1 2 3): sequential integers from 0
+    counter   = row_number() - 1,
+    month_num = counter + 450,
+    # Map Stata monthly integer back to a calendar month
+    month     = as.yearmon(1960 + month_num / 12)
+  )
+```
+
+## Stata
+
+```stata
+* Create a sequential counter starting at 0
+egen counter = fill(0 1 2 3)
+
+* Add 450 to put the counter on Stata's %tm scale (months since Jan 1960).
+* 12*37 + 6 = 450 corresponds to June 1997, the first observation.
+gen month = counter + 450
+format month %tm
+
+* Declare the dataset as a monthly time series indexed by 'month'.
+* This activates d. (difference), L. (lag), and other TS operators.
+tsset month
+```
+
+:::
+
+---
+
+# Visualising the Series
+
+## Blair Approval Rating
+
+We first plot the approval series to get a sense of its behaviour over time.
+Visual inspection is always the starting point for time-series analysis —
+trends and structural breaks often reveal themselves immediately.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: fig-approval
+#| fig-cap: "Tony Blair approval ratings, June 1997 onwards."
+
+ggplot(blair, aes(x = as.Date(month), y = app)) +
+  geom_line(colour = "#2c6fad", linewidth = 0.8) +
+  labs(
+    title = "Blair Approval Rating",
+    x     = NULL,
+    y     = "Approval (%)"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Stata
+
+```stata
+label variable app "Blair Approval Rating"
+
+twoway line app month
+```
+
+:::
+
+The series shows a clear downward trend rather than fluctuating around a
+constant mean — an early signal that it may be *non-stationary* (integrated
+of order 1, or I(1)).
+
+## Labour as Best Economic Manager
+
+The key independent variable is the share of respondents who identified Labour
+as the best party to manage the economy (`labecman`).
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: fig-labecman
+#| fig-cap: "Share of respondents identifying Labour as best economic manager."
+
+ggplot(blair, aes(x = as.Date(month), y = labecman)) +
+  geom_line(colour = "#d95f02", linewidth = 0.8) +
+  labs(
+    title = "Labour: Best Economic Manager",
+    x     = NULL,
+    y     = "Share (%)"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Stata
+
+```stata
+label variable labecman "Labour Best Eco Mng"
+
+twoway line labecman month
+```
+
+:::
+
+## Both Series Together
+
+Plotting both series on the same axes allows us to visually assess whether
+they move together — a precondition for cointegration.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: fig-both
+#| fig-cap: "Blair approval and Labour economic management ratings plotted together."
+
+ggplot(blair, aes(x = as.Date(month))) +
+  geom_line(aes(y = app,      colour = "Blair Approval"),
+            linewidth = 0.8) +
+  geom_line(aes(y = labecman, colour = "Labour Best Eco Mng"),
+            linewidth = 0.8) +
+  scale_colour_manual(
+    values = c("Blair Approval"     = "#2c6fad",
+               "Labour Best Eco Mng" = "#d95f02")
+  ) +
+  labs(
+    title  = "Blair Approval & Labour Economic Management",
+    x      = NULL,
+    y      = "Value (%)",
+    colour = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+## Stata
+
+```stata
+* The || operator overlays a second plot on the same axes
+twoway line app month || line labecman month
+```
+
+:::
+
+The two series appear to co-move, which motivates both the correlation
+analysis and the formal cointegration test below.
+
+## Correlation
+
+A high pairwise correlation supports the visual impression of co-movement,
+though it tells us nothing about the direction of causation or whether the
+relationship is spurious.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: correlation
+
+# cor.test() returns the correlation coefficient and a two-sided p-value,
+# equivalent to Stata's pwcorr with the sig option.
+cor.test(blair$app, blair$labecman)
+```
+
+## Stata
+
+```stata
+* pwcorr displays pairwise correlations; the sig option adds p-values.
+pwcorr app labecman, sig
+```
+
+:::
+
+---
+
+# Stationarity Testing
+
+Before running any regression, we must establish the *order of integration*
+of each series. A series is **I(1)** (integrated of order 1) if it is
+non-stationary in levels but becomes stationary after first-differencing.
+
+We use the **Augmented Dickey-Fuller (ADF) test** throughout.
+
+- **Null hypothesis:** the series has a unit root (is non-stationary).
+- **Reject H₀** (p < 0.05) → the series is stationary.
+- **Fail to reject H₀** → the series is non-stationary; try first differences.
+
+> **Note on lag selection.** Stata's `dfuller` defaults to 0 lags with a
+> constant. R's `adf.test()` selects lags automatically using
+> $k = \lfloor (n-1)^{1/3} \rfloor$. Add `k = 0` inside `adf.test()` to
+> replicate Stata's default exactly.
+
+## Blair Approval (`app`)
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: adf-app
+
+cat("--- ADF Test: app (levels) ---\n")
+adf.test(na.omit(blair$app))
+
+cat("\n--- ADF Test: diff(app) (first differences) ---\n")
+adf.test(na.omit(diff(blair$app)))
+```
+
+## Stata
+
+```stata
+* Test levels: expect to fail to reject H0 (series is non-stationary)
+dfuller app
+
+* Test first differences: expect to reject H0 (series becomes stationary)
+* The d. prefix applies the first-difference operator inline
+dfuller d.app
+```
+
+:::
+
+We expect to fail to reject H₀ in levels (the series is I(1)) and reject H₀
+in first differences, confirming it becomes stationary after differencing.
+
+## Labour Economic Manager (`labecman`)
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: adf-labecman
+
+cat("--- ADF Test: labecman (levels) ---\n")
+adf.test(na.omit(blair$labecman))
+
+cat("\n--- ADF Test: diff(labecman) (first differences) ---\n")
+adf.test(na.omit(diff(blair$labecman)))
+```
+
+## Stata
+
+```stata
+dfuller labecman
+
+dfuller d.labecman
+```
+
+:::
+
+If both `app` and `labecman` are I(1), the conditions for cointegration are
+met — we can proceed to the Engle-Granger test.
+
+---
+
+# Cointegration Test (Engle-Granger)
+
+Two I(1) series are **cointegrated** if there exists a linear combination of
+them that is I(0) — stationary. Economically, this means they share a
+long-run equilibrium relationship even though each series individually wanders.
+
+The **Engle-Granger (1987)** approach tests this in two steps.
+
+## Step 1: Estimate the long-run relationship
+
+Regress `app` on `labecman`. The fitted line represents the long-run
+equilibrium. The residuals represent deviations from that equilibrium at each
+point in time.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: coint-reg
+
+coint_reg <- lm(app ~ labecman, data = blair)
+summary(coint_reg)
+
+# Save residuals — these become the error correction term in the ECM
+blair$ecm_labecman <- residuals(coint_reg)
+```
+
+## Stata
+
+```stata
+reg app labecman
+
+* Save the residuals as a new variable — this is the error correction term
+predict ecm_labecman, resid
+```
+
+:::
+
+## Step 2: Test the residuals for stationarity
+
+If the residuals are **stationary** (I(0)), the series are cointegrated — the
+deviations from equilibrium are temporary and the series will always revert
+toward each other. If the residuals are non-stationary, any apparent
+relationship is spurious.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: adf-residuals
+
+cat("--- ADF Test: ECM residuals (cointegration test) ---\n")
+adf.test(na.omit(blair$ecm_labecman))
+```
+
+## Stata
+
+```stata
+dfuller ecm_labecman
+```
+
+:::
+
+A significant ADF result on the residuals confirms cointegration and justifies
+estimating the ECM below.
+
+---
+
+# Iraq Casualties
+
+A key control variable is the (logged) count of Iraq War casualties. We plot
+it to understand its trajectory over the sample.
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: fig-casualties
+#| fig-cap: "Logged Iraq War casualties over time."
+
+ggplot(blair, aes(x = as.Date(month), y = casl)) +
+  geom_line(colour = "#7b2d8b", linewidth = 0.8) +
+  labs(
+    title = "Iraq Casualties (Logged)",
+    x     = NULL,
+    y     = "Log Casualties"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Stata
+
+```stata
+label var casl "Iraq casualties Logged"
+
+twoway line casl month
+```
+
+:::
+
+Because `casl` is non-stationary (it rises monotonically), it enters the ECM
+as a *lagged second-order difference* (`L2D.casl`), which we construct below.
+
+---
+
+# ECM Estimation
+
+## Constructing the differenced and lagged variables
+
+The ECM is estimated entirely in *first differences* (capturing short-run
+changes), with the **lagged residual from the cointegrating regression** added
+as the error correction term. This term tells us: for every 1-unit deviation
+from the long-run equilibrium last period, how much does the dependent variable
+adjust this period?
+
+A key difference between R and Stata here is that **Stata applies time-series
+operators inline within the regression command**, so no separate variable
+construction step is needed. In R, we must explicitly create each transformed
+variable before passing it to `lm()`.
+
+| Stata operator | Meaning | R equivalent |
+|----------------|---------|--------------|
+| `d.X` | First difference of X | `c(NA, diff(X))` |
+| `L.X` | One-period lag of X | `lag(X, 1)` |
+| `L2D.X` | Lag 2 of first-differenced X | `lag(c(NA, diff(X)), 2)` |
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: construct-vars
+
+# In Stata, d. / L. / L2D. operators are applied inline at estimation time.
+# In R, we pre-compute each transformed column explicitly.
+blair <- blair %>%
+  mutate(
+    d_appd         = c(NA, diff(appd)),      # d.appd  — dependent variable
+    d_labecman     = c(NA, diff(labecman)),  # d.labecman
+    L_ecm_labecman = lag(ecm_labecman, 1),  # L.ecm_labecman (error correction term)
+    d_casl         = c(NA, diff(casl)),      # D.casl (intermediate)
+    L2D_casl       = lag(d_casl, 2)         # L2D.casl
+  )
+```
+
+## Stata
+
+```stata
+* No separate variable construction is needed in Stata.
+* The d., L., and L2D. operators are applied directly inside the
+* regression command. Stata's tsset declaration (made earlier) enables this.
+
+* For reference, the operators used in the next step mean:
+*   d.X      first difference of X
+*   L.X      one-period lag of X
+*   L2D.X    two-period lag of the first difference of X
+
+* v911d and petrold are already differenced variables in the dataset.
+```
+
+:::
+
+## Fit the model
+
+::: {.panel-tabset}
+
+## R
+
+```{r}
+#| label: ecm-model
+
+ecm_model <- lm(
+  d_appd ~ d_labecman + L_ecm_labecman + v911d + petrold + L2D_casl,
+  data = blair
+)
+
+summary(ecm_model)
+```
+
+## Stata
+
+```stata
+* Stata applies all time-series operators inline.
+* L.ecm_labecman is the one-period lag of the cointegrating residual —
+* this is the error correction term.
+reg d.appd d.labecman L.ecm_labecman v911d petrold L2D.casl
+```
+
+:::
+
+## Interpreting the results
+
+| Term | Interpretation |
+|------|----------------|
+| `d_labecman` | Short-run effect: a 1-point rise in Labour's economic ratings this month is associated with a `β` change in approval this month. |
+| `L_ecm_labecman` | **Error correction speed.** Should be negative and significant. A coefficient of, say, −0.3 means 30% of last period's deviation from equilibrium is corrected each month. |
+| `v911d` | One-off impact of the September 2001 attacks on approval (already first-differenced). |
+| `petrold` | One-off impact of the petrol crisis (already first-differenced). |
+| `L2D_casl` | Effect of rising Iraq casualties, lagged two periods — the media cycle and public opinion formation mean casualties take time to register in polls. |
+
+A **negative and statistically significant** `L_ecm_labecman` is the crucial
+result: it confirms that when approval ratings deviate from their long-run
+relationship with economic perceptions, they adjust back toward equilibrium
+over subsequent months.
+
+---
+
+# Summary
+
+This analysis followed the standard Engle-Granger ECM procedure:
+
+1. **Visualised** the series to identify apparent non-stationarity and
+   co-movement.
+2. **Confirmed** both series are I(1) via ADF tests on levels and first
+   differences.
+3. **Tested for cointegration** by regressing `app` on `labecman` and
+   confirming that the residuals are I(0).
+4. **Estimated the ECM**, modelling short-run changes in approval as a
+   function of short-run changes in economic perceptions, the error correction
+   term, and event-based shocks.
+
+The ECM framework is particularly well-suited to approval rating data because
+it respects the non-stationary nature of the series, recovers the long-run
+relationship, and separately identifies the speed of adjustment — all of which
+have substantive political-science meaning.

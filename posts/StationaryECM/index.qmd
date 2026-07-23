@@ -1,0 +1,232 @@
+---
+title: "Stationary ARDL(1,1) as Cointegration?"
+author: "Robert W. Walker"
+date: "07/23/2026"
+categories: [panel data, code, analysis]
+image: "image.png"
+---
+This is a really substantive methodological debate. Let me work through the core tension you're identifying.
+
+## The DeBoef-Keele Argument
+
+Their 2008 AJPS piece argues that the ECM is just an algebraic reparametrization of an ARDL(1,1):
+
+Taking:
+> y_t = α + β₀x_t + β₁x_{t-1} + γy_{t-1} + ε_t
+
+Subtract y_{t-1} from both sides and add/subtract β₀x_{t-1}:
+
+> Δy_t = α + β₀Δx_t + (β₀+β₁)x_{t-1} + (γ−1)y_{t-1} + ε_t
+
+This is a pure algebraic identity, they claim the reparametrization is always valid regardless of the integration order of x and y.  That is not really up for debate.
+
+---
+
+The problem is that **algebraic equivalence ≠ interpretive equivalence**. The ECM framework derives its theoretical content from the Granger Representation Theorem, which ties error correction *specifically* to cointegration between I(1) series. When you strip out that foundation, several things unravel:
+
+**1. The "error correction" coefficient is trivially negative for any stationary process**
+
+For I(0) data, a stable AR(1) requires |γ| < 1 by definition, so (γ−1) is *always* negative. You haven't discovered error correction — you've just confirmed stationarity. Every stationary autoregressive process will produce a negative "error correction" coefficient when written in ECM form, making the coefficient's sign uninformative.
+
+**2. The long-run multiplier loses its theoretical referent**
+
+With cointegrated I(1) data, (β₀+β₁)/(1−γ) estimates a genuine cointegrating vector — a stable attractor in the Granger sense, with super-consistent estimation. With I(0) data, it's just the steady-state of an ADL model. These are not the same concept, even if they share notation. The former describes a persistent equilibrium relationship the data are "pulled toward"; the latter is just the unconditional mean relationship.
+
+**3. The disequilibrium concept doesn't transfer**
+
+The whole substantive story of an ECM — that agents/systems accumulate disequilibrium errors that they subsequently correct — requires that disequilibrium be persistent enough to accumulate. That's precisely what integration (and cointegration) provides. With I(0) data, the series are already reverting to their means; the "error" at t−1 isn't a substantively meaningful accumulated deviation, it's just the lagged residual of a stationary process.
+
+**4. The bounds testing alternative they ignore**
+
+Pesaran, Shin & Smith (2001) actually provides a principled framework for cases where integration order is uncertain — the ARDL bounds test. It's more honest about what's being tested. DeBoef & Keele's approach tends to paper over this uncertainty rather than confront it.
+
+---
+
+## The Grant-Lebo Response
+
+Grant and Lebo (2016) made similar criticisms with simulation evidence, showing that applying ECMs to stationary data can produce misleading inference — particularly that researchers may interpret the ECM coefficient as substantively meaningful "adjustment speed" when it's largely just reflecting the degree of autocorrelation in a stationary series.
+
+---
+
+## What the Reparametrization Actually Buys You
+
+There's a narrower, more defensible version of the DeBoef-Keele position: the ECM form of an ARDL can be a convenient way to **separately estimate short-run and long-run effects** in a single model, and this *parameterization* can be useful for presentation even with stationary data. That's true. But it requires being explicit that you're not making claims about error correction in the Granger sense — you're just reporting the implied steady-state relationship alongside the dynamics.
+
+When D&K slide from "this parameterization is useful" to "this is an error correction model with an error correction process," that's where the overreach occurs.
+
+
+# The Recent History
+
+**The foundational critique pair (2016):**
+
+Grant, Taylor and Matthew J. Lebo. 2016. "Error Correction Methods with Political Time Series." *Political Analysis* 24(1): 3–30. This is the core paper raising concerns about GECM application in political science and introducing PSS bounds testing to that audience.
+
+Lebo, Matthew and Taylor Grant. 2016. "Equation Balance and Dynamic Political Modeling." *Political Analysis* 24(1). The companion piece in the same issue, focusing on the equation balance problem that we will examine tomorrow.
+
+**The Enns et al. response and Lebo's rejoinder (2017):**
+
+Lebo, Matthew and Patrick Kraft. 2017. "The General Error Correction Model in Practice." *Research and Politics* 4(2): 2053168017713059. This is a direct response to Enns, Kelly, Masaki, and Wohlfarth's defence of the GECM. Lebo and Kraft demonstrate the crucial differences between having *evidence* of a unit root from Dickey-Fuller tests versus actually having a unit root, using simulations to show how overblown findings of error correction await the uncareful researcher.
+
+**The LRM bounds procedure (2019):**
+
+Webb, Clayton, Suzanna Linn, and Matthew Lebo. 2019. "A Bounds Approach to Inference Using the Long Run Multiplier." *Political Analysis* 27(3): 281–301. This is the key methodological contribution. The paper proposes the long run multiplier (LRM) test statistic as a means of testing for long-run relationships without needing to know whether the series are stationary or unit roots — directly addressing the limitation in PSS (2001) that the dependent variable still had to be treated as definitively I(1).
+
+**The extension (2020):**
+
+Webb, Clayton, Suzanna Linn, and Matthew Lebo. 2020. "Beyond the Unit Root Question: Uncertainty and Inference." *American Journal of Political Science* 64(2): 275–292. This extends the WLL bounds procedure, showing how it can be applied to any fully specified regression model and presenting a general set of critical value bounds for applied work.
+
+---
+
+The intellectual arc is worth noting: the 2016 papers critique the misuse of the GECM; the 2017 Lebo-Kraft paper battles out the unit root testing uncertainty problem in practice; and the 2019/2020 Webb-Linn-Lebo papers provide a positive alternative that sidesteps the sharp I(0)/I(1) classification requirement entirely — which is precisely the problem that makes the DeBoef-Keele "it's just a reparametrization" argument so dangerous in applied work.
+
+# On that Alternative
+
+Good — I have the full paper. Here is a detailed implementation guide drawn directly from the text.
+
+---
+
+## Implementation Guide: Webb, Linn & Lebo (2020)
+
+### The Core Problem This Solves
+
+The paper's starting point is that unit root pretests are unreliable for four compounding reasons: low power (optimal tests correctly reject the unit root null less than 20% of the time with T=50 and ρ=.85); sensitivity to correct specification of the deterministic component Dₜ (trend vs. constant vs. neither); sensitivity to lag length, bandwidth, and truncation choices; and knife-edge categorisation decisions that hinge on chosen significance levels. Since existing methods — GECM, ADL, PSS bounds — all require correct classification of at least the dependent variable, uncertainty in pretesting propagates into false conclusions about long-run relationships. WLL (2020) provides a procedure that bypasses this requirement entirely.
+
+---
+
+### Why the Standard GECM Error Correction Coefficient Fails
+
+Before implementing, it's critical to understand the flaw being corrected. In the GECM:
+
+> Δyₜ = γ₀ + α₀*Δxₜ + α₁*yₜ₋₁ + β₁*xₜ₋₁ + eₜ
+
+The error correction coefficient is α₁*. The problem is that α₁* will be non-zero for **any** stationary y, regardless of whether y is actually related to x. When y is stationary with autocorrelation ρ, α₁* centres on −(1−ρ) — it is just capturing mean reversion. With ρ=0.5, α₁* centres on −0.5; with ρ=0.9, on −0.1. This means you will almost always reject H₀: α₁*=0 for stationary series simply because the series is stationary, not because there is a genuine long-run relationship with x. Tests on α₁* cannot distinguish between an unconditional stationary equilibrium (y mean-reverts to its own long-run mean regardless of x) and a conditional equilibrium (y's equilibrium is determined by x). The PSS (2001) approach partially addresses this by providing bounds over the uncertainty in the regressors, but it still assumes the analyst knows y is I(1). WLL (2020) addresses both.
+
+---
+
+### The Key Estimand: The Long-Run Multiplier (LRM)
+
+The LRM, λ, is the total effect of a unit change in x on y distributed over time. The critical insight is:
+
+- If both y and x are I(1), λ is only defined and non-zero if there is **cointegration** between them.
+- If y is stationary, λ is only non-zero if y's long-run equilibrium is **conditional on x** (rather than just mean-reverting on its own).
+
+In either case, λ=0 iff there is no long-run relationship, and λ≠0 iff there is one. This is the test you want, and it is valid regardless of integration order.
+
+**LRM formulas by model:**
+
+From the ADL: `λ = (β₀ + β₁) / (1 − γ₁)`
+
+From the GECM: `λ = −β₁* / α₁*`
+
+Note that λ is estimated *separately* for each regressor, which is an additional advantage over testing α₁* alone — with multiple regressors, rejecting H₀: α₁*=0 in the GECM only tells you that y has an LRR with *at least one* element of X, without specifying which.
+
+---
+
+### Step-by-Step Implementation
+
+#### Step 1: Model Specification (Theory-First)
+
+Do not begin with unit root tests. Begin with theory. Theory determines which variables belong in the model. Specify a model general enough to encompass your theoretical hypotheses — either an ADL(1,1) or GECM form is fine since they are algebraically equivalent.
+
+**ADL form:**
+> yₜ = γ₀ + γ₁yₜ₋₁ + β₀xₜ + β₁xₜ₋₁ + εₜ
+
+**GECM form:**
+> Δyₜ = γ₀ + α₀*Δxₜ + α₁*yₜ₋₁ + β₁*xₜ₋₁ + eₜ
+
+If there is a visible downward or upward trend in y, include a trend term. If multiple regressors, include all of them in a single model.
+
+Check for serial correlation in the residuals (Breusch-Godfrey test). If serial correlation is present, add lagged differences of y or x until it is cleared. The model must be dynamically complete before proceeding.
+
+#### Step 2: Estimate the LRM and its Standard Error
+
+You have two equivalent routes. The Bewley transformation is generally preferred as it gives the LRM and its standard error directly.
+
+**Route A — Delta Method**
+
+Estimate the ADL or GECM by OLS. Compute λ from the formula above. Then use the delta method to propagate uncertainty through the nonlinear ratio. In R, `deltaMethod()` from the `car` package handles this. This is what the paper does for the Supreme Court application.
+
+**Route B — Bewley (IV) Transformation (recommended)**
+
+Reparametrise the ADL as:
+
+> yₜ = δ₀ − δ₁Δyₜ + λxₜ − φΔxₜ + ηₜ
+
+where λ is now the LRM estimated directly as a coefficient. Because Δyₜ is endogenous (correlated with ηₜ), estimate by instrumental variables using {1, yₜ₋₁, xₜ, xₜ₋₁} as instruments. The coefficient on xₜ is the LRM, and its IV standard error is obtained directly. If a trend is part of the DGP, include it in the Bewley regression as well.
+
+In R: use `ivreg()` from the `AER` or `ivreg` package. In Stata: use `ivregress`. The Bewley transformation is what the paper uses for the Labour Party application.
+
+#### Step 3: Compute the LRM t-Statistic
+
+For each regressor k:
+
+> LRM_t,k = λ_k / SE(λ_k)
+
+Take the **absolute value** for comparison with the bounds.
+
+#### Step 4: Look Up the Critical Value Bounds
+
+Use **Table 2** from the paper, reproduced here for the most common significance level (α=.05):
+
+| T | k=1 | k=2 | k=3 | k=4 | k=5 |
+|---|-----|-----|-----|-----|-----|
+| 25 | [1.25, 3.79] | [1.27, 3.72] | [1.29, 3.68] | [1.33, 3.57] | [1.39, 3.50] |
+| 50 | [1.09, 3.72] | [1.10, 3.68] | [1.10, 3.64] | [1.11, 3.57] | [1.11, 3.52] |
+| 75 | [1.06, 3.73] | [1.06, 3.70] | [1.06, 3.65] | [1.06, 3.62] | [1.07, 3.59] |
+| 150 | [1.01, 3.68] | [1.02, 3.67] | [1.01, 3.65] | [1.01, 3.63] | [1.01, 3.61] |
+| 500 | [0.99, 3.66] | [0.99, 3.66] | [0.99, 3.65] | [0.99, 3.64] | [0.99, 3.64] |
+| 1000 | [0.99, 3.62] | [0.99, 3.62] | [0.99, 3.62] | [0.99, 3.61] | [0.99, 3.62] |
+
+Where T is your sample size and k is the number of independent variables. The table also provides bounds for α=.01 and α=.10. Use the T row closest to your actual sample size.
+
+Note: The lower bound is the minimum critical value across all possible integration scenarios; the upper bound is the maximum. The zone between them is the region of genuine uncertainty given pretest ambiguity.
+
+#### Step 5: Apply the Decision Rule
+
+For each regressor, compare |LRM_t,k| to the bounds [LB, UB]:
+
+- **|t| < LB** → **Below.** Fail to reject H₀. Conclude no long-run relationship between xₖ and y, regardless of integration properties.
+- **LB ≤ |t| ≤ UB** → **Between.** Indeterminate. You cannot draw a firm conclusion about the existence of an LRR without additional knowledge of the univariate properties. The indeterminacy is not a failure of the test — it honestly reflects the pretest uncertainty inherent in your data.
+- **|t| > UB** → **Beyond.** Reject H₀. Conclude a long-run relationship exists between xₖ and y, with confidence that does not depend on knowing integration properties.
+
+#### Step 6: Classification (Optional and Cautious)
+
+If the test statistic is beyond the upper bound, you have confirmed a long-run relationship exists, but you **cannot** determine from the LRM test alone whether it is a cointegrating relationship (both I(1)) or a conditional stationary equilibrium (both I(0)). The test is agnostic between these.
+
+If you wish to classify the type of equilibrium, this requires that you: have a long time series, run a battery of unit root tests (ADF, PP, DF-GLS, KPSS) across multiple lag lengths and Dₜ specifications, obtain consistent results, and have theoretical reasons to expect one property over the other. Do not treat any single test result as definitive. Report the full battery of results and be explicit about which Dₜ specification you are using and why.
+
+#### Step 7: Reporting
+
+The paper recommends reporting:
+
+1. The LRM estimate and standard error for each regressor.
+2. The LRM t-statistic for each regressor.
+3. The specific bounds used (T, k, α).
+4. Whether each result falls **Below / Between / Beyond** the bounds.
+5. If unit root tests are reported at all, report multiple tests across multiple lag lengths and Dₜ specifications — not a single convenient result.
+6. The Breusch-Godfrey test for residual serial correlation to verify dynamic completeness.
+
+---
+
+### What This Procedure Does Not Solve
+
+WLL (2020) are candid about three limitations:
+
+**Power costs.** The indeterminate zone means some relationships that would be detectable with known integration properties will be inconclusive here. This is the honest price of genuine uncertainty. Applying standard critical values when integration is uncertain is not more powerful — it is just wrong more often.
+
+**Type of equilibrium.** Beyond the upper bound, you know a long-run relationship exists but cannot distinguish cointegration from a conditional stationary equilibrium without further analysis.
+
+**Type II error when y is actually known to be I(0).** If y is genuinely and certainly stationary, using the upper bound as the threshold is more conservative than the standard normal critical value (~1.96) and will correctly reject the null less often than would be appropriate. The authors note the standard approach is still valid when the analyst has genuine certainty about the data properties — the bounds are for the common case where that certainty is lacking.
+
+---
+
+### The Paper's Revised Blueprint in Summary
+
+| Stage | Instruction |
+|---|---|
+| **Theory** | Derive hypotheses about LRRs from substantive theory; select variables on that basis |
+| **Estimation** | Estimate ADL or GECM; verify dynamic completeness via Breusch-Godfrey |
+| **LRM** | Calculate LRM for each regressor via delta method or Bewley IV |
+| **Inference** | Compare |LRM_t| to bounds from Table 2; report Below / Between / Beyond |
+| **Classification** | Only if genuinely needed; requires long T, consistent battery of tests, and strong theory |
+| **Reporting** | Full battery of any unit root tests used; explicit Dₜ specification; LRM t-statistics against stated bounds |
