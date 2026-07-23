@@ -7,9 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Robert W. Walker">
-<meta name="dcterms.date" content="2026-07-23">
 
-<title>Day 4: Cointegration – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
+<title>A Bit More on Characteristic Roots – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -187,7 +186,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../posts/day-1/index.html">Week 1</a></li><li class="breadcrumb-item"><a href="../../posts/day-4/index.html">Day 4: Cointegration</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">A Bit More on Characteristic Roots</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -199,8 +198,8 @@ window.Quarto = {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-body"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../posts/day-1/index.html">Week 1</a></li><li class="breadcrumb-item"><a href="../../posts/day-4/index.html">Day 4: Cointegration</a></li></ol></nav>
-      <h1 class="title">Day 4: Cointegration</h1>
+    <div class="quarto-title column-body">
+      <h1 class="title">A Bit More on Characteristic Roots</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">time series</div>
                 <div class="quarto-category">code</div>
@@ -219,12 +218,6 @@ window.Quarto = {
             </div>
     </div>
       
-      <div>
-      <div class="quarto-title-meta-heading">Published</div>
-      <div class="quarto-title-meta-contents">
-        <p class="date">July 23, 2026</p>
-      </div>
-    </div>
     
       
     </div>
@@ -279,7 +272,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../posts/day-4/index.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../posts/day-4/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Day 4: Cointegration</span></a>
   </div>
 </li>
@@ -307,17 +300,8 @@ window.Quarto = {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#slides" id="toc-slides" class="nav-link active" data-scroll-target="#slides">Slides</a></li>
-  <li><a href="#a-replication" id="toc-a-replication" class="nav-link" data-scroll-target="#a-replication">A replication</a></li>
-  <li><a href="#cointegration-and-error-correction" id="toc-cointegration-and-error-correction" class="nav-link" data-scroll-target="#cointegration-and-error-correction">Cointegration and Error Correction</a></li>
-  <li><a href="#adl-and-cointegration" id="toc-adl-and-cointegration" class="nav-link" data-scroll-target="#adl-and-cointegration">ADL and Cointegration</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -326,48 +310,23 @@ window.Quarto = {
 
 
 
-<section id="slides" class="level2">
-<h2 class="anchored" data-anchor-id="slides">Slides</h2>
-<ul>
-<li><p><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/">A reveal presentation</a></p></li>
-<li><p><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/index-NI.html">A reveal presentation without increments</a></p></li>
-<li><p><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-SE/">A reveal presentation</a></p></li>
-<li><p><a href="https://robertwwalker.github.io/ESSSSDA26-2J/UK-ECM/">An example ECM on Blair:</a></p></li>
-<li><p><a href="https://robertwwalker.github.io/ESSSSDA26-2J/LRM-Calc/">Calculating a Long Run Multiplier</a></p></li>
-<li><p><a href="https://robertwwalker.github.io/ESSSSDA26-2J/StationaryECM/">A Stationary ECM?</a></p></li>
-<li><p><a href="https://robertwwalker.github.io/ESSSSDA26-2J/CharRoots/">On Characteristic Roots</a></p></li>
-</ul>
-</section>
-<section id="a-replication" class="level2">
-<h2 class="anchored" data-anchor-id="a-replication">A replication</h2>
-<p>This is an example with an ECM from a model presented by DeBoef and Keele in their excellent paper “Taking Time Seriously: Dynamic Regression.” The data come from a paper Gilmour and Wolbrecht.</p>
-<pre><code>use "https://github.com/robertwwalker/Essex-Data/raw/main/dgw.dta", clear
-* These data have already been time set:
-tsset
-* The dependent variable in this example is Congressional Approval
-*Table 2
-reg capp l.capp econexp nytavg kg hb vetoes override intrasum mbill 
-bgodfrey, lag(1 2 3)</code></pre>
+<p>There are stability conditions for the <code>ar</code> and <code>ma</code> processes that revolve around the roots of the characteristic equations. The so-called stationarity and invertability conditions. They are implemented by default in R’s arima package but they can be checked with relative ease in both stata and R.</p>
+<p>In particular, having estimated an ar process ar(p), the characteristic equations in the slides give a <span class="math inline">\(p^{th}\)</span> order polynomial that we can solve for the charateristic roots. There is an invertability condition for an ma(q) that gives a <span class="math inline">\(q^{th}\)</span> order polynomial. After estimating an ARIMA(p,d,q) model, they can be easily checked. In both cases, the complex roots should lie outside the unit circle. We more frequently examine the inverse roots and ask whether or not they are <strong>inside</strong> the unit circle.</p>
+<p>Taking the British government popularity data</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven); <span class="fu">library</span>(tidyverse); <span class="fu">library</span>(fpp3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fpp3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.2.1     ✔ readr     2.2.0
-✔ forcats   1.0.1     ✔ stringr   1.6.0
-✔ ggplot2   4.0.3     ✔ tibble    3.3.1
-✔ lubridate 1.9.5     ✔ tidyr     1.3.2
-✔ purrr     1.2.2     
-── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-✖ dplyr::filter() masks stats::filter()
-✖ dplyr::lag()    masks stats::lag()
-ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
-── Attaching packages ──────────────────────────────────────────── fpp3 1.0.3 ──
-
-✔ tsibble     1.2.0     ✔ feasts      0.5.0
-✔ tsibbledata 0.4.1     ✔ fable       0.5.0
-✔ ggtime      0.2.0     
-
-── Conflicts ───────────────────────────────────────────────── fpp3_conflicts ──
+<pre><code>── Attaching packages ──────────────────────────────────────────── fpp3 1.0.3 ──</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>✔ tibble      3.3.1     ✔ tsibble     1.2.0
+✔ dplyr       1.2.1     ✔ tsibbledata 0.4.1
+✔ tidyr       1.3.2     ✔ ggtime      0.2.0
+✔ lubridate   1.9.5     ✔ feasts      0.5.0
+✔ ggplot2     4.0.3     ✔ fable       0.5.0</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ───────────────────────────────────────────────── fpp3_conflicts ──
 ✖ lubridate::date()    masks base::date()
 ✖ dplyr::filter()      masks stats::filter()
 ✖ tsibble::intersect() masks base::intersect()
@@ -376,282 +335,153 @@ bgodfrey, lag(1 2 3)</code></pre>
 ✖ tsibble::setdiff()   masks base::setdiff()
 ✖ tsibble::union()     masks base::union()</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dgw.data <span class="ot">&lt;-</span> <span class="fu">read_stata</span>(<span class="st">"https://github.com/robertwwalker/Essex-Data/raw/main/dgw.dta"</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>dgw.data <span class="ot">&lt;-</span> dgw.data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(year))</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>dgw.data <span class="ot">&lt;-</span> dgw.data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">paste0</span>(year,<span class="st">" Q"</span>,quarter, <span class="at">sep=</span><span class="st">""</span>)) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">dateQ =</span> <span class="fu">yearquarter</span>(date))</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>dgw.ts <span class="ot">&lt;-</span> dgw.data <span class="sc">%&gt;%</span> <span class="fu">as_tsibble</span>(<span class="at">index=</span>dateQ)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># A dynamic linear model</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>dgw.ts <span class="sc">%&gt;%</span> <span class="fu">model</span>(<span class="fu">TSLM</span>(capp<span class="sc">~</span><span class="fu">lag</span>(capp,<span class="dv">1</span>)<span class="sc">+</span>econexp<span class="sc">+</span>nytavg<span class="sc">+</span>kg<span class="sc">+</span>hb<span class="sc">+</span>vetoes<span class="sc">+</span>override<span class="sc">+</span>intrasum<span class="sc">+</span>mbills)) <span class="sc">%&gt;%</span> <span class="fu">report</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Series: capp 
-Model: TSLM 
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--9.1137 -1.3908 -0.1014  1.5446  7.0873 
-
-Coefficients:
-             Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)   9.37793    3.33043   2.816  0.00634 ** 
-lag(capp, 1)  0.79605    0.05166  15.409  &lt; 2e-16 ***
-econexp       0.07173    0.03090   2.321  0.02323 *  
-nytavg        0.20716    0.06982   2.967  0.00413 ** 
-kg           -1.29097    1.08646  -1.188  0.23881    
-hb           -4.68564    1.69975  -2.757  0.00746 ** 
-vetoes        0.24382    0.08898   2.740  0.00781 ** 
-override     -0.99198    0.55252  -1.795  0.07697 .  
-intrasum     -0.16907    0.12199  -1.386  0.17021    
-mbills       -0.43939    0.28270  -1.554  0.12469    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 2.976 on 69 degrees of freedom
-Multiple R-squared: 0.885,  Adjusted R-squared: 0.8699
-F-statistic: 58.97 on 9 and 69 DF, p-value: &lt; 2.22e-16</code></pre>
-</div>
-</div>
-<pre><code>*Table 2 with Pres. Approval
-reg capp l.capp p_prap econexp nytavg kg hb vetoes override intrasum mbill 
-bgodfrey, lag(1 2 3)</code></pre>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dgw.ts <span class="sc">%&gt;%</span> <span class="fu">model</span>(<span class="fu">TSLM</span>(capp<span class="sc">~</span><span class="fu">lag</span>(capp,<span class="dv">1</span>)<span class="sc">+</span>p_prap<span class="sc">+</span>econexp<span class="sc">+</span>nytavg<span class="sc">+</span>kg<span class="sc">+</span>hb<span class="sc">+</span>vetoes<span class="sc">+</span>override<span class="sc">+</span>intrasum<span class="sc">+</span>mbills)) <span class="sc">%&gt;%</span> <span class="fu">report</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Series: capp 
-Model: TSLM 
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--8.4892 -1.3161 -0.1978  1.7633  6.3624 
-
-Coefficients:
-             Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)  10.13865    3.38461   2.996  0.00382 ** 
-lag(capp, 1)  0.77084    0.05585  13.803  &lt; 2e-16 ***
-p_prap        0.04708    0.04024   1.170  0.24610    
-econexp       0.08161    0.03195   2.554  0.01290 *  
-nytavg        0.20342    0.06971   2.918  0.00477 ** 
-kg           -1.61049    1.11745  -1.441  0.15411    
-hb           -4.87343    1.70280  -2.862  0.00559 ** 
-vetoes        0.24012    0.08880   2.704  0.00865 ** 
-override     -0.96229    0.55163  -1.744  0.08560 .  
-intrasum     -0.14809    0.12298  -1.204  0.23267    
-mbills       -0.46652    0.28290  -1.649  0.10375    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 2.968 on 68 degrees of freedom
-Multiple R-squared: 0.8872, Adjusted R-squared: 0.8706
-F-statistic:  53.5 on 10 and 68 DF, p-value: &lt; 2.22e-16</code></pre>
-</div>
-</div>
-<p>The Breusch-Godfrey test</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>), <span class="cf">function</span>(x) {lmtest<span class="sc">::</span><span class="fu">bgtest</span>(<span class="fu">lm</span>(capp<span class="sc">~</span><span class="fu">lag</span>(capp,<span class="dv">1</span>)<span class="sc">+</span>p_prap<span class="sc">+</span>econexp<span class="sc">+</span>nytavg<span class="sc">+</span>kg<span class="sc">+</span>hb<span class="sc">+</span>vetoes<span class="sc">+</span>override<span class="sc">+</span>intrasum<span class="sc">+</span>mbills, <span class="at">data=</span>dgw.ts), <span class="at">order =</span> x)})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>             [,1]                                                          
-statistic    0.5038368                                                     
-parameter    1                                                             
-method       "Breusch-Godfrey test for serial correlation of order up to 1"
-p.value      0.4778191                                                     
-data.name    character,2                                                   
-coefficients numeric,12                                                    
-vcov         numeric,144                                                   
-             [,2]                                                          
-statistic    1.043041                                                      
-parameter    2                                                             
-method       "Breusch-Godfrey test for serial correlation of order up to 2"
-p.value      0.5936172                                                     
-data.name    character,2                                                   
-coefficients numeric,13                                                    
-vcov         numeric,169                                                   
-             [,3]                                                          
-statistic    1.531487                                                      
-parameter    3                                                             
-method       "Breusch-Godfrey test for serial correlation of order up to 3"
-p.value      0.6750225                                                     
-data.name    character,2                                                   
-coefficients numeric,14                                                    
-vcov         numeric,196                                                   </code></pre>
-</div>
-</div>
-<pre><code>* An Alternate Measure
-* ADL
-reg capp l.capp p_prap l.p_prap econexp l.econexp nytavg l.nytavg kg hb vetoes override intrasum mbill 
-fitstat
-bgodfrey, lag(1 2 3)</code></pre>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dgw.ts <span class="sc">%&gt;%</span> <span class="fu">model</span>(<span class="fu">TSLM</span>(capp<span class="sc">~</span><span class="fu">lag</span>(capp, <span class="dv">1</span>)<span class="sc">+</span>p_prap<span class="sc">+</span><span class="fu">lag</span>(p_prap, <span class="dv">1</span>)<span class="sc">+</span>econexp<span class="sc">+</span><span class="fu">lag</span>(econexp,<span class="dv">1</span>)<span class="sc">+</span>nytavg<span class="sc">+</span><span class="fu">lag</span>(nytavg, <span class="dv">1</span>)<span class="sc">+</span>kg<span class="sc">+</span>hb<span class="sc">+</span>vetoes<span class="sc">+</span>override<span class="sc">+</span>intrasum<span class="sc">+</span>mbills)) <span class="sc">%&gt;%</span> <span class="fu">gg_tsresiduals</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
-(`geom_line()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
-(`geom_point()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
-(`stat_bin()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
-(`geom_rug()`).</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>br7983 <span class="ot">&lt;-</span> <span class="fu">read_dta</span>(<span class="fu">url</span>(<span class="st">"https://github.com/robertwwalker/Essex-Data/raw/main/br7983.dta"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">month =</span> <span class="fu">as.character</span>(month)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">month =</span> <span class="fu">paste0</span>(<span class="st">"19"</span>,month, <span class="at">sep=</span><span class="st">""</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">yearmonth</span>(month, <span class="at">format=</span><span class="st">"%Y%m"</span>))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>br7983 <span class="ot">&lt;-</span> br7983 <span class="sc">%&gt;%</span> <span class="fu">as_tsibble</span>(<span class="at">index=</span>date) </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>br7983 <span class="sc">%&gt;%</span> <span class="fu">autoplot</span>(govpopl) <span class="sc">+</span> hrbrthemes<span class="sc">::</span><span class="fu">theme_ipsum</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">y=</span><span class="st">"logged Government Popularity"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<pre><code>reg capp l.capp p_prap l.p_prap econexp l.econexp nytavg l.nytavg l2.nytavg kg hb vetoes override intrasum mbill 
-fitstat
-test l.p_prap </code></pre>
+<p>The best model seems to be ar(1) and sma(4).</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(capp<span class="sc">~</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(capp, <span class="dv">1</span>)<span class="sc">+</span>p_prap<span class="sc">+</span>dplyr<span class="sc">::</span><span class="fu">lag</span>(p_prap, <span class="dv">1</span>)<span class="sc">+</span>econexp<span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(econexp, <span class="dv">1</span>)<span class="sc">+</span> nytavg<span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(nytavg, <span class="dv">1</span>) <span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(nytavg, <span class="dv">2</span>)<span class="sc">+</span> kg<span class="sc">+</span>hb<span class="sc">+</span>vetoes<span class="sc">+</span>override<span class="sc">+</span>intrasum<span class="sc">+</span>mbills, <span class="at">data=</span>dgw.data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">arima</span>(br7983<span class="sc">$</span>govpopl, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="at">seasonal=</span><span class="fu">list</span>(<span class="at">order=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">period=</span><span class="dv">4</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>mod</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
-lm(formula = capp ~ dplyr::lag(capp, 1) + p_prap + dplyr::lag(p_prap, 
-    1) + econexp + dplyr::lag(econexp, 1) + nytavg + dplyr::lag(nytavg, 
-    1) + dplyr::lag(nytavg, 2) + kg + hb + vetoes + override + 
-    intrasum + mbills, data = dgw.data)
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--7.2813 -1.1587 -0.2843  1.5055  5.5623 
+arima(x = br7983$govpopl, order = c(1, 0, 0), seasonal = list(order = c(0, 0, 
+    1), period = 4))
 
 Coefficients:
-                        Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)            13.255444   4.027775   3.291  0.00164 ** 
-dplyr::lag(capp, 1)     0.726775   0.065844  11.038 2.31e-16 ***
-p_prap                  0.138223   0.057373   2.409  0.01892 *  
-dplyr::lag(p_prap, 1)  -0.093813   0.055274  -1.697  0.09459 .  
-econexp                 0.005848   0.070969   0.082  0.93459    
-dplyr::lag(econexp, 1)  0.082163   0.072223   1.138  0.25959    
-nytavg                  0.192404   0.071465   2.692  0.00908 ** 
-dplyr::lag(nytavg, 1)   0.023006   0.069422   0.331  0.74144    
-dplyr::lag(nytavg, 2)   0.138535   0.078110   1.774  0.08097 .  
-kg                     -1.566093   1.122181  -1.396  0.16774    
-hb                     -4.340598   1.715171  -2.531  0.01389 *  
-vetoes                  0.283759   0.101779   2.788  0.00700 ** 
-override               -1.061008   0.580564  -1.828  0.07235 .  
-intrasum               -0.107917   0.122254  -0.883  0.38074    
-mbills                 -0.715715   0.304646  -2.349  0.02196 *  
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+         ar1    sma1  intercept
+      0.8392  0.3350     3.4889
+s.e.  0.0760  0.1316     0.0997
 
-Residual standard error: 2.914 on 63 degrees of freedom
-  (2 observations deleted due to missingness)
-Multiple R-squared:  0.8992,    Adjusted R-squared:  0.8768 
-F-statistic: 40.14 on 14 and 63 DF,  p-value: &lt; 2.2e-16</code></pre>
+sigma^2 estimated as 0.008444:  log likelihood = 45.47,  aic = -82.95</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(<span class="fu">arima</span>(br7983<span class="sc">$</span>govpopl, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="at">seasonal=</span><span class="fu">list</span>(<span class="at">order=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">period=</span><span class="dv">4</span>))<span class="sc">$</span>residuals)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(<span class="fu">arima</span>(br7983<span class="sc">$</span>govpopl, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="at">seasonal=</span><span class="fu">list</span>(<span class="at">order=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">period=</span><span class="dv">4</span>))<span class="sc">$</span>residuals)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-2-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>White noise. Parameters are all likely different from zero. What about the characteristic roots?</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(<span class="fu">lm</span>(capp<span class="sc">~</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(capp, <span class="dv">1</span>)<span class="sc">+</span>p_prap<span class="sc">+</span>econexp<span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(econexp, <span class="dv">1</span>)<span class="sc">+</span> nytavg<span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(nytavg, <span class="dv">1</span>) <span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(nytavg, <span class="dv">2</span>)<span class="sc">+</span> kg<span class="sc">+</span>hb<span class="sc">+</span>vetoes<span class="sc">+</span>override<span class="sc">+</span>intrasum<span class="sc">+</span>mbills, <span class="at">data=</span>dgw.data), <span class="fu">lm</span>(capp<span class="sc">~</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(capp, <span class="dv">1</span>)<span class="sc">+</span>p_prap<span class="sc">+</span>dplyr<span class="sc">::</span><span class="fu">lag</span>(p_prap, <span class="dv">1</span>)<span class="sc">+</span>econexp<span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(econexp, <span class="dv">1</span>)<span class="sc">+</span> nytavg<span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(nytavg, <span class="dv">1</span>) <span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(nytavg, <span class="dv">2</span>)<span class="sc">+</span> kg<span class="sc">+</span>hb<span class="sc">+</span>vetoes<span class="sc">+</span>override<span class="sc">+</span>intrasum<span class="sc">+</span>mbills, <span class="at">data=</span>dgw.data)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Analysis of Variance Table
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>forecast<span class="sc">::</span><span class="fu">autoplot</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that these are the inverse characteristic roots. And all are inside the unit circle. So this model is stationary and invertible.</p>
+<p>What about Stata?</p>
+<pre><code>. arima govpopl, ar(1) ma(4)
 
-Model 1: capp ~ dplyr::lag(capp, 1) + p_prap + econexp + dplyr::lag(econexp, 
-    1) + nytavg + dplyr::lag(nytavg, 1) + dplyr::lag(nytavg, 
-    2) + kg + hb + vetoes + override + intrasum + mbills
-Model 2: capp ~ dplyr::lag(capp, 1) + p_prap + dplyr::lag(p_prap, 1) + 
-    econexp + dplyr::lag(econexp, 1) + nytavg + dplyr::lag(nytavg, 
-    1) + dplyr::lag(nytavg, 2) + kg + hb + vetoes + override + 
-    intrasum + mbills
-  Res.Df    RSS Df Sum of Sq      F  Pr(&gt;F)  
-1     64 559.29                              
-2     63 534.83  1    24.454 2.8806 0.09459 .
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
-</div>
-</div>
-<pre><code>*ECM
-reg d.capp l.capp d.p_prap l.p_prap d.econexp l.econexp d.nytavg l.nytavg kg hb vetoes override intrasum mbill 
-bgodfrey, lag(1 2 3)</code></pre>
+(setting optimization to BHHH)
+Iteration 0:  Log likelihood =  40.962134  
+Iteration 1:  Log likelihood =  44.723724  
+Iteration 2:  Log likelihood =  44.866662  
+Iteration 3:  Log likelihood =  45.127431  
+Iteration 4:  Log likelihood =  45.434671  
+(switching optimization to BFGS)
+Iteration 5:  Log likelihood =  45.471498  
+Iteration 6:  Log likelihood =  45.472428  
+Iteration 7:  Log likelihood =  45.473906  
+Iteration 8:  Log likelihood =  45.473963  
+Iteration 9:  Log likelihood =  45.474094  
+Iteration 10: Log likelihood =  45.474098  
+
+ARIMA regression
+
+Sample: 0 thru 47                               Number of obs     =         48
+                                                Wald chi2(2)      =      97.18
+Log likelihood = 45.4741                        Prob &gt; chi2       =     0.0000
+
+------------------------------------------------------------------------------
+             |                 OPG
+     govpopl | Coefficient  std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+govpopl      |
+       _cons |   3.488899   .1376348    25.35   0.000      3.21914    3.758658
+-------------+----------------------------------------------------------------
+ARMA         |
+          ar |
+         L1. |   .8391349   .0952577     8.81   0.000     .6524332    1.025837
+             |
+          ma |
+         L4. |   .3351339   .1690192     1.98   0.047     .0038624    .6664055
+-------------+----------------------------------------------------------------
+      /sigma |    .091893   .0090176    10.19   0.000     .0742189    .1095671
+------------------------------------------------------------------------------
+Note: The test of the variance against zero is one sided, and the two-sided
+      confidence interval is truncated at zero.
+
+. estat aroots
+
+   Eigenvalue stability condition
+  +----------------------------------------+
+  |        Eigenvalue        |   Modulus   |
+  |--------------------------+-------------|
+  |   .8391349               |   .839135   |
+  +----------------------------------------+
+   All the eigenvalues lie inside the unit circle.
+   AR parameters satisfy stability condition.
+
+   Eigenvalue stability condition
+  +----------------------------------------+
+  |        Eigenvalue        |   Modulus   |
+  |--------------------------+-------------|
+  |  -.5380091 +  .5380091i  |    .76086   |
+  |  -.5380091 -  .5380091i  |    .76086   |
+  |   .5380091 +  .5380091i  |    .76086   |
+  |   .5380091 -  .5380091i  |    .76086   |
+  +----------------------------------------+
+   All the eigenvalues lie inside the unit circle.
+   MA parameters satisfy invertibility condition.
+</code></pre>
+<p>Notice stata tells you how to interpret the result.</p>
+<p><img src="CRootStata.png" class="img-fluid"></p>
+<p>And to reiterate, these conditions establish that either the MA(q) can be inverted to an infinite AR process with declining dependence through time or the AR(p) can be rewritten as an infinite order MA with each shock declining in weight through time.</p>
+<p>In R, <code>polyroot</code> can be used to obtain the roots. In this case, for the AR, we obtain</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(<span class="fu">difference</span>(capp)<span class="sc">~</span>dplyr<span class="sc">::</span><span class="fu">lag</span>(capp, <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">difference</span>(p_prap) <span class="sc">+</span>  dplyr<span class="sc">::</span><span class="fu">lag</span>(p_prap, <span class="dv">1</span>)<span class="sc">+</span> <span class="fu">difference</span>(econexp)<span class="sc">+</span><span class="fu">lag</span>(econexp, <span class="dv">1</span>)<span class="sc">+</span><span class="fu">difference</span>(nytavg) <span class="sc">+</span> dplyr<span class="sc">::</span><span class="fu">lag</span>(nytavg) <span class="sc">+</span>  kg <span class="sc">+</span>  hb <span class="sc">+</span>  vetoes <span class="sc">+</span> override <span class="sc">+</span>  intrasum <span class="sc">+</span>  mbills, <span class="at">data=</span>dgw.data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">/</span><span class="fu">polyroot</span>(<span class="fu">c</span>(<span class="dv">1</span>,.<span class="dv">839</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm(formula = difference(capp) ~ dplyr::lag(capp, 1) + difference(p_prap) + 
-    dplyr::lag(p_prap, 1) + difference(econexp) + lag(econexp, 
-    1) + difference(nytavg) + dplyr::lag(nytavg) + kg + hb + 
-    vetoes + override + intrasum + mbills, data = dgw.data)
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--8.0575 -1.2991 -0.2338  1.6723  6.0297 
-
-Coefficients:
-                      Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)            9.92398    3.59485   2.761 0.007490 ** 
-dplyr::lag(capp, 1)   -0.22348    0.05979  -3.738 0.000394 ***
-difference(p_prap)     0.11480    0.05548   2.069 0.042508 *  
-dplyr::lag(p_prap, 1)  0.02166    0.04356   0.497 0.620667    
-difference(econexp)    0.02214    0.07027   0.315 0.753732    
-lag(econexp, 1)        0.08156    0.03311   2.463 0.016420 *  
-difference(nytavg)     0.18074    0.07179   2.518 0.014290 *  
-dplyr::lag(nytavg)     0.22229    0.09152   2.429 0.017921 *  
-kg                    -1.36022    1.12380  -1.210 0.230519    
-hb                    -4.24191    1.72938  -2.453 0.016865 *  
-vetoes                 0.20605    0.09261   2.225 0.029567 *  
-override              -0.75686    0.55956  -1.353 0.180870    
-intrasum              -0.12549    0.12277  -1.022 0.310504    
-mbills                -0.53209    0.28906  -1.841 0.070217 .  
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 2.939 on 65 degrees of freedom
-  (1 observation deleted due to missingness)
-Multiple R-squared:  0.4115,    Adjusted R-squared:  0.2938 
-F-statistic: 3.496 on 13 and 65 DF,  p-value: 0.0003862</code></pre>
+<pre><code>[1] -0.839+0i</code></pre>
 </div>
 </div>
-<pre><code>*Bewley
-ivreg capp p_prap d.p_prap econexp d.econexp nytavg d.nytavg kg hb vetoes override intrasum mbill (d.capp = l.capp p_prap l.p_prap econexp l.econexp nytavg l.nytavg)</code></pre>
-</section>
-<section id="cointegration-and-error-correction" class="level2">
-<h2 class="anchored" data-anchor-id="cointegration-and-error-correction">Cointegration and Error Correction</h2>
-<p>Studying long-run relationships between two variables <span class="math inline">\(Y_t\)</span> and <span class="math inline">\(X_t\)</span>.<br>
-<strong>Question: do Y and X travel together thru time in dynamic equilibrium?</strong></p>
-<p>Methodology developed by Engle and Granger 1987</p>
-<ol type="1">
-<li><p>Determine if <span class="math inline">\(Y_t\)</span> and <span class="math inline">\(X_t\)</span> are nonstationary</p></li>
-<li><p>If <span class="math inline">\(Y_t\)</span> and <span class="math inline">\(X_t\)</span> are nonstationary, regress <span class="math inline">\(Y_t\)</span> on <span class="math inline">\(X_t\)</span> and save residuals. This is called the cointegrating regression</p></li>
-<li><p>Do unit-root test on residuals - if residuals are stationary, <span class="math inline">\(Y_t\)</span> and <span class="math inline">\(X_t\)</span> cointegrate (travel together over time). If residuals are not stationary then <span class="math inline">\(Y_t\)</span> and <span class="math inline">\(X_t\)</span> do not cointegrate</p></li>
-</ol>
-<p>Engle and Granger show that if <span class="math inline">\(Y_t\)</span> and <span class="math inline">\(X_t\)</span> cointegrate, then their relationship can be specified as an error correction model:</p>
-<p><span class="math display">\[
-(1-L)Y_t = B_0 + B_1(1-L)X_t + a(\underbrace{Y_{t-1} - c_0 - c_1X_{t-1}}_{\textrm{Cointegration residual, lagged}}) + e_t
-\]</span></p>
-<p>In this model <span class="math inline">\(B_1\)</span> captures the short-run effect of X on Y</p>
-<p><span class="math inline">\((Y_{t-1} -c_0 - c_1X_{t-1})\)</span> is called the error correction mechanism and it captures the long-run effect of X on Y. In the Engle-Granger “two-step” methodology, the error correction mechanism is measured by the residuals from the cointegrating regression lagged back 1 period</p>
-<p>The coefficient <span class="math inline">\(a\)</span> is an adjustment parameter which is expected to be less than 1 in absolute value and to carry a negative sign. The larger the absolute value of a, the stronger the error correction mechanism. a indicates the speed with which a shock to Y is eroded by the cointegrating realtionship between Y and X</p>
-<p>The error correction model is estimated by OLS regression.</p>
-<p>Note that cointegration does not imply causation, and it is up to the investigator to determine if <span class="math inline">\(Y_t\)</span> or <span class="math inline">\(X_t\)</span> is the dependent variable and to defend the implicit assumption of 1-way causation.</p>
-</section>
-<section id="adl-and-cointegration" class="level2">
-<h2 class="anchored" data-anchor-id="adl-and-cointegration">ADL and Cointegration</h2>
-<p>The error correction model is a restricted autoregressive distributed lag (ADL) (1,1) model (see Hendry, 1995):</p>
-<p><span class="math display">\[
-(1-L)Yt = B_0 + B_1(1-L)X_t + a(Y_{t-1} - C_0 - C_1X_{t-1}) + e_t
-\]</span> <span class="math display">\[
-Y_t - Y_{t-1} = B_0 + B_1X_t - B_1X_{t-1} + aY_{t-1} + aC_0 - aC_1X_{t-1} + e_t
-\]</span> <span class="math display">\[
-Y_t = B_0 + aC_0 + Y_{t-1} + aY_{t-1} + B_1 X_t - (B_1 + aC_1)X_{t-1} + e_t
-\]</span></p>
-<p>if Y and X cointegrate then a should be less than 1 in absolute value and carry a negative sign</p>
-<p>ADL (1,1) model - 1 lag of Y and 1 lag of X</p>
-<p><span class="math display">\[
-Y_t = B_0  -aC_0 + (1-a)Y_{t-1} + B_1 X_t - (B_1 -aC_1)X_{t-1} + e_t
-\]</span></p>
-<p>if a = -.5, this implies that the coefficient on aYt-1 = (1-.5) = .5, so 50% of a shock to Y at time t will erode in each subsequent period.</p>
-<p>Reference: David Hendry. 1995. <em>Dynamic Econometrics</em>. Oxford: Oxford University Press</p>
+<p>the condition that <span class="math inline">\(abs(\rho) &lt; 1\)</span></p>
+<p>Similarly, the MA</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">/</span><span class="fu">polyroot</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.335</span>)) <span class="co"># our MA 4 has 1,2,3 equal zero</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  0.5379553-0.5379553i -0.5379553-0.5379553i -0.5379553+0.5379553i
+[4]  0.5379553+0.5379553i</code></pre>
+</div>
+</div>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
