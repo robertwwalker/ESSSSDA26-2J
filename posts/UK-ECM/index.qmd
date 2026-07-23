@@ -444,6 +444,9 @@ relationship is spurious.
 
 cat("--- ADF Test: ECM residuals (cointegration test) ---\n")
 adf.test(na.omit(blair$ecm_labecman))
+cat("--- KPSS Test: ECM residuals (cointegration test) ---\n")
+kpss.test(na.omit(blair$ecm_labecman))
+# KPSS does not differ.
 ```
 
 ## Stata
