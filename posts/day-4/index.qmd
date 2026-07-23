@@ -13,10 +13,10 @@ image: "image.png"
 
 - [A reveal presentation on Simultaneous Equations](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-SE/)
 
-- [An example ECM on Blair:](https://robertwwalker.github.io/ESSSSDA26-2J/UK-ECM/)
-- [Calculating a Long Run Multiplier](https://robertwwalker.github.io/ESSSSDA26-2J/LRM-Calc/)
-- [A Stationary ECM?](https://robertwwalker.github.io/ESSSSDA26-2J/StationaryECM/)
-- [On Characteristic Roots](https://robertwwalker.github.io/ESSSSDA26-2J/CharRoots/)
+- [An example ECM on Blair:](https://robertwwalker.github.io/ESSSSDA26-2J/posts/UK-ECM/)
+- [Calculating a Long Run Multiplier](https://robertwwalker.github.io/ESSSSDA26-2J/posts/LRM-Calc/)
+- [A Stationary ECM?](https://robertwwalker.github.io/ESSSSDA26-2J/posts/StationaryECM/)
+- [On Characteristic Roots](https://robertwwalker.github.io/ESSSSDA26-2J/posts/CharRoots/)
 
 
 ## A replication
