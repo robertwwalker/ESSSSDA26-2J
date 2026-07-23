@@ -11,7 +11,7 @@ image: "image.png"
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/)
 - [A reveal presentation without increments](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day4/index-NI.html)
 
-- [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-SE/)
+- [A reveal presentation on Simultaneous Equations](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-SE/)
 
 - [An example ECM on Blair:](https://robertwwalker.github.io/ESSSSDA26-2J/UK-ECM/)
 - [Calculating a Long Run Multiplier](https://robertwwalker.github.io/ESSSSDA26-2J/LRM-Calc/)
