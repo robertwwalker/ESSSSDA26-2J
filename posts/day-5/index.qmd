@@ -8,7 +8,11 @@ image: "image.jpg"
 
 ## Slides
 
-- [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day5/)
+- [The Main reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day5/)
+- [A reveal presentation on Variance models](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-ARCH/)
+
+- [A worked example on ARCH](https://robertwwalker.github.io/ESSSSDA26-2J/posts/UK-ARCH/)
+
 
 ## Equation Balance
 
