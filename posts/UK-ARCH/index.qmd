@@ -19,16 +19,18 @@ reference.  It extends the ECM analysis to ARCH.
 
 Variables in `tonyapp4.dta`:
 
-| Variable   | Description                                    |
-|------------|------------------------------------------------|
-| `app`      | Blair approval rating (%)                      |
-| `labecman` | % thinking Labour best manager of the economy  |
-| `v911d`    | 9/11 dummy (differenced)                       |
-| `petrold`  | Petrol crisis dummy (differenced)              |
-| `casl`     | Iraq casualties (logged)                       |
-| `casld`    | Iraq casualties logged, differenced            |
-| `appd`     | `app`, first-differenced (pre-stored)          |
-| `labecmand`| `labecman`, first-differenced (pre-stored)     |
+| Variable    | Description                                    |
+|-------------|------------------------------------------------|
+| `app`       | Blair approval rating (%)                      |
+| `labecman`  | % thinking Labour best manager of the economy  |
+| `v911d`     | 9/11 dummy (pre-stored, already differenced)   |
+| `petrold`   | Petrol crisis dummy (pre-stored, differenced)  |
+| `casl`      | Iraq casualties (logged)                       |
+| `casld`     | Iraq casualties logged, differenced            |
+| `appd`      | `app`, first-differenced (pre-stored)          |
+| `labecmand` | `labecman`, first-differenced (pre-stored)     |
+| `v911`      | 9/11 dummy (raw, for differencing)             |
+| `petrol`    | Petrol crisis dummy (raw, for differencing)    |
 
 ---
 
@@ -42,7 +44,7 @@ Variables in `tonyapp4.dta`:
 #| label: setup
 library(haven)     # read .dta files
 library(zoo)       # yearmon monthly time index
-library(tseries)   # adf.test  (Augmented Dickey-Fuller)
+library(urca)      # ur.df  (Dickey-Fuller — matches Stata's dfuller)
 library(fracdiff)  # fracdiff  (ARFIMA models)
 library(rugarch)   # ugarchspec / ugarchfit  (ARCH/GARCH)
 library(ggplot2)   # plotting
@@ -73,6 +75,7 @@ df <- read_dta("./data/tonyapp4.dta")
 ### Stata
 
 ```{.stata}
+cd "C:\icpsrdyn\Lab"
 use "tonyapp4.dta", clear
 ```
 
@@ -82,9 +85,11 @@ use "tonyapp4.dta", clear
 
 ## 3. Create Monthly Time Index
 
-Stata's `%tm` format counts months from January 1960 (month 0), so June
-1997 = month 450. In R we use `zoo::yearmon` to represent the same
-monthly series.
+Stata's `%tm` format counts months from January 1960 (month 0). The
+`counter` variable runs 0, 1, 2, … and `month = counter + 450`. Since
+month 0 = Jan 1960 and 12 × 37 + 6 = 450, month 450 = **July 1997**.
+(The `.do` file comment says "June" but the Stata log confirms
+`1997m7 to 2005m12`.) In R we use `zoo::yearmon`.
 
 ::: {.panel-tabset}
 
@@ -95,18 +100,19 @@ monthly series.
 n          <- nrow(df)
 df$counter <- 0:(n - 1)
 
-# as.yearmon("1997-06") is June 1997; each step is 1/12 of a year
-df$month   <- as.yearmon("1997-06") + df$counter / 12
+# month 450 in Stata %tm = July 1997 (not June — see note above)
+df$month   <- as.yearmon("1997-07") + df$counter / 12
 ```
 
 ### Stata
 
 ```{.stata}
-* Create a running counter 0, 1, 2, … then shift to Stata %tm month number
+* counter = 0, 1, 2, … ; month 450 in %tm = July 1997
 egen counter = fill(0 1 2 3)
 gen  month   = counter + 450
 format month %tm
 tsset month
+* Stata confirms: Time variable: month, 1997m7 to 2005m12
 ```
 
 :::
@@ -140,10 +146,14 @@ twoway line app month
 
 :::
 
-### 4.2 Stationarity Tests (Augmented Dickey-Fuller)
+### 4.2 Stationarity Tests (Dickey-Fuller)
 
-The plot suggests the series is non-stationary. We confirm with ADF tests
-on the level and the first difference.
+Stata's `dfuller` defaults to **0 augmentation lags**, **no constant**,
+and **no trend** (H₀: random walk without drift). `urca::ur.df()` with
+`type = "none"` and `lags = 0` matches this specification exactly.
+`tseries::adf.test()` — which auto-selects lags and includes both a
+constant and trend — produces notably different statistics and should be
+avoided for direct comparison.
 
 ::: {.panel-tabset}
 
@@ -151,15 +161,17 @@ on the level and the first difference.
 
 ```{r}
 #| label: adf-app
-adf.test(df$app)        # level
-adf.test(diff(df$app))  # first difference
+# type="none": no constant, no trend — matches Stata's dfuller default
+# lags=0: no augmentation — matches Stata's "Number of lags = 0"
+summary(ur.df(df$app,        type = "none", lags = 0))   # level
+summary(ur.df(diff(df$app),  type = "none", lags = 0))   # first difference
 ```
 
 ### Stata
 
 ```{.stata}
-dfuller app
-dfuller d.app
+dfuller app      /* Z(t) = -2.262,  p = 0.1847 */
+dfuller d.app    /* Z(t) = -11.314, p = 0.0000 */
 ```
 
 :::
@@ -168,7 +180,15 @@ dfuller d.app
 
 ## 5. ARFIMA Models
 
-With `d.app` apparently stationary, we test for fractional integration.
+::: {.callout-warning}
+**Estimation method mismatch — R and Stata will differ here.**  
+Stata's `arfima` uses exact maximum likelihood. `fracdiff::fracdiff()` 
+uses the Haslett–Raftery (1989) spectral approximation, which for these
+data finds d ≈ 0 (no evidence of fractional integration). Stata's exact
+MLE finds d ≈ −0.28 (significant at 1%), implying mild overdifferencing.
+The qualitative conclusion depends on the estimator.  
+For R results closer to Stata, consider `forecast::arfima(dapp, estim = "mle")`.
+:::
 
 ::: {.panel-tabset}
 
@@ -178,26 +198,24 @@ With `d.app` apparently stationary, we test for fractional integration.
 #| label: arfima
 dapp <- diff(df$app)
 
-# ARFIMA(0, d, 0)
+# ARFIMA(0, d, 0) — Stata finds d = -0.278 (SE 0.092, z = -3.01, p = 0.003)
 fracdiff(dapp)
 
-# ARFIMA(1, d, 0)
+# ARFIMA(1, d, 0) — Stata finds d = -0.474, ar = 0.253
 fracdiff(dapp, nar = 1)
 ```
 
 ### Stata
 
 ```{.stata}
-arfima d.app              /* ARFIMA(0, d, 0)  */
-arfima d.app, ar(1)       /* ARFIMA(1, d, 0)  */
+arfima d.app              /* d = -0.278, SE 0.092, z = -3.01, p = 0.003 */
+arfima d.app, ar(1)       /* d = -0.474, ar(1) = 0.253                  */
 ```
 
 :::
 
-The Stata command `arfima d.app d.v911 d.petrol, ma(1)` allows external
-regressors directly. `fracdiff` does not support `xreg`, so the R
-equivalent pre-filters `d.app` by regressing on the covariates and then
-fits ARFIMA on the residuals:
+ARFIMA with external regressors — Stata accepts `xreg` directly; `fracdiff`
+does not, so we pre-filter first:
 
 ::: {.panel-tabset}
 
@@ -205,19 +223,21 @@ fits ARFIMA on the residuals:
 
 ```{r}
 #| label: arfima-xreg
-# Compute differenced regressors (adjust column names to match your .dta)
+# Pre-filter: partial out d.v911 and d.petrol before estimating d
 dv911   <- diff(df$v911)
 dpetrol <- diff(df$petrol)
+pre_fit <- lm(dapp ~ dv911 + dpetrol)
 
-# Pre-filter: regress d.app on covariates, then fit ARFIMA(0,d,1) on residuals
-pre_fit  <- lm(dapp ~ dv911 + dpetrol)
-fracdiff(residuals(pre_fit), nma = 1)  # ARFIMA(0, d, 1) on residuals
+# ARFIMA(0, d, 1) on residuals — approximate equivalent
+# Stata finds: d.v911=10.61, d.petrol=-9.01, d=-0.470, ma(1)=0.339
+fracdiff(residuals(pre_fit), nma = 1)
 ```
 
 ### Stata
 
 ```{.stata}
-arfima d.app d.v911 d.petrol, ma(1)   /* ARFIMA(0,d,1) with regressors */
+/* d.v911=10.607, d.petrol=-9.007, d=-0.470, ma(1)=0.339 */
+arfima d.app d.v911 d.petrol, ma(1)
 ```
 
 :::
@@ -234,24 +254,24 @@ arfima d.app d.v911 d.petrol, ma(1)   /* ARFIMA(0,d,1) with regressors */
 
 ```{r}
 #| label: adf-labecman
-adf.test(df$labecman)
-adf.test(diff(df$labecman))
+summary(ur.df(df$labecman,       type = "none", lags = 0))   # level
+summary(ur.df(diff(df$labecman), type = "none", lags = 0))   # first difference
 ```
 
 ### Stata
 
 ```{.stata}
 label variable labecman "Labour Best Eco Mng"
-dfuller labecman
-dfuller d.labecman
+dfuller labecman    /* Z(t) = -2.380, p = 0.1474 */
+dfuller d.labecman  /* Z(t) = -11.359, p = 0.0000 */
 ```
 
 :::
 
 ### 6.2 Overlay Plot
 
-Both series appear non-stationary and are plotted together to inspect
-potential cointegration.
+Both series appear non-stationary; plotting together to inspect potential
+cointegration.
 
 ::: {.panel-tabset}
 
@@ -265,7 +285,7 @@ ggplot(df, aes(x = month)) +
   geom_line(aes(y = app,      colour = "Blair Approval")) +
   geom_line(aes(y = labecman, colour = "Labour Best Eco Mng")) +
   scale_colour_manual(
-    values = c("Blair Approval"       = "#2c7bb6",
+    values = c("Blair Approval"      = "#2c7bb6",
                "Labour Best Eco Mng" = "#d7191c")
   ) +
   labs(title  = "Approval & Labour Economic Management",
@@ -284,7 +304,10 @@ twoway line app month || line labecman month
 ### 6.3 Cointegration Residuals (Engle-Granger)
 
 Regress `app` on `labecman`; if the residuals are I(0), the two series
-are cointegrated.
+are cointegrated. **The lag choice matters critically here**: with 4 lags
+(the `adf.test()` default) R fails to reject the unit root (p ≈ 0.34),
+while Stata with 0 lags rejects at 1% (p = 0.0025). Using `ur.df` with
+`lags = 0` aligns the test with Stata.
 
 ::: {.panel-tabset}
 
@@ -294,7 +317,10 @@ are cointegrated.
 #| label: coint-resid
 reg_coint       <- lm(app ~ labecman, data = df)
 df$ecm_labecman <- residuals(reg_coint)
-adf.test(df$ecm_labecman)
+
+# With lags=0 (matching dfuller): test stat ≈ -3.84, critical value 1% = -2.60
+# → reject unit root → cointegration supported (matches Stata)
+summary(ur.df(df$ecm_labecman, type = "none", lags = 0))
 ```
 
 ### Stata
@@ -302,7 +328,7 @@ adf.test(df$ecm_labecman)
 ```{.stata}
 reg app labecman
 predict ecm_labecman, resid
-dfuller ecm_labecman
+dfuller ecm_labecman   /* Z(t) = -3.838, p = 0.0025 → cointegrated */
 ```
 
 :::
@@ -311,13 +337,13 @@ dfuller ecm_labecman
 
 ## 7. Error Correction Model (OLS)
 
-The ECM takes `d.app` as the dependent variable. The levels `L.app` and
-`L.labecman` provide the error-correction terms.
+The ECM takes `d.app` as dependent variable. `L.app` and `L.labecman`
+provide the error-correction terms.
 
 ### 7.1 Construct Lag and Difference Variables
 
-Stata computes lags and differences on the fly with `L.` and `D.`
-operators. In R we create them explicitly.
+Stata resolves `d.`, `L.`, and `L2D.` operators on the fly. In R we
+build them explicitly.
 
 ::: {.panel-tabset}
 
@@ -334,14 +360,14 @@ df$L_labecman <- c(NA, head(df$labecman, -1))
 dcasl      <- c(NA, diff(df$casl))
 df$L2Dcasl <- c(NA, NA, head(dcasl, -2))
 
-# L.casl used later in the ARCH variance equation
+# L.casl = one-period lag of casl (used in ARCH variance equation)
 df$L_casl  <- c(NA, head(df$casl, -1))
 ```
 
 ### Stata
 
 ```{.stata}
-* Stata resolves d.app, L.app, L2D.casl, etc. automatically — no setup needed.
+* Stata resolves d.app, L.app, L2D.casl, etc. automatically at estimation time.
 label var v911d   "911 differenced"
 label var petrold "Petrol Crisis differenced"
 label var casld   "Iraq casualties Logged differenced"
@@ -351,6 +377,9 @@ label var casl    "Iraq casualties Logged"
 :::
 
 ### 7.2 OLS Regression
+
+OLS coefficients match Stata to 4–5 significant figures — no rounding
+issues here.
 
 ::: {.panel-tabset}
 
@@ -368,6 +397,7 @@ summary(reg_ecm)
 
 ```{.stata}
 reg d.app d.labecman L.app L.labecman v911d petrold L2D.casl
+* N=99 (3 obs lost to L2D.casl); R²=0.33; Root MSE=3.817
 ```
 
 :::
@@ -385,7 +415,7 @@ Autocorrelation in the **squared** OLS residuals signals ARCH effects.
 #| fig-width: 8
 #| fig-height: 3.5
 
-# Align residuals back into df by row index
+# Align residuals into df by row index
 df$resid_ols <- NA
 df$resid_ols[as.integer(rownames(model.frame(reg_ecm)))] <- residuals(reg_ecm)
 df$resid_ols_sq <- df$resid_ols^2
@@ -400,9 +430,10 @@ par(mfrow = c(1, 1))
 ### Stata
 
 ```{.stata}
-predict resid_ols, res
+predict resid_ols, res     /* 3 missing values generated */
 gen resid_ols_sq = resid_ols * resid_ols
 corrgram resid_ols_sq
+* AC at lag 1 = 0.157, lag 9 = 0.205; no strong ARCH signal but proceed
 ```
 
 :::
@@ -411,18 +442,40 @@ corrgram resid_ols_sq
 
 ## 8. ARCH(1) Model
 
-We now account for conditional heteroskedasticity. Iraq casualties (logged,
-lagged) enter the variance equation as an external predictor of volatility.
+We account for conditional heteroskedasticity. Iraq casualties (logged,
+lagged one period) enter the variance equation.
 
 ::: {.callout-note}
-**Stata vs R — variance specification**  
-Stata's `het()` option enters variance regressors *multiplicatively* in
-log-linear form:
-$$\sigma^2_t = \exp(\gamma_0 + \gamma_1 \cdot \text{L.casl})\,(1 + \alpha_1 \varepsilon^2_{t-1})$$
-`rugarch`'s `external.regressors` in the variance model enters them
-*additively*:
-$$\sigma^2_t = \omega + \alpha_1 \varepsilon^2_{t-1} + \eta \cdot \text{L.casl}$$
-Coefficients will differ in scale; the substantive interpretation is the same.
+**Stata vs R — variance equation parameterisation**
+
+Stata's `het()` option uses a **multiplicative log-linear** specification:
+
+$$\sigma^2_t = \exp(\gamma_0 + \gamma_1 \cdot \text{L.casl})\,(1 + \alpha_1\,\varepsilon^2_{t-1})$$
+
+Stata estimates: γ₀ = 2.509, γ₁ = −0.310, α₁ = 0.398.
+
+`rugarch`'s `external.regressors` in the variance model uses an **additive** 
+specification:
+
+$$\sigma^2_t = \omega + \alpha_1\,\varepsilon^2_{t-1} + \eta\,\text{L.casl}$$
+
+Because the true generating model is multiplicative, the additive form cannot
+represent it well: `rugarch` estimates vxreg1 (η) ≈ 0, absorbing the casualty
+effect into `omega`. The ARCH coefficient (α₁ = 0.380 vs Stata's 0.398) and 
+mean-equation slopes are nonetheless close.
+
+**Mean equation comparison (Stata → R):**
+
+| Term | Stata | R (rugarch) |
+|---|---|---|
+| Intercept | 5.248 | 5.045 |
+| `labecmand` | 0.271 | 0.326 |
+| `L.app` | −0.160 | −0.146 |
+| `L.labecman` | 0.135 | 0.110 |
+| `v911d` | 9.677 | 9.807 |
+| `petrold` | −6.377 | −5.698 |
+| `L2D.casl` | −3.058 | −2.688 |
+| ARCH α₁ | 0.398 | 0.380 |
 :::
 
 ### 8.1 Fit the Model
@@ -448,7 +501,7 @@ spec_arch <- ugarchspec(
   variance.model = list(
     model               = "sGARCH",
     garchOrder          = c(1, 0),   # ARCH(1): one alpha, no beta
-    external.regressors = var_xreg   # het(L.casl)
+    external.regressors = var_xreg   # additive approximation to het(L.casl)
   ),
   mean.model = list(
     armaOrder           = c(0, 0),
@@ -465,17 +518,21 @@ show(fit_arch)
 ### Stata
 
 ```{.stata}
-* appd and labecmand are pre-differenced columns already in the dataset
+* appd and labecmand are pre-differenced variables already in the dataset.
+* het(L.casl) uses a multiplicative log-linear variance model (see note above).
 arch appd labecmand L.app L.labecman v911d petrold L2D.casl, ///
      het(L.casl) arch(1)
+* Log L = -263.06; N = 99; sample 1997m10 to 2005m12
+* HET: L.casl = -0.310 (p=0.003), _cons = 2.509 (p<0.001)
+* ARCH L1 = 0.398 (p=0.032)
 ```
 
 :::
 
 ### 8.2 Residual Diagnostics
 
-If the ARCH model is well-specified, neither the residuals nor their
-squares should show significant autocorrelation.
+If the model is well-specified, neither the residuals nor their squares
+should show significant autocorrelation.
 
 ::: {.panel-tabset}
 
@@ -500,11 +557,11 @@ par(mfrow = c(1, 1))
 ### Stata
 
 ```{.stata}
-predict resid, res
-corrgram resid
+predict resid, res     /* 3 missing values generated */
+corrgram resid         /* no significant autocorrelation */
 
 gen resid_sq = resid * resid
-corrgram resid_sq
+corrgram resid_sq      /* no significant autocorrelation */
 ```
 
 :::
@@ -537,7 +594,7 @@ ggplot(sigma2_df, aes(x = month, y = sigma2)) +
 ### Stata
 
 ```{.stata}
-predict sigma2, variance
+predict sigma2, variance   /* 1 missing value generated */
 graph twoway line sigma2 month
 ```
 
@@ -547,8 +604,16 @@ graph twoway line sigma2 month
 
 ## 9. Digression: Random Walks
 
-Random walks are a canonical non-stationary process. Their variance grows
-over time — but does an ARCH model pick this up?
+Random walks are non-stationary with variance growing over time. We
+simulate one and confirm the ARCH model detects time-varying variance.
+
+::: {.callout-note}
+**R and Stata use different random number generators.** Even with the
+same seed (1234), `rnorm()` and `drawnorm` produce different sequences,
+so the simulated paths diverge. Consequently, the ARCH model results
+(mean, omega, alpha) will also differ between platforms — this is
+expected, not an error.
+:::
 
 ### 9.1 Simulate and Plot
 
@@ -576,10 +641,10 @@ ggplot(rw_df, aes(x = month, y = Y1)) +
 
 ```{.stata}
 set seed 1234
-drawnorm r1
-generate Y1 = sum(r1)    /* sum() in Stata is a running/cumulative sum */
-
+drawnorm r1               /* different RNG from R's rnorm() */
+generate Y1 = sum(r1)     /* sum() in Stata is a running/cumulative sum */
 twoway line Y1 month, yline(0)
+* Stata path mean ≈ 4.3; R path mean ≈ -19.5 — different due to RNG
 ```
 
 :::
@@ -605,6 +670,9 @@ show(rw_fit)
 
 ```{.stata}
 arch Y1, arch(1)
+* _cons = 4.264, ARCH L1 = 1.001 (≈1: variance growing at rate of random walk)
+* omega = 0.517
+* R results differ due to different simulated path (see RNG note above)
 ```
 
 :::
@@ -629,7 +697,8 @@ sigma_rw_df <- data.frame(
 ggplot(sigma_rw_df, aes(x = month, y = sigma1_rw)) +
   geom_line(colour = "#2c7bb6") +
   labs(
-    title = expression("Random Walk: Conditional Variance " * sigma[RW]^2 * " — ARCH(1)"),
+    title = expression("Random Walk: Conditional Variance " *
+                       sigma[RW]^2 * " — ARCH(1)"),
     x = "Month", y = expression(sigma[RW]^2)
   )
 ```
@@ -639,6 +708,7 @@ ggplot(sigma_rw_df, aes(x = month, y = sigma1_rw)) +
 ```{.stata}
 predict sigma1_rw, variance
 graph twoway line sigma1_rw month
+* Both R and Stata show increasing variance — the key qualitative result
 ```
 
 :::

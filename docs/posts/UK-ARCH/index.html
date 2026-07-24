@@ -321,7 +321,7 @@ window.Quarto = {
   <li><a href="#blair-approval-rating" id="toc-blair-approval-rating" class="nav-link" data-scroll-target="#blair-approval-rating">4. Blair Approval Rating</a>
   <ul class="collapse">
   <li><a href="#exploratory-plot" id="toc-exploratory-plot" class="nav-link" data-scroll-target="#exploratory-plot">4.1 Exploratory Plot</a></li>
-  <li><a href="#stationarity-tests-augmented-dickey-fuller" id="toc-stationarity-tests-augmented-dickey-fuller" class="nav-link" data-scroll-target="#stationarity-tests-augmented-dickey-fuller">4.2 Stationarity Tests (Augmented Dickey-Fuller)</a></li>
+  <li><a href="#stationarity-tests-dickey-fuller" id="toc-stationarity-tests-dickey-fuller" class="nav-link" data-scroll-target="#stationarity-tests-dickey-fuller">4.2 Stationarity Tests (Dickey-Fuller)</a></li>
   </ul></li>
   <li><a href="#arfima-models" id="toc-arfima-models" class="nav-link" data-scroll-target="#arfima-models">5. ARFIMA Models</a></li>
   <li><a href="#labour-economic-management" id="toc-labour-economic-management" class="nav-link" data-scroll-target="#labour-economic-management">6. Labour Economic Management</a>
@@ -383,11 +383,11 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td><code>v911d</code></td>
-<td>9/11 dummy (differenced)</td>
+<td>9/11 dummy (pre-stored, already differenced)</td>
 </tr>
 <tr class="even">
 <td><code>petrold</code></td>
-<td>Petrol crisis dummy (differenced)</td>
+<td>Petrol crisis dummy (pre-stored, differenced)</td>
 </tr>
 <tr class="odd">
 <td><code>casl</code></td>
@@ -404,6 +404,14 @@ window.Quarto = {
 <tr class="even">
 <td><code>labecmand</code></td>
 <td><code>labecman</code>, first-differenced (pre-stored)</td>
+</tr>
+<tr class="odd">
+<td><code>v911</code></td>
+<td>9/11 dummy (raw, for differencing)</td>
+</tr>
+<tr class="even">
+<td><code>petrol</code></td>
+<td>Petrol crisis dummy (raw, for differencing)</td>
 </tr>
 </tbody>
 </table>
@@ -427,23 +435,18 @@ Attaching package: 'zoo'</code></pre>
 
     as.Date, as.Date.numeric</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tseries)   <span class="co"># adf.test  (Augmented Dickey-Fuller)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Registered S3 method overwritten by 'quantmod':
-  method            from
-  as.zoo.data.frame zoo </code></pre>
-</div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fracdiff)  <span class="co"># fracdiff  (ARFIMA models)</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rugarch)   <span class="co"># ugarchspec / ugarchfit  (ARCH/GARCH)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(urca)      <span class="co"># ur.df  (Dickey-Fuller — matches Stata's dfuller)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fracdiff)  <span class="co"># fracdiff  (ARFIMA models)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rugarch)   <span class="co"># ugarchspec / ugarchfit  (ARCH/GARCH)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Loading required package: parallel</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)   <span class="co"># plotting</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)   <span class="co"># plotting</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>* All procedures used here are built into Stata.</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>* No package installation is required.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>* All procedures used here are built into Stata.</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>* No package installation is required.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -456,11 +459,12 @@ Attaching package: 'zoo'</code></pre>
 <div class="tab-content">
 <div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_dta</span>(<span class="st">"./data/tonyapp4.dta"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_dta</span>(<span class="st">"./data/tonyapp4.dta"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="st">"tonyapp4.dta"</span>, <span class="kw">clear</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>cd <span class="st">"C:\icpsrdyn\Lab"</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="st">"tonyapp4.dta"</span>, <span class="kw">clear</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -468,25 +472,26 @@ Attaching package: 'zoo'</code></pre>
 </section>
 <section id="create-monthly-time-index" class="level2">
 <h2 class="anchored" data-anchor-id="create-monthly-time-index">3. Create Monthly Time Index</h2>
-<p>Stata’s <code>%tm</code> format counts months from January 1960 (month 0), so June 1997 = month 450. In R we use <code>zoo::yearmon</code> to represent the same monthly series.</p>
+<p>Stata’s <code>%tm</code> format counts months from January 1960 (month 0). The <code>counter</code> variable runs 0, 1, 2, … and <code>month = counter + 450</code>. Since month 0 = Jan 1960 and 12 × 37 + 6 = 450, month 450 = <strong>July 1997</strong>. (The <code>.do</code> file comment says “June” but the Stata log confirms <code>1997m7 to 2005m12</code>.) In R we use <code>zoo::yearmon</code>.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>n          <span class="ot">&lt;-</span> <span class="fu">nrow</span>(df)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>counter <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span>(n <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># as.yearmon("1997-06") is June 1997; each step is 1/12 of a year</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>month   <span class="ot">&lt;-</span> <span class="fu">as.yearmon</span>(<span class="st">"1997-06"</span>) <span class="sc">+</span> df<span class="sc">$</span>counter <span class="sc">/</span> <span class="dv">12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>n          <span class="ot">&lt;-</span> <span class="fu">nrow</span>(df)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>counter <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span>(n <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># month 450 in Stata %tm = July 1997 (not June — see note above)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>month   <span class="ot">&lt;-</span> <span class="fu">as.yearmon</span>(<span class="st">"1997-07"</span>) <span class="sc">+</span> df<span class="sc">$</span>counter <span class="sc">/</span> <span class="dv">12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>* Create a running counter 0, 1, 2, … then <span class="kw">shift</span> to Stata %tm <span class="fu">month</span> number</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">egen</span> counter = <span class="fu">fill</span>(0 1 2 3)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span>  <span class="fu">month</span>   = counter + 450</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">format</span> <span class="fu">month</span> %tm</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">tsset</span> <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>* counter = 0, 1, 2, … ; <span class="fu">month</span> 450 <span class="kw">in</span> %tm = July 1997</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">egen</span> counter = <span class="fu">fill</span>(0 1 2 3)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span>  <span class="fu">month</span>   = counter + 450</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">format</span> <span class="fu">month</span> %tm</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">tsset</span> <span class="fu">month</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>* Stata confirms: Time <span class="kw">variable</span>: <span class="fu">month</span>, 1997m7 to 2005m12</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -501,10 +506,10 @@ Attaching package: 'zoo'</code></pre>
 <div class="tab-content">
 <div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> app)) <span class="sc">+</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Blair Approval Rating"</span>,</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="st">"Approval (%)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> app)) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Blair Approval Rating"</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="st">"Approval (%)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -515,46 +520,93 @@ Attaching package: 'zoo'</code></pre>
 </div>
 </div>
 <div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> app <span class="st">"Blair Approval Rating"</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">twoway</span> <span class="kw">line</span> app <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> app <span class="st">"Blair Approval Rating"</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">twoway</span> <span class="kw">line</span> app <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
 </section>
-<section id="stationarity-tests-augmented-dickey-fuller" class="level3">
-<h3 class="anchored" data-anchor-id="stationarity-tests-augmented-dickey-fuller">4.2 Stationarity Tests (Augmented Dickey-Fuller)</h3>
-<p>The plot suggests the series is non-stationary. We confirm with ADF tests on the level and the first difference.</p>
+<section id="stationarity-tests-dickey-fuller" class="level3">
+<h3 class="anchored" data-anchor-id="stationarity-tests-dickey-fuller">4.2 Stationarity Tests (Dickey-Fuller)</h3>
+<p>Stata’s <code>dfuller</code> defaults to <strong>0 augmentation lags</strong>, <strong>no constant</strong>, and <strong>no trend</strong> (H₀: random walk without drift). <code>urca::ur.df()</code> with <code>type = "none"</code> and <code>lags = 0</code> matches this specification exactly. <code>tseries::adf.test()</code> — which auto-selects lags and includes both a constant and trend — produces notably different statistics and should be avoided for direct comparison.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" role="tab" aria-controls="tabset-5-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" role="tab" aria-controls="tabset-5-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">adf.test</span>(df<span class="sc">$</span>app)        <span class="co"># level</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># type="none": no constant, no trend — matches Stata's dfuller default</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># lags=0: no augmentation — matches Stata's "Number of lags = 0"</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">ur.df</span>(df<span class="sc">$</span>app,        <span class="at">type =</span> <span class="st">"none"</span>, <span class="at">lags =</span> <span class="dv">0</span>))   <span class="co"># level</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Augmented Dickey-Fuller Test
+############################################### 
+# Augmented Dickey-Fuller Test Unit Root Test # 
+############################################### 
 
-data:  df$app
-Dickey-Fuller = -2.6626, Lag order = 4, p-value = 0.302
-alternative hypothesis: stationary</code></pre>
+Test regression none 
+
+
+Call:
+lm(formula = z.diff ~ z.lag.1 - 1)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-12.4602  -2.4362  -0.2563   2.7197  18.5878 
+
+Coefficients:
+         Estimate Std. Error t value Pr(&gt;|t|)
+z.lag.1 -0.011995   0.009446   -1.27    0.207
+
+Residual standard error: 4.595 on 100 degrees of freedom
+Multiple R-squared:  0.01587,   Adjusted R-squared:  0.006029 
+F-statistic: 1.613 on 1 and 100 DF,  p-value: 0.2071
+
+
+Value of test-statistic is: -1.2699 
+
+Critical values for test statistics: 
+      1pct  5pct 10pct
+tau1 -2.58 -1.95 -1.62</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">adf.test</span>(<span class="fu">diff</span>(df<span class="sc">$</span>app))  <span class="co"># first difference</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in adf.test(diff(df$app)): p-value smaller than printed p-value</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">ur.df</span>(<span class="fu">diff</span>(df<span class="sc">$</span>app),  <span class="at">type =</span> <span class="st">"none"</span>, <span class="at">lags =</span> <span class="dv">0</span>))   <span class="co"># first difference</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Augmented Dickey-Fuller Test
+############################################### 
+# Augmented Dickey-Fuller Test Unit Root Test # 
+############################################### 
 
-data:  diff(df$app)
-Dickey-Fuller = -5.6329, Lag order = 4, p-value = 0.01
-alternative hypothesis: stationary</code></pre>
+Test regression none 
+
+
+Call:
+lm(formula = z.diff ~ z.lag.1 - 1)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-12.6322  -2.7404  -0.6839   2.1063  17.7548 
+
+Coefficients:
+        Estimate Std. Error t value Pr(&gt;|t|)    
+z.lag.1 -1.12261    0.09915  -11.32   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.592 on 99 degrees of freedom
+Multiple R-squared:  0.5642,    Adjusted R-squared:  0.5598 
+F-statistic: 128.2 on 1 and 99 DF,  p-value: &lt; 2.2e-16
+
+
+Value of test-statistic is: -11.3219 
+
+Critical values for test statistics: 
+      1pct  5pct 10pct
+tau1 -2.58 -1.95 -1.62</code></pre>
 </div>
 </div>
 </div>
 <div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> app</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> <span class="kw">d</span>.app</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> app      <span class="co">/* Z(t) = -2.262,  p = 0.1847 */</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> <span class="kw">d</span>.app    <span class="co">/* Z(t) = -11.314, p = 0.0000 */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -563,16 +615,30 @@ alternative hypothesis: stationary</code></pre>
 </section>
 <section id="arfima-models" class="level2">
 <h2 class="anchored" data-anchor-id="arfima-models">5. ARFIMA Models</h2>
-<p>With <code>d.app</code> apparently stationary, we test for fractional integration.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Estimation method mismatch — R and Stata will differ here.</strong><br>
+Stata’s <code>arfima</code> uses exact maximum likelihood. <code>fracdiff::fracdiff()</code> uses the Haslett–Raftery (1989) spectral approximation, which for these data finds d ≈ 0 (no evidence of fractional integration). Stata’s exact MLE finds d ≈ −0.28 (significant at 1%), implying mild overdifferencing. The qualitative conclusion depends on the estimator.<br>
+For R results closer to Stata, consider <code>forecast::arfima(dapp, estim = "mle")</code>.</p>
+</div>
+</div>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-6-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-1" role="tab" aria-controls="tabset-6-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-2" role="tab" aria-controls="tabset-6-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-6-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-6-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>dapp <span class="ot">&lt;-</span> <span class="fu">diff</span>(df<span class="sc">$</span>app)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ARFIMA(0, d, 0)</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">fracdiff</span>(dapp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dapp <span class="ot">&lt;-</span> <span class="fu">diff</span>(df<span class="sc">$</span>app)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ARFIMA(0, d, 0) — Stata finds d = -0.278 (SE 0.092, z = -3.01, p = 0.003)</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">fracdiff</span>(dapp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -589,8 +655,8 @@ a list with components:
 [13] "d.tol"           "M"               "hessian.dpq"     "length.w"       
 [17] "residuals"       "fitted"          "call"           </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ARFIMA(1, d, 0)</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fracdiff</span>(dapp, <span class="at">nar =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ARFIMA(1, d, 0) — Stata finds d = -0.474, ar = 0.253</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fracdiff</span>(dapp, <span class="at">nar =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: unable to compute correlation matrix; maybe change 'h'</code></pre>
 </div>
@@ -615,24 +681,25 @@ a list with components:
 </div>
 </div>
 <div id="tabset-6-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-6-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>arfima <span class="kw">d</span>.app              <span class="co">/* ARFIMA(0, d, 0)  */</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>arfima <span class="kw">d</span>.app, ar(1)       <span class="co">/* ARFIMA(1, d, 0)  */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>arfima <span class="kw">d</span>.app              <span class="co">/* d = -0.278, SE 0.092, z = -3.01, p = 0.003 */</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>arfima <span class="kw">d</span>.app, ar(1)       <span class="co">/* d = -0.474, ar(1) = 0.253                  */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
-<p>The Stata command <code>arfima d.app d.v911 d.petrol, ma(1)</code> allows external regressors directly. <code>fracdiff</code> does not support <code>xreg</code>, so the R equivalent pre-filters <code>d.app</code> by regressing on the covariates and then fits ARFIMA on the residuals:</p>
+<p>ARFIMA with external regressors — Stata accepts <code>xreg</code> directly; <code>fracdiff</code> does not, so we pre-filter first:</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-7-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-1" role="tab" aria-controls="tabset-7-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-7-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-2" role="tab" aria-controls="tabset-7-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-7-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-7-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute differenced regressors (adjust column names to match your .dta)</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>dv911   <span class="ot">&lt;-</span> <span class="fu">diff</span>(df<span class="sc">$</span>v911)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>dpetrol <span class="ot">&lt;-</span> <span class="fu">diff</span>(df<span class="sc">$</span>petrol)</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Pre-filter: regress d.app on covariates, then fit ARFIMA(0,d,1) on residuals</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>pre_fit  <span class="ot">&lt;-</span> <span class="fu">lm</span>(dapp <span class="sc">~</span> dv911 <span class="sc">+</span> dpetrol)</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">fracdiff</span>(<span class="fu">residuals</span>(pre_fit), <span class="at">nma =</span> <span class="dv">1</span>)  <span class="co"># ARFIMA(0, d, 1) on residuals</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pre-filter: partial out d.v911 and d.petrol before estimating d</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>dv911   <span class="ot">&lt;-</span> <span class="fu">diff</span>(df<span class="sc">$</span>v911)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>dpetrol <span class="ot">&lt;-</span> <span class="fu">diff</span>(df<span class="sc">$</span>petrol)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>pre_fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(dapp <span class="sc">~</span> dv911 <span class="sc">+</span> dpetrol)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ARFIMA(0, d, 1) on residuals — approximate equivalent</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Stata finds: d.v911=10.61, d.petrol=-9.01, d=-0.470, ma(1)=0.339</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="fu">fracdiff</span>(<span class="fu">residuals</span>(pre_fit), <span class="at">nma =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: unable to compute correlation matrix; maybe change 'h'</code></pre>
 </div>
@@ -657,7 +724,8 @@ a list with components:
 </div>
 </div>
 <div id="tabset-7-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>arfima <span class="kw">d</span>.app <span class="kw">d</span>.v911 <span class="kw">d</span>.petrol, ma(1)   <span class="co">/* ARFIMA(0,d,1) with regressors */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* d.v911=10.607, d.petrol=-9.007, d=-0.470, ma(1)=0.339 */</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>arfima <span class="kw">d</span>.app <span class="kw">d</span>.v911 <span class="kw">d</span>.petrol, ma(1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -672,55 +740,100 @@ a list with components:
 <div class="tab-content">
 <div id="tabset-8-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-8-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">adf.test</span>(df<span class="sc">$</span>labecman)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">ur.df</span>(df<span class="sc">$</span>labecman,       <span class="at">type =</span> <span class="st">"none"</span>, <span class="at">lags =</span> <span class="dv">0</span>))   <span class="co"># level</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Augmented Dickey-Fuller Test
+############################################### 
+# Augmented Dickey-Fuller Test Unit Root Test # 
+############################################### 
 
-data:  df$labecman
-Dickey-Fuller = -1.8498, Lag order = 4, p-value = 0.639
-alternative hypothesis: stationary</code></pre>
+Test regression none 
+
+
+Call:
+lm(formula = z.diff ~ z.lag.1 - 1)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.4701  -1.2809   0.6056   2.8108  11.8326 
+
+Coefficients:
+        Estimate Std. Error t value Pr(&gt;|t|)
+z.lag.1 -0.03785    0.02418  -1.565    0.121
+
+Residual standard error: 4.183 on 100 degrees of freedom
+Multiple R-squared:  0.02392,   Adjusted R-squared:  0.01416 
+F-statistic:  2.45 on 1 and 100 DF,  p-value: 0.1207
+
+
+Value of test-statistic is: -1.5653 
+
+Critical values for test statistics: 
+      1pct  5pct 10pct
+tau1 -2.58 -1.95 -1.62</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">adf.test</span>(<span class="fu">diff</span>(df<span class="sc">$</span>labecman))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in adf.test(diff(df$labecman)): p-value smaller than printed p-value</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">ur.df</span>(<span class="fu">diff</span>(df<span class="sc">$</span>labecman), <span class="at">type =</span> <span class="st">"none"</span>, <span class="at">lags =</span> <span class="dv">0</span>))   <span class="co"># first difference</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Augmented Dickey-Fuller Test
+############################################### 
+# Augmented Dickey-Fuller Test Unit Root Test # 
+############################################### 
 
-data:  diff(df$labecman)
-Dickey-Fuller = -4.7619, Lag order = 4, p-value = 0.01
-alternative hypothesis: stationary</code></pre>
+Test regression none 
+
+
+Call:
+lm(formula = z.diff ~ z.lag.1 - 1)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-14.482  -1.974   0.000   2.574  10.353 
+
+Coefficients:
+        Estimate Std. Error t value Pr(&gt;|t|)    
+z.lag.1 -1.12939    0.09895  -11.41   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.19 on 99 degrees of freedom
+Multiple R-squared:  0.5682,    Adjusted R-squared:  0.5638 
+F-statistic: 130.3 on 1 and 99 DF,  p-value: &lt; 2.2e-16
+
+
+Value of test-statistic is: -11.4138 
+
+Critical values for test statistics: 
+      1pct  5pct 10pct
+tau1 -2.58 -1.95 -1.62</code></pre>
 </div>
 </div>
 </div>
 <div id="tabset-8-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-8-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> labecman <span class="st">"Labour Best Eco Mng"</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> labecman</span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> <span class="kw">d</span>.labecman</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> labecman <span class="st">"Labour Best Eco Mng"</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> labecman    <span class="co">/* Z(t) = -2.380, p = 0.1474 */</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> <span class="kw">d</span>.labecman  <span class="co">/* Z(t) = -11.359, p = 0.0000 */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
 </section>
 <section id="overlay-plot" class="level3">
 <h3 class="anchored" data-anchor-id="overlay-plot">6.2 Overlay Plot</h3>
-<p>Both series appear non-stationary and are plotted together to inspect potential cointegration.</p>
+<p>Both series appear non-stationary; plotting together to inspect potential cointegration.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-9-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-9-1" role="tab" aria-controls="tabset-9-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-9-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-9-2" role="tab" aria-controls="tabset-9-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-9-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-9-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> month)) <span class="sc">+</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> app,      <span class="at">colour =</span> <span class="st">"Blair Approval"</span>)) <span class="sc">+</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> labecman, <span class="at">colour =</span> <span class="st">"Labour Best Eco Mng"</span>)) <span class="sc">+</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Blair Approval"</span>       <span class="ot">=</span> <span class="st">"#2c7bb6"</span>,</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Labour Best Eco Mng"</span> <span class="ot">=</span> <span class="st">"#d7191c"</span>)</span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title  =</span> <span class="st">"Approval &amp; Labour Economic Management"</span>,</span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">colour =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> month)) <span class="sc">+</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> app,      <span class="at">colour =</span> <span class="st">"Blair Approval"</span>)) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> labecman, <span class="at">colour =</span> <span class="st">"Labour Best Eco Mng"</span>)) <span class="sc">+</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Blair Approval"</span>      <span class="ot">=</span> <span class="st">"#2c7bb6"</span>,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Labour Best Eco Mng"</span> <span class="ot">=</span> <span class="st">"#d7191c"</span>)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title  =</span> <span class="st">"Approval &amp; Labour Economic Management"</span>,</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">colour =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -731,36 +844,64 @@ alternative hypothesis: stationary</code></pre>
 </div>
 </div>
 <div id="tabset-9-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-9-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">twoway</span> <span class="kw">line</span> app <span class="fu">month</span> || <span class="kw">line</span> labecman <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">twoway</span> <span class="kw">line</span> app <span class="fu">month</span> || <span class="kw">line</span> labecman <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
 </section>
 <section id="cointegration-residuals-engle-granger" class="level3">
 <h3 class="anchored" data-anchor-id="cointegration-residuals-engle-granger">6.3 Cointegration Residuals (Engle-Granger)</h3>
-<p>Regress <code>app</code> on <code>labecman</code>; if the residuals are I(0), the two series are cointegrated.</p>
+<p>Regress <code>app</code> on <code>labecman</code>; if the residuals are I(0), the two series are cointegrated. <strong>The lag choice matters critically here</strong>: with 4 lags (the <code>adf.test()</code> default) R fails to reject the unit root (p ≈ 0.34), while Stata with 0 lags rejects at 1% (p = 0.0025). Using <code>ur.df</code> with <code>lags = 0</code> aligns the test with Stata.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-10-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-10-1" role="tab" aria-controls="tabset-10-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-10-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-10-2" role="tab" aria-controls="tabset-10-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-10-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-10-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>reg_coint       <span class="ot">&lt;-</span> <span class="fu">lm</span>(app <span class="sc">~</span> labecman, <span class="at">data =</span> df)</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>ecm_labecman <span class="ot">&lt;-</span> <span class="fu">residuals</span>(reg_coint)</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">adf.test</span>(df<span class="sc">$</span>ecm_labecman)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>reg_coint       <span class="ot">&lt;-</span> <span class="fu">lm</span>(app <span class="sc">~</span> labecman, <span class="at">data =</span> df)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>ecm_labecman <span class="ot">&lt;-</span> <span class="fu">residuals</span>(reg_coint)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="co"># With lags=0 (matching dfuller): test stat ≈ -3.84, critical value 1% = -2.60</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="co"># → reject unit root → cointegration supported (matches Stata)</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">ur.df</span>(df<span class="sc">$</span>ecm_labecman, <span class="at">type =</span> <span class="st">"none"</span>, <span class="at">lags =</span> <span class="dv">0</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Augmented Dickey-Fuller Test
+############################################### 
+# Augmented Dickey-Fuller Test Unit Root Test # 
+############################################### 
 
-data:  df$ecm_labecman
-Dickey-Fuller = -2.5805, Lag order = 4, p-value = 0.336
-alternative hypothesis: stationary</code></pre>
+Test regression none 
+
+
+Call:
+lm(formula = z.diff ~ z.lag.1 - 1)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-10.5428  -3.4681  -0.8156   2.7531  12.3382 
+
+Coefficients:
+        Estimate Std. Error t value Pr(&gt;|t|)    
+z.lag.1 -0.26380    0.06832  -3.861    2e-04 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.742 on 100 degrees of freedom
+Multiple R-squared:  0.1298,    Adjusted R-squared:  0.121 
+F-statistic: 14.91 on 1 and 100 DF,  p-value: 0.0002002
+
+
+Value of test-statistic is: -3.8613 
+
+Critical values for test statistics: 
+      1pct  5pct 10pct
+tau1 -2.58 -1.95 -1.62</code></pre>
 </div>
 </div>
 </div>
 <div id="tabset-10-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-10-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">reg</span> app labecman</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> ecm_labecman, <span class="kw">resid</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> ecm_labecman</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">reg</span> app labecman</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> ecm_labecman, <span class="kw">resid</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="kw">dfuller</span> ecm_labecman   <span class="co">/* Z(t) = -3.838, p = 0.0025 → cointegrated */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -769,49 +910,50 @@ alternative hypothesis: stationary</code></pre>
 </section>
 <section id="error-correction-model-ols" class="level2">
 <h2 class="anchored" data-anchor-id="error-correction-model-ols">7. Error Correction Model (OLS)</h2>
-<p>The ECM takes <code>d.app</code> as the dependent variable. The levels <code>L.app</code> and <code>L.labecman</code> provide the error-correction terms.</p>
+<p>The ECM takes <code>d.app</code> as dependent variable. <code>L.app</code> and <code>L.labecman</code> provide the error-correction terms.</p>
 <section id="construct-lag-and-difference-variables" class="level3">
 <h3 class="anchored" data-anchor-id="construct-lag-and-difference-variables">7.1 Construct Lag and Difference Variables</h3>
-<p>Stata computes lags and differences on the fly with <code>L.</code> and <code>D.</code> operators. In R we create them explicitly.</p>
+<p>Stata resolves <code>d.</code>, <code>L.</code>, and <code>L2D.</code> operators on the fly. In R we build them explicitly.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-11-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-11-1" role="tab" aria-controls="tabset-11-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-11-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-11-2" role="tab" aria-controls="tabset-11-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-11-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-11-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>dapp       <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(df<span class="sc">$</span>app))</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>dlabecman  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(df<span class="sc">$</span>labecman))</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L_app      <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">head</span>(df<span class="sc">$</span>app,      <span class="sc">-</span><span class="dv">1</span>))</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L_labecman <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">head</span>(df<span class="sc">$</span>labecman, <span class="sc">-</span><span class="dv">1</span>))</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="co"># L2D.casl = second lag of first difference of casl</span></span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>dcasl      <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(df<span class="sc">$</span>casl))</span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L2Dcasl <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fu">head</span>(dcasl, <span class="sc">-</span><span class="dv">2</span>))</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="co"># L.casl used later in the ARCH variance equation</span></span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L_casl  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">head</span>(df<span class="sc">$</span>casl, <span class="sc">-</span><span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>dapp       <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(df<span class="sc">$</span>app))</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>dlabecman  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(df<span class="sc">$</span>labecman))</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L_app      <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">head</span>(df<span class="sc">$</span>app,      <span class="sc">-</span><span class="dv">1</span>))</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L_labecman <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">head</span>(df<span class="sc">$</span>labecman, <span class="sc">-</span><span class="dv">1</span>))</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="co"># L2D.casl = second lag of first difference of casl</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>dcasl      <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(df<span class="sc">$</span>casl))</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L2Dcasl <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fu">head</span>(dcasl, <span class="sc">-</span><span class="dv">2</span>))</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="co"># L.casl = one-period lag of casl (used in ARCH variance equation)</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>L_casl  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">head</span>(df<span class="sc">$</span>casl, <span class="sc">-</span><span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div id="tabset-11-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-11-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>* Stata resolves <span class="kw">d</span>.app, L.app, L2D.casl, etc. automatically — no setup needed.</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> v911d   <span class="st">"911 differenced"</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> petrold <span class="st">"Petrol Crisis differenced"</span></span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> casld   <span class="st">"Iraq casualties Logged differenced"</span></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> casl    <span class="st">"Iraq casualties Logged"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>* Stata resolves <span class="kw">d</span>.app, L.app, L2D.casl, etc. automatically <span class="fu">at</span> estimation time.</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> v911d   <span class="st">"911 differenced"</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> petrold <span class="st">"Petrol Crisis differenced"</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> casld   <span class="st">"Iraq casualties Logged differenced"</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">var</span> casl    <span class="st">"Iraq casualties Logged"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
 </section>
 <section id="ols-regression" class="level3">
 <h3 class="anchored" data-anchor-id="ols-regression">7.2 OLS Regression</h3>
+<p>OLS coefficients match Stata to 4–5 significant figures — no rounding issues here.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-12-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-12-1" role="tab" aria-controls="tabset-12-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-12-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-12-2" role="tab" aria-controls="tabset-12-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-12-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-12-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>reg_ecm <span class="ot">&lt;-</span> <span class="fu">lm</span>(dapp <span class="sc">~</span> dlabecman <span class="sc">+</span> L_app <span class="sc">+</span> L_labecman <span class="sc">+</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>                v911d <span class="sc">+</span> petrold <span class="sc">+</span> L2Dcasl,</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> df)</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(reg_ecm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>reg_ecm <span class="ot">&lt;-</span> <span class="fu">lm</span>(dapp <span class="sc">~</span> dlabecman <span class="sc">+</span> L_app <span class="sc">+</span> L_labecman <span class="sc">+</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                v911d <span class="sc">+</span> petrold <span class="sc">+</span> L2Dcasl,</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> df)</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(reg_ecm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -842,7 +984,8 @@ F-statistic: 7.602 on 6 and 92 DF,  p-value: 1.219e-06</code></pre>
 </div>
 </div>
 <div id="tabset-12-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-12-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">reg</span> <span class="kw">d</span>.app <span class="kw">d</span>.labecman L.app L.labecman v911d petrold L2D.casl</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">reg</span> <span class="kw">d</span>.app <span class="kw">d</span>.labecman L.app L.labecman v911d petrold L2D.casl</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>* <span class="kw">N</span>=99 (3 <span class="kw">obs</span> lost to L2D.casl); R²=0.33; Root MSE=3.817</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -855,15 +998,15 @@ F-statistic: 7.602 on 6 and 92 DF,  p-value: 1.219e-06</code></pre>
 <div class="tab-content">
 <div id="tabset-13-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-13-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Align residuals back into df by row index</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>resid_ols <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>resid_ols[<span class="fu">as.integer</span>(<span class="fu">rownames</span>(<span class="fu">model.frame</span>(reg_ecm)))] <span class="ot">&lt;-</span> <span class="fu">residuals</span>(reg_ecm)</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>resid_ols_sq <span class="ot">&lt;-</span> df<span class="sc">$</span>resid_ols<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>resid_sq_clean <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df<span class="sc">$</span>resid_ols_sq)</span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>( resid_sq_clean, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"ACF  — Squared OLS Residuals"</span>)</span>
-<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(resid_sq_clean, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"PACF — Squared OLS Residuals"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Align residuals into df by row index</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>resid_ols <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>resid_ols[<span class="fu">as.integer</span>(<span class="fu">rownames</span>(<span class="fu">model.frame</span>(reg_ecm)))] <span class="ot">&lt;-</span> <span class="fu">residuals</span>(reg_ecm)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>resid_ols_sq <span class="ot">&lt;-</span> df<span class="sc">$</span>resid_ols<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>resid_sq_clean <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df<span class="sc">$</span>resid_ols_sq)</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>( resid_sq_clean, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"ACF  — Squared OLS Residuals"</span>)</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(resid_sq_clean, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"PACF — Squared OLS Residuals"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -871,13 +1014,14 @@ F-statistic: 7.602 on 6 and 92 DF,  p-value: 1.219e-06</code></pre>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div id="tabset-13-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-13-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> resid_ols, res</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> resid_ols_sq = resid_ols * resid_ols</span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="kw">corrgram</span> resid_ols_sq</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> resid_ols, res     <span class="co">/* 3 missing values generated */</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> resid_ols_sq = resid_ols * resid_ols</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="kw">corrgram</span> resid_ols_sq</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>* AC <span class="fu">at</span> lag 1 = 0.157, lag 9 = 0.205; no strong ARCH signal but proceed</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -886,7 +1030,7 @@ F-statistic: 7.602 on 6 and 92 DF,  p-value: 1.219e-06</code></pre>
 </section>
 <section id="arch1-model" class="level2">
 <h2 class="anchored" data-anchor-id="arch1-model">8. ARCH(1) Model</h2>
-<p>We now account for conditional heteroskedasticity. Iraq casualties (logged, lagged) enter the variance equation as an external predictor of volatility.</p>
+<p>We account for conditional heteroskedasticity. Iraq casualties (logged, lagged one period) enter the variance equation.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -897,8 +1041,65 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Stata vs R — variance specification</strong><br>
-Stata’s <code>het()</code> option enters variance regressors <em>multiplicatively</em> in log-linear form: <span class="math display">\[\sigma^2_t = \exp(\gamma_0 + \gamma_1 \cdot \text{L.casl})\,(1 + \alpha_1 \varepsilon^2_{t-1})\]</span> <code>rugarch</code>’s <code>external.regressors</code> in the variance model enters them <em>additively</em>: <span class="math display">\[\sigma^2_t = \omega + \alpha_1 \varepsilon^2_{t-1} + \eta \cdot \text{L.casl}\]</span> Coefficients will differ in scale; the substantive interpretation is the same.</p>
+<p><strong>Stata vs R — variance equation parameterisation</strong></p>
+<p>Stata’s <code>het()</code> option uses a <strong>multiplicative log-linear</strong> specification:</p>
+<p><span class="math display">\[\sigma^2_t = \exp(\gamma_0 + \gamma_1 \cdot \text{L.casl})\,(1 + \alpha_1\,\varepsilon^2_{t-1})\]</span></p>
+<p>Stata estimates: γ₀ = 2.509, γ₁ = −0.310, α₁ = 0.398.</p>
+<p><code>rugarch</code>’s <code>external.regressors</code> in the variance model uses an <strong>additive</strong> specification:</p>
+<p><span class="math display">\[\sigma^2_t = \omega + \alpha_1\,\varepsilon^2_{t-1} + \eta\,\text{L.casl}\]</span></p>
+<p>Because the true generating model is multiplicative, the additive form cannot represent it well: <code>rugarch</code> estimates vxreg1 (η) ≈ 0, absorbing the casualty effect into <code>omega</code>. The ARCH coefficient (α₁ = 0.380 vs Stata’s 0.398) and mean-equation slopes are nonetheless close.</p>
+<p><strong>Mean equation comparison (Stata → R):</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Stata</th>
+<th>R (rugarch)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Intercept</td>
+<td>5.248</td>
+<td>5.045</td>
+</tr>
+<tr class="even">
+<td><code>labecmand</code></td>
+<td>0.271</td>
+<td>0.326</td>
+</tr>
+<tr class="odd">
+<td><code>L.app</code></td>
+<td>−0.160</td>
+<td>−0.146</td>
+</tr>
+<tr class="even">
+<td><code>L.labecman</code></td>
+<td>0.135</td>
+<td>0.110</td>
+</tr>
+<tr class="odd">
+<td><code>v911d</code></td>
+<td>9.677</td>
+<td>9.807</td>
+</tr>
+<tr class="even">
+<td><code>petrold</code></td>
+<td>−6.377</td>
+<td>−5.698</td>
+</tr>
+<tr class="odd">
+<td><code>L2D.casl</code></td>
+<td>−3.058</td>
+<td>−2.688</td>
+</tr>
+<tr class="even">
+<td>ARCH α₁</td>
+<td>0.398</td>
+<td>0.380</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <section id="fit-the-model" class="level3">
@@ -908,37 +1109,37 @@ Stata’s <code>het()</code> option enters variance regressors <em>multiplicativ
 <div class="tab-content">
 <div id="tabset-14-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-14-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop rows with any NA across required columns</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>arch_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"month"</span>, <span class="st">"dapp"</span>, <span class="st">"dlabecman"</span>, <span class="st">"L_app"</span>, <span class="st">"L_labecman"</span>,</span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>               <span class="st">"v911d"</span>, <span class="st">"petrold"</span>, <span class="st">"L2Dcasl"</span>, <span class="st">"L_casl"</span>)</span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>arch_df   <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df[, arch_vars])</span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>y_arch    <span class="ot">&lt;-</span> arch_df<span class="sc">$</span>dapp</span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>mean_xreg <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(arch_df[, <span class="fu">c</span>(<span class="st">"dlabecman"</span>, <span class="st">"L_app"</span>, <span class="st">"L_labecman"</span>,</span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"v911d"</span>, <span class="st">"petrold"</span>, <span class="st">"L2Dcasl"</span>)])</span>
-<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>var_xreg  <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(arch_df[, <span class="st">"L_casl"</span>, <span class="at">drop =</span> <span class="cn">FALSE</span>])</span>
-<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>spec_arch <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
-<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model =</span> <span class="fu">list</span>(</span>
-<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">model               =</span> <span class="st">"sGARCH"</span>,</span>
-<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">garchOrder          =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>),   <span class="co"># ARCH(1): one alpha, no beta</span></span>
-<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">external.regressors =</span> var_xreg   <span class="co"># het(L.casl)</span></span>
-<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model =</span> <span class="fu">list</span>(</span>
-<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">armaOrder           =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>),</span>
-<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">include.mean        =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">external.regressors =</span> mean_xreg</span>
-<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"norm"</span></span>
-<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>fit_arch <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(<span class="at">spec =</span> spec_arch, <span class="at">data =</span> y_arch)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop rows with any NA across required columns</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>arch_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"month"</span>, <span class="st">"dapp"</span>, <span class="st">"dlabecman"</span>, <span class="st">"L_app"</span>, <span class="st">"L_labecman"</span>,</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>               <span class="st">"v911d"</span>, <span class="st">"petrold"</span>, <span class="st">"L2Dcasl"</span>, <span class="st">"L_casl"</span>)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>arch_df   <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df[, arch_vars])</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>y_arch    <span class="ot">&lt;-</span> arch_df<span class="sc">$</span>dapp</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>mean_xreg <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(arch_df[, <span class="fu">c</span>(<span class="st">"dlabecman"</span>, <span class="st">"L_app"</span>, <span class="st">"L_labecman"</span>,</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"v911d"</span>, <span class="st">"petrold"</span>, <span class="st">"L2Dcasl"</span>)])</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>var_xreg  <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(arch_df[, <span class="st">"L_casl"</span>, <span class="at">drop =</span> <span class="cn">FALSE</span>])</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>spec_arch <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model =</span> <span class="fu">list</span>(</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">model               =</span> <span class="st">"sGARCH"</span>,</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">garchOrder          =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>),   <span class="co"># ARCH(1): one alpha, no beta</span></span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">external.regressors =</span> var_xreg   <span class="co"># additive approximation to het(L.casl)</span></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model =</span> <span class="fu">list</span>(</span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">armaOrder           =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">include.mean        =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">external.regressors =</span> mean_xreg</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"norm"</span></span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a>fit_arch <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(<span class="at">spec =</span> spec_arch, <span class="at">data =</span> y_arch)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in .sgarchfit(spec = spec, data = data, out.sample = out.sample, : 
 ugarchfit--&gt;waring: using less than 100 data
  points for estimation</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show</span>(fit_arch)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show</span>(fit_arch)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 *---------------------------------*
@@ -1049,34 +1250,38 @@ Adjusted Pearson Goodness-of-Fit Test:
 4    50     58.07       0.1758
 
 
-Elapsed time : 0.1586871 </code></pre>
+Elapsed time : 0.176755 </code></pre>
 </div>
 </div>
 </div>
 <div id="tabset-14-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-14-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>* appd and labecmand are pre-differenced <span class="kw">columns</span> already <span class="kw">in</span> the dataset</span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="kw">arch</span> appd labecmand L.app L.labecman v911d petrold L2D.casl, <span class="co">///</span></span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>     het(L.casl) <span class="kw">arch</span>(1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>* appd and labecmand are pre-differenced variables already <span class="kw">in</span> the dataset.</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>* het(L.casl) uses a multiplicative <span class="fu">log</span>-linear <span class="kw">variance</span> <span class="kw">model</span> (see <span class="kw">note</span> above).</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="kw">arch</span> appd labecmand L.app L.labecman v911d petrold L2D.casl, <span class="co">///</span></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>     het(L.casl) <span class="kw">arch</span>(1)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>* Log L = -263.06; <span class="kw">N</span> = 99; <span class="kw">sample</span> 1997m10 to 2005m12</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>* HET: L.casl = -0.310 (<span class="kw">p</span>=0.003), <span class="dt">_cons</span> = 2.509 (<span class="kw">p</span>&lt;0.001)</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>* ARCH L1 = 0.398 (<span class="kw">p</span>=0.032)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
 </section>
 <section id="residual-diagnostics" class="level3">
 <h3 class="anchored" data-anchor-id="residual-diagnostics">8.2 Residual Diagnostics</h3>
-<p>If the ARCH model is well-specified, neither the residuals nor their squares should show significant autocorrelation.</p>
+<p>If the model is well-specified, neither the residuals nor their squares should show significant autocorrelation.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-15-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-15-1" role="tab" aria-controls="tabset-15-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-15-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-15-2" role="tab" aria-controls="tabset-15-2" aria-selected="false" href="">Stata</a></li></ul>
 <div class="tab-content">
 <div id="tabset-15-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-15-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>resid_arch    <span class="ot">&lt;-</span> <span class="fu">residuals</span>(fit_arch)</span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>resid_arch_sq <span class="ot">&lt;-</span> resid_arch<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
-<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>( resid_arch,    <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"ACF  — ARCH Residuals"</span>)</span>
-<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(resid_arch,    <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"PACF — ARCH Residuals"</span>)</span>
-<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>( resid_arch_sq, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"ACF  — Squared ARCH Residuals"</span>)</span>
-<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(resid_arch_sq, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"PACF — Squared ARCH Residuals"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>resid_arch    <span class="ot">&lt;-</span> <span class="fu">residuals</span>(fit_arch)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>resid_arch_sq <span class="ot">&lt;-</span> resid_arch<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>( resid_arch,    <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"ACF  — ARCH Residuals"</span>)</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(resid_arch,    <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"PACF — ARCH Residuals"</span>)</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>( resid_arch_sq, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"ACF  — Squared ARCH Residuals"</span>)</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(resid_arch_sq, <span class="at">lag.max =</span> <span class="dv">20</span>, <span class="at">main =</span> <span class="st">"PACF — Squared ARCH Residuals"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1084,15 +1289,15 @@ Elapsed time : 0.1586871 </code></pre>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div id="tabset-15-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-15-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> <span class="kw">resid</span>, res</span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="kw">corrgram</span> <span class="kw">resid</span></span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> resid_sq = <span class="kw">resid</span> * <span class="kw">resid</span></span>
-<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a><span class="kw">corrgram</span> resid_sq</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> <span class="kw">resid</span>, res     <span class="co">/* 3 missing values generated */</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="kw">corrgram</span> <span class="kw">resid</span>         <span class="co">/* no significant autocorrelation */</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> resid_sq = <span class="kw">resid</span> * <span class="kw">resid</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a><span class="kw">corrgram</span> resid_sq      <span class="co">/* no significant autocorrelation */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1104,18 +1309,18 @@ Elapsed time : 0.1586871 </code></pre>
 <div class="tab-content">
 <div id="tabset-16-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-16-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>sigma2    <span class="ot">&lt;-</span> <span class="fu">sigma</span>(fit_arch)<span class="sc">^</span><span class="dv">2</span>   <span class="co"># sigma() returns std dev; square for variance</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>sigma2_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">month  =</span> arch_df<span class="sc">$</span>month,</span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sigma2 =</span> <span class="fu">as.numeric</span>(sigma2)</span>
-<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sigma2_df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> sigma2)) <span class="sc">+</span></span>
-<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
-<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">expression</span>(<span class="st">"Conditional Variance "</span> <span class="sc">*</span> sigma<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="st">" — ARCH(1) Model"</span>),</span>
-<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="fu">expression</span>(sigma<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>sigma2    <span class="ot">&lt;-</span> <span class="fu">sigma</span>(fit_arch)<span class="sc">^</span><span class="dv">2</span>   <span class="co"># sigma() returns std dev; square for variance</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>sigma2_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">month  =</span> arch_df<span class="sc">$</span>month,</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sigma2 =</span> <span class="fu">as.numeric</span>(sigma2)</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sigma2_df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> sigma2)) <span class="sc">+</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">expression</span>(<span class="st">"Conditional Variance "</span> <span class="sc">*</span> sigma<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="st">" — ARCH(1) Model"</span>),</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="fu">expression</span>(sigma<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1126,8 +1331,8 @@ Elapsed time : 0.1586871 </code></pre>
 </div>
 </div>
 <div id="tabset-16-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-16-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> sigma2, <span class="kw">variance</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="kw">twoway</span> <span class="kw">line</span> sigma2 <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb56"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> sigma2, <span class="kw">variance</span>   <span class="co">/* 1 missing value generated */</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="kw">twoway</span> <span class="kw">line</span> sigma2 <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1136,7 +1341,20 @@ Elapsed time : 0.1586871 </code></pre>
 </section>
 <section id="digression-random-walks" class="level2">
 <h2 class="anchored" data-anchor-id="digression-random-walks">9. Digression: Random Walks</h2>
-<p>Random walks are a canonical non-stationary process. Their variance grows over time — but does an ARCH model pick this up?</p>
+<p>Random walks are non-stationary with variance growing over time. We simulate one and confirm the ARCH model detects time-varying variance.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>R and Stata use different random number generators.</strong> Even with the same seed (1234), <code>rnorm()</code> and <code>drawnorm</code> produce different sequences, so the simulated paths diverge. Consequently, the ARCH model results (mean, omega, alpha) will also differ between platforms — this is expected, not an error.</p>
+</div>
+</div>
 <section id="simulate-and-plot" class="level3">
 <h3 class="anchored" data-anchor-id="simulate-and-plot">9.1 Simulate and Plot</h3>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
@@ -1144,15 +1362,15 @@ Elapsed time : 0.1586871 </code></pre>
 <div class="tab-content">
 <div id="tabset-17-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-17-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>r1 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n)       <span class="co"># one N(0,1) draw per observation</span></span>
-<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>Y1 <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(r1)     <span class="co"># cumsum() = Stata's running sum()</span></span>
-<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>rw_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">month =</span> df<span class="sc">$</span>month, <span class="at">Y1 =</span> Y1)</span>
-<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rw_df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> Y1)) <span class="sc">+</span></span>
-<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
-<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey50"</span>) <span class="sc">+</span></span>
-<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Simulated Random Walk"</span>, <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="st">"Y1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>r1 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n)       <span class="co"># one N(0,1) draw per observation</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>Y1 <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(r1)     <span class="co"># cumsum() = Stata's running sum()</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>rw_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">month =</span> df<span class="sc">$</span>month, <span class="at">Y1 =</span> Y1)</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rw_df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> Y1)) <span class="sc">+</span></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey50"</span>) <span class="sc">+</span></span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Simulated Random Walk"</span>, <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="st">"Y1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1163,11 +1381,11 @@ Elapsed time : 0.1586871 </code></pre>
 </div>
 </div>
 <div id="tabset-17-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-17-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="dv">seed</span> 1234</span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="kw">drawnorm</span> r1</span>
-<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> Y1 = <span class="kw">sum</span>(r1)    <span class="co">/* sum() in Stata is a running/cumulative sum */</span></span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a><span class="kw">twoway</span> <span class="kw">line</span> Y1 <span class="fu">month</span>, <span class="kw">yline</span>(0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="dv">seed</span> 1234</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="kw">drawnorm</span> r1               <span class="co">/* different RNG from R's rnorm() */</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> Y1 = <span class="kw">sum</span>(r1)     <span class="co">/* sum() in Stata is a running/cumulative sum */</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="kw">twoway</span> <span class="kw">line</span> Y1 <span class="fu">month</span>, <span class="kw">yline</span>(0)</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>* Stata path <span class="kw">mean</span> ≈ 4.3; R path <span class="kw">mean</span> ≈ -19.5 — different due to RNG</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1179,13 +1397,13 @@ Elapsed time : 0.1586871 </code></pre>
 <div class="tab-content">
 <div id="tabset-18-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-18-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>rw_spec <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model     =</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">"sGARCH"</span>, <span class="at">garchOrder =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>)),</span>
-<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model         =</span> <span class="fu">list</span>(<span class="at">armaOrder =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"norm"</span></span>
-<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>rw_fit <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(<span class="at">spec =</span> rw_spec, <span class="at">data =</span> Y1)</span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a><span class="fu">show</span>(rw_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>rw_spec <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model     =</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">"sGARCH"</span>, <span class="at">garchOrder =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>)),</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model         =</span> <span class="fu">list</span>(<span class="at">armaOrder =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"norm"</span></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>rw_fit <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(<span class="at">spec =</span> rw_spec, <span class="at">data =</span> Y1)</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a><span class="fu">show</span>(rw_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 *---------------------------------*
@@ -1275,12 +1493,15 @@ Adjusted Pearson Goodness-of-Fit Test:
 4    50     233.3    8.102e-26
 
 
-Elapsed time : 0.02585793 </code></pre>
+Elapsed time : 0.02026701 </code></pre>
 </div>
 </div>
 </div>
 <div id="tabset-18-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-18-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="kw">arch</span> Y1, <span class="kw">arch</span>(1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb61"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="kw">arch</span> Y1, <span class="kw">arch</span>(1)</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>* <span class="dt">_cons</span> = 4.264, ARCH L1 = 1.001 (≈1: <span class="kw">variance</span> growing <span class="fu">at</span> rate <span class="kw">of</span> random walk)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>* omega = 0.517</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>* R results differ due to different simulated path (see RNG <span class="kw">note</span> above)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1292,18 +1513,19 @@ Elapsed time : 0.02585793 </code></pre>
 <div class="tab-content">
 <div id="tabset-19-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-19-1-tab">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>sigma1_rw   <span class="ot">&lt;-</span> <span class="fu">sigma</span>(rw_fit)<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>sigma_rw_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">month     =</span> df<span class="sc">$</span>month[<span class="fu">seq_along</span>(sigma1_rw)],</span>
-<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sigma1_rw =</span> <span class="fu">as.numeric</span>(sigma1_rw)</span>
-<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sigma_rw_df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> sigma1_rw)) <span class="sc">+</span></span>
-<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
-<span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">expression</span>(<span class="st">"Random Walk: Conditional Variance "</span> <span class="sc">*</span> sigma[RW]<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="st">" — ARCH(1)"</span>),</span>
-<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="fu">expression</span>(sigma[RW]<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb66-12"><a href="#cb66-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>sigma1_rw   <span class="ot">&lt;-</span> <span class="fu">sigma</span>(rw_fit)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>sigma_rw_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">month     =</span> df<span class="sc">$</span>month[<span class="fu">seq_along</span>(sigma1_rw)],</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sigma1_rw =</span> <span class="fu">as.numeric</span>(sigma1_rw)</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sigma_rw_df, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> sigma1_rw)) <span class="sc">+</span></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> <span class="st">"#2c7bb6"</span>) <span class="sc">+</span></span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">expression</span>(<span class="st">"Random Walk: Conditional Variance "</span> <span class="sc">*</span></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>                       sigma[RW]<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="st">" — ARCH(1)"</span>),</span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Month"</span>, <span class="at">y =</span> <span class="fu">expression</span>(sigma[RW]<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1314,8 +1536,9 @@ Elapsed time : 0.02585793 </code></pre>
 </div>
 </div>
 <div id="tabset-19-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-19-2-tab">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb67"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> sigma1_rw, <span class="kw">variance</span></span>
-<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="kw">twoway</span> <span class="kw">line</span> sigma1_rw <span class="fu">month</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> sigma1_rw, <span class="kw">variance</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="kw">twoway</span> <span class="kw">line</span> sigma1_rw <span class="fu">month</span></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>* Both R and Stata show increasing <span class="kw">variance</span> — the key qualitative result</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
