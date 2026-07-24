@@ -11,6 +11,9 @@ image: "image.jpg"
 - [The Main reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day5/)
 - [A reveal presentation on Variance models](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-ARCH/)
 
+- [A reveal presentation on Switching models](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-MarkSwitch/)
+
+
 - [A worked example on ARCH](https://robertwwalker.github.io/ESSSSDA26-2J/posts/UK-ARCH/)
 
 
