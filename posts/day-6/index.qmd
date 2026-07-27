@@ -11,6 +11,10 @@ image: "image.png"
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day6/)
 - [A reveal presentation on REWB](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-REWB/)
 - [A reveal presentation on TWFE Models](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-TWFE-Models/)
+- [A reveal presentation on Common Factor Restrictions](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-CFRTSP/)
+- [A reveal presentation on Dangers in FE Models](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-FE-Danger/)
+
+
 
 ## `panelr`
 

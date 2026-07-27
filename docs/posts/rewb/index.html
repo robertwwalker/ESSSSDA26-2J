@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Robert W. Walker">
+<meta name="dcterms.date" content="2026-07-27">
+
+<title>Fixed and Random Effects Models: A Worked Example – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-01c21dad8388d127029aa6ec675015ac.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="../../site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="../../site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">ESSSSDA 2026 2J: Time Series and Collections of Them</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../posts/welcome/index.html" aria-current="page"> 
+<span class="menu-text">Welcome!</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/robertwwalker/ESSSSDA26-2J/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/robertwwalker/Essex-Data/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Fixed and Random Effects Models: A Worked Example</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Fixed and Random Effects Models: A Worked Example</h1>
+            <p class="subtitle lead">REWB Models with the Cornwell–Rupert PSID Wages Panel</p>
+                                <div class="quarto-categories">
+                <div class="quarto-category">panel data</div>
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">analysis</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Robert W. Walker </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 27, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+      <a href="../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/welcome/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to 2J!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Week 1</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-1/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 1: Time, Decomposition, and Summaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-2/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 2: Time Series, Stationarity, and ARIMA Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-3/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 3: Dynamic Linear, ADL Models, and VARs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-4/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 4: Cointegration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-5/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 5: Equation Balance to Wrap Up Week 1</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Week 2</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-6/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 6: Panel Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-7/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 7: Missing Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-8/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 8: Panel Models for Limited Outcomes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-9/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 9: DPD and GMM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-10/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 10: Causal Inference in Panels and TWFE</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#dataset" id="toc-dataset" class="nav-link active" data-scroll-target="#dataset">Dataset</a>
+  <ul class="collapse">
+  <li><a href="#load-and-prepare" id="toc-load-and-prepare" class="nav-link" data-scroll-target="#load-and-prepare">Load and prepare</a></li>
+  <li><a href="#confirm-within-sd-of-time-invariant-variables" id="toc-confirm-within-sd-of-time-invariant-variables" class="nav-link" data-scroll-target="#confirm-within-sd-of-time-invariant-variables">Confirm within-SD of time-invariant variables</a></li>
+  </ul></li>
+  <li><a href="#model-estimation" id="toc-model-estimation" class="nav-link" data-scroll-target="#model-estimation">Model Estimation</a>
+  <ul class="collapse">
+  <li><a href="#model-1-pooled-ols" id="toc-model-1-pooled-ols" class="nav-link" data-scroll-target="#model-1-pooled-ols">Model 1 — Pooled OLS</a></li>
+  <li><a href="#model-2-fixed-effects" id="toc-model-2-fixed-effects" class="nav-link" data-scroll-target="#model-2-fixed-effects">Model 2 — Fixed Effects</a></li>
+  <li><a href="#model-3-standard-random-effects" id="toc-model-3-standard-random-effects" class="nav-link" data-scroll-target="#model-3-standard-random-effects">Model 3 — Standard Random Effects</a></li>
+  <li><a href="#hausman-style-test" id="toc-hausman-style-test" class="nav-link" data-scroll-target="#hausman-style-test">Hausman-Style Test</a></li>
+  <li><a href="#model-4-within-between-re-rewb" id="toc-model-4-within-between-re-rewb" class="nav-link" data-scroll-target="#model-4-within-between-re-rewb">Model 4 — Within-Between RE (REWB)</a></li>
+  <li><a href="#model-5-mundlak-parameterisation" id="toc-model-5-mundlak-parameterisation" class="nav-link" data-scroll-target="#model-5-mundlak-parameterisation">Model 5 — Mundlak Parameterisation</a></li>
+  <li><a href="#model-6-rewb-with-random-slopes" id="toc-model-6-rewb-with-random-slopes" class="nav-link" data-scroll-target="#model-6-rewb-with-random-slopes">Model 6 — REWB with Random Slopes</a></li>
+  </ul></li>
+  <li><a href="#results-summary" id="toc-results-summary" class="nav-link" data-scroll-target="#results-summary">Results Summary</a></li>
+  <li><a href="#a-cautionary-note-nonstationarity" id="toc-a-cautionary-note-nonstationarity" class="nav-link" data-scroll-target="#a-cautionary-note-nonstationarity">A Cautionary Note: Nonstationarity</a>
+  <ul class="collapse">
+  <li><a href="#experience-as-a-deterministic-time-trend" id="toc-experience-as-a-deterministic-time-trend" class="nav-link" data-scroll-target="#experience-as-a-deterministic-time-trend">Experience as a deterministic time trend</a></li>
+  <li><a href="#panel-unit-root-tests-on-wages" id="toc-panel-unit-root-tests-on-wages" class="nav-link" data-scroll-target="#panel-unit-root-tests-on-wages">Panel unit root tests on wages</a></li>
+  <li><a href="#implications-and-practical-remedies" id="toc-implications-and-practical-remedies" class="nav-link" data-scroll-target="#implications-and-practical-remedies">Implications and practical remedies</a></li>
+  <li><a href="#summary-of-the-nonstationarity-issue" id="toc-summary-of-the-nonstationarity-issue" class="nav-link" data-scroll-target="#summary-of-the-nonstationarity-issue">Summary of the nonstationarity issue</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="dataset" class="level2">
+<h2 class="anchored" data-anchor-id="dataset">Dataset</h2>
+<p>The examples use the <strong>Cornwell–Rupert PSID Males Wages Panel</strong> (Vella &amp; Verbeek 1998), available as <code>Males</code> in R’s <code>plm</code> package: 545 male workers observed annually from 1980 to 1987 (N = 4,360, balanced panel).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>wage</code></td>
+<td>Time-varying</td>
+<td>Log hourly wage (outcome)</td>
+</tr>
+<tr class="even">
+<td><code>exper</code></td>
+<td>Time-varying</td>
+<td>Years of work experience</td>
+</tr>
+<tr class="odd">
+<td><code>union_d</code></td>
+<td>Time-varying</td>
+<td>Union member (1 = yes)</td>
+</tr>
+<tr class="even">
+<td><code>married_d</code></td>
+<td>Time-varying</td>
+<td>Married (1 = yes)</td>
+</tr>
+<tr class="odd">
+<td><code>health_d</code></td>
+<td>Time-varying</td>
+<td>Poor health (1 = yes)</td>
+</tr>
+<tr class="even">
+<td><code>school</code></td>
+<td><strong>Time-invariant</strong></td>
+<td>Years of schooling</td>
+</tr>
+<tr class="odd">
+<td><code>black_d</code></td>
+<td><strong>Time-invariant</strong></td>
+<td>Black ethnicity (1 = yes)</td>
+</tr>
+<tr class="even">
+<td><code>hisp_d</code></td>
+<td><strong>Time-invariant</strong></td>
+<td>Hispanic ethnicity (1 = yes)</td>
+</tr>
+</tbody>
+</table>
+<p>The central research question is: <strong>how does work experience relate to log wages?</strong> We distinguish the <em>within-person</em> effect (does your wage grow as you gain experience year by year?) from the <em>between-person</em> effect (do workers with more average experience earn more?).</p>
+<section id="load-and-prepare" class="level3">
+<h3 class="anchored" data-anchor-id="load-and-prepare">Load and prepare</h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)       <span class="co"># mixed-effects models</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plm)        <span class="co"># panel FE / RE</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">"Males"</span>, <span class="at">package =</span> <span class="st">"plm"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>d           <span class="ot">&lt;-</span> Males</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>id        <span class="ot">&lt;-</span> d<span class="sc">$</span>nr</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>union_d   <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(d<span class="sc">$</span>union   <span class="sc">==</span> <span class="st">"yes"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>married_d <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(d<span class="sc">$</span>married <span class="sc">==</span> <span class="st">"yes"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>health_d  <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(d<span class="sc">$</span>health  <span class="sc">==</span> <span class="st">"yes"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>black_d   <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(d<span class="sc">$</span>ethn   <span class="sc">==</span> <span class="st">"black"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>hisp_d    <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(d<span class="sc">$</span>ethn   <span class="sc">==</span> <span class="st">"hisp"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Decompose experience into within and between components</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>exper_bar <span class="ot">&lt;-</span> <span class="fu">ave</span>(d<span class="sc">$</span>exper, d<span class="sc">$</span>id)      <span class="co"># person-specific mean</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>exper_win <span class="ot">&lt;-</span> d<span class="sc">$</span>exper <span class="sc">-</span> d<span class="sc">$</span>exper_bar   <span class="co"># deviation from own mean</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>pdat <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(d, <span class="at">index =</span> <span class="fu">c</span>(<span class="st">"id"</span>, <span class="st">"year"</span>))</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Individuals: %d  |  Years: 1980–1987  |  N: %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>id)), <span class="fu">nrow</span>(d)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Individuals: 545  |  Years: 1980–1987  |  N: 4360</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* males_wages.csv should be in your working directory.        */</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">/* Alternatively: webuse nlswork, clear                        */</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">/* (then rename: ln_wage→wage, ttl_exp→exper, grade→school)   */</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>import delimited <span class="kw">using</span> <span class="st">"males_wages.csv"</span>, <span class="kw">clear</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>xtset id <span class="fu">year</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> wage      <span class="st">"Log wage"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> exper     <span class="st">"Work experience (years)"</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> school    <span class="st">"Years of schooling (time-invariant)"</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">/* Decompose experience into within and between components      */</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="kw">bysort</span> id: <span class="kw">egen</span> exper_bar = <span class="kw">mean</span>(exper)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> exper_win = exper - exper_bar</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> exper_bar <span class="st">"Person mean of experience (between)"</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> exper_win <span class="st">"exper minus person mean   (within)"</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="kw">di</span> <span class="st">"Individuals: 545  |  Years: 1980-1987  |  N: "</span> _N</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="confirm-within-sd-of-time-invariant-variables" class="level3">
+<h3 class="anchored" data-anchor-id="confirm-within-sd-of-time-invariant-variables">Confirm within-SD of time-invariant variables</h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"school"</span>, <span class="st">"black_d"</span>, <span class="st">"hisp_d"</span>, <span class="st">"exper"</span>, <span class="st">"union_d"</span>, <span class="st">"married_d"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>wsd <span class="ot">&lt;-</span> <span class="fu">sapply</span>(vars, <span class="cf">function</span>(v)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(<span class="fu">tapply</span>(d[[v]], d<span class="sc">$</span>id, sd, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">Variable =</span> vars,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>           <span class="st">`</span><span class="at">Within-person SD</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(wsd, <span class="dv">4</span>),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">Role =</span> <span class="fu">c</span>(<span class="st">"Time-invariant"</span>, <span class="st">"Time-invariant"</span>, <span class="st">"Time-invariant"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"Time-varying"</span>, <span class="st">"Time-varying"</span>, <span class="st">"Time-varying"</span>),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">check.names =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align =</span> <span class="st">"lcc"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">Variable</th>
+<th style="text-align: center;">Within-person SD</th>
+<th style="text-align: center;">Role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">school</td>
+<td style="text-align: left;">school</td>
+<td style="text-align: center;">0.0000</td>
+<td style="text-align: center;">Time-invariant</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">black_d</td>
+<td style="text-align: left;">black_d</td>
+<td style="text-align: center;">0.0000</td>
+<td style="text-align: center;">Time-invariant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">hisp_d</td>
+<td style="text-align: left;">hisp_d</td>
+<td style="text-align: center;">0.0000</td>
+<td style="text-align: center;">Time-invariant</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exper</td>
+<td style="text-align: left;">exper</td>
+<td style="text-align: center;">2.4495</td>
+<td style="text-align: center;">Time-varying</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">union_d</td>
+<td style="text-align: left;">union_d</td>
+<td style="text-align: center;">0.1954</td>
+<td style="text-align: center;">Time-varying</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">married_d</td>
+<td style="text-align: left;">married_d</td>
+<td style="text-align: center;">0.2576</td>
+<td style="text-align: center;">Time-varying</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">foreach</span> v <span class="kw">in</span> school black_d hisp_d exper union_d married_d {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">bysort</span> id: <span class="kw">egen</span> <span class="ot">`v'</span>_sd = <span class="fu">sd</span>(<span class="ot">`v'</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">sum</span> <span class="ot">`v'</span>_sd, <span class="kw">meanonly</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">di</span> <span class="st">"`v' within-SD: "</span> <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">drop</span> <span class="ot">`v'</span>_sd</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="model-estimation" class="level2">
+<h2 class="anchored" data-anchor-id="model-estimation">Model Estimation</h2>
+<section id="model-1-pooled-ols" class="level3">
+<h3 class="anchored" data-anchor-id="model-1-pooled-ols">Model 1 — Pooled OLS</h3>
+<p>The coefficient on <code>exper</code> blends the within and between effects. Because clustering is ignored, standard errors are underestimated.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>m_ols <span class="ot">&lt;-</span> <span class="fu">lm</span>(wage <span class="sc">~</span> exper <span class="sc">+</span> school <span class="sc">+</span> union_d <span class="sc">+</span> married_d <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>              health_d <span class="sc">+</span> black_d <span class="sc">+</span> hisp_d, <span class="at">data =</span> d)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m_ols)<span class="sc">$</span>coefficients[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="dv">4</span>) <span class="sc">|&gt;</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">0.0255</td>
+<td style="text-align: right;">0.0632</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exper</td>
+<td style="text-align: right;">0.0501</td>
+<td style="text-align: right;">0.0029</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">school</td>
+<td style="text-align: right;">0.1035</td>
+<td style="text-align: right;">0.0046</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">union_d</td>
+<td style="text-align: right;">0.1831</td>
+<td style="text-align: right;">0.0171</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">married_d</td>
+<td style="text-align: right;">0.1125</td>
+<td style="text-align: right;">0.0157</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">health_d</td>
+<td style="text-align: right;">-0.0515</td>
+<td style="text-align: right;">0.0566</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">black_d</td>
+<td style="text-align: right;">-0.1428</td>
+<td style="text-align: right;">0.0236</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">hisp_d</td>
+<td style="text-align: right;">0.0124</td>
+<td style="text-align: right;">0.0208</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> wage exper school union_d married_d health_d black_d hisp_d</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-2-fixed-effects" class="level3">
+<h3 class="anchored" data-anchor-id="model-2-fixed-effects">Model 2 — Fixed Effects</h3>
+<p>Within-group demeaning eliminates all between-person variation. Time-invariant variables (<code>school</code>, <code>black_d</code>, <code>hisp_d</code>) are absorbed by the person dummies and cannot be estimated.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>m_fe <span class="ot">&lt;-</span> <span class="fu">plm</span>(wage <span class="sc">~</span> exper <span class="sc">+</span> union_d <span class="sc">+</span> married_d <span class="sc">+</span> health_d,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">data   =</span> pdat,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">model  =</span> <span class="st">"within"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">effect =</span> <span class="st">"individual"</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m_fe)<span class="sc">$</span>coefficients[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">|&gt;</span> <span class="fu">round</span>(<span class="dv">4</span>) <span class="sc">|&gt;</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">exper</td>
+<td style="text-align: right;">0.0599</td>
+<td style="text-align: right;">0.0026</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">union_d</td>
+<td style="text-align: right;">0.0836</td>
+<td style="text-align: right;">0.0194</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">married_d</td>
+<td style="text-align: right;">0.0608</td>
+<td style="text-align: right;">0.0183</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">health_d</td>
+<td style="text-align: right;">-0.0183</td>
+<td style="text-align: right;">0.0475</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* school, black_d, hisp_d cannot be included -- time-invariant */</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">xtreg</span> wage exper union_d married_d health_d, <span class="kw">fe</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-3-standard-random-effects" class="level3">
+<h3 class="anchored" data-anchor-id="model-3-standard-random-effects">Model 3 — Standard Random Effects</h3>
+<p>Assumes the within and between effects of experience are equal (<span class="math inline">\(\beta_W = \beta_B\)</span>). The Hausman-style test below shows this assumption is rejected.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" role="tab" aria-controls="tabset-5-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" role="tab" aria-controls="tabset-5-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>m_re <span class="ot">&lt;-</span> <span class="fu">lmer</span>(wage <span class="sc">~</span> exper <span class="sc">+</span> school <span class="sc">+</span> union_d <span class="sc">+</span> married_d <span class="sc">+</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>               health_d <span class="sc">+</span> black_d <span class="sc">+</span> hisp_d <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> id),</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> d, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">summary</span>(m_re)<span class="sc">$</span>coefficients[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">4</span>) <span class="sc">|&gt;</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">-0.0466</td>
+<td style="text-align: right;">0.1114</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exper</td>
+<td style="text-align: right;">0.0580</td>
+<td style="text-align: right;">0.0025</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">school</td>
+<td style="text-align: right;">0.1081</td>
+<td style="text-align: right;">0.0089</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">union_d</td>
+<td style="text-align: right;">0.1093</td>
+<td style="text-align: right;">0.0179</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">married_d</td>
+<td style="text-align: right;">0.0753</td>
+<td style="text-align: right;">0.0168</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">health_d</td>
+<td style="text-align: right;">-0.0234</td>
+<td style="text-align: right;">0.0466</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">black_d</td>
+<td style="text-align: right;">-0.1412</td>
+<td style="text-align: right;">0.0481</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">hisp_d</td>
+<td style="text-align: right;">0.0159</td>
+<td style="text-align: right;">0.0430</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">xtreg</span> wage exper school union_d married_d health_d black_d hisp_d, re</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="hausman-style-test" class="level3">
+<h3 class="anchored" data-anchor-id="hausman-style-test">Hausman-Style Test</h3>
+<p>The test checks whether the within and between effects of experience differ — i.e., whether the contextual effect <span class="math inline">\(\beta_{2C} = 0\)</span>. A significant result means the two effects are distinct and standard RE produces an uninterpretable blend.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-6-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-1" role="tab" aria-controls="tabset-6-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-2" role="tab" aria-controls="tabset-6-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-6-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-6-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>m_rewb_h <span class="ot">&lt;-</span> <span class="fu">lmer</span>(wage <span class="sc">~</span> exper_win <span class="sc">+</span> exper_bar <span class="sc">+</span> school <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                   union_d <span class="sc">+</span> married_d <span class="sc">+</span> health_d <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                   black_d <span class="sc">+</span> hisp_d <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> id),</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> d, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>lrt <span class="ot">&lt;-</span> <span class="fu">anova</span>(m_re, m_rewb_h)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test       =</span> <span class="st">"LRT: Standard RE vs REWB"</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Chi-sq</span><span class="st">`</span>   <span class="ot">=</span> <span class="fu">round</span>(lrt<span class="sc">$</span>Chisq[<span class="dv">2</span>], <span class="dv">3</span>),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">df         =</span> <span class="dv">1</span>,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">p-value</span><span class="st">`</span>  <span class="ot">=</span> <span class="fu">round</span>(lrt<span class="sc">$</span><span class="st">`</span><span class="at">Pr(&gt;Chisq)</span><span class="st">`</span>[<span class="dv">2</span>], <span class="dv">4</span>),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Conclusion =</span> <span class="fu">ifelse</span>(lrt<span class="sc">$</span><span class="st">`</span><span class="at">Pr(&gt;Chisq)</span><span class="st">`</span>[<span class="dv">2</span>] <span class="sc">&lt;</span> <span class="fl">0.05</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Reject H₀: within ≠ between → use REWB"</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Cannot reject H₀: standard RE acceptable"</span>),</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">check.names =</span> <span class="cn">FALSE</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 8%">
+<col style="width: 3%">
+<col style="width: 9%">
+<col style="width: 47%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Test</th>
+<th style="text-align: right;">Chi-sq</th>
+<th style="text-align: right;">df</th>
+<th style="text-align: right;">p-value</th>
+<th style="text-align: left;">Conclusion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LRT: Standard RE vs REWB</td>
+<td style="text-align: right;">5.122</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.0236</td>
+<td style="text-align: left;">Reject H₀: within ≠ between → use REWB</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-6-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-6-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">xtreg</span> wage exper union_d married_d health_d, <span class="kw">fe</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">estimates</span> <span class="kw">store</span> fe_stored</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">xtreg</span> wage exper school union_d married_d health_d black_d hisp_d, re</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">hausman</span> fe_stored ., sigmamore</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">/* Significant result =&gt; within ≠ between =&gt; use REWB           */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-4-within-between-re-rewb" class="level3">
+<h3 class="anchored" data-anchor-id="model-4-within-between-re-rewb">Model 4 — Within-Between RE (REWB)</h3>
+<p>The recommended model. <code>exper_win</code> captures the within-person effect of gaining experience year by year; <code>exper_bar</code> captures the between-person effect of having more average experience. Time-invariant variables are estimable — a key advantage over FE.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-7-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-1" role="tab" aria-controls="tabset-7-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-7-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-2" role="tab" aria-controls="tabset-7-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-7-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-7-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>m_rewb <span class="ot">&lt;-</span> <span class="fu">lmer</span>(wage <span class="sc">~</span> exper_win <span class="sc">+</span> exper_bar <span class="sc">+</span> school <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                 union_d <span class="sc">+</span> married_d <span class="sc">+</span> health_d <span class="sc">+</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                 black_d <span class="sc">+</span> hisp_d <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> id),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> d, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">summary</span>(m_rewb)<span class="sc">$</span>coefficients[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">4</span>) <span class="sc">|&gt;</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">0.2725</td>
+<td style="text-align: right;">0.1791</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exper_win</td>
+<td style="text-align: right;">0.0591</td>
+<td style="text-align: right;">0.0025</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">exper_bar</td>
+<td style="text-align: right;">0.0332</td>
+<td style="text-align: right;">0.0112</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">school</td>
+<td style="text-align: right;">0.0946</td>
+<td style="text-align: right;">0.0107</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">union_d</td>
+<td style="text-align: right;">0.1104</td>
+<td style="text-align: right;">0.0179</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">married_d</td>
+<td style="text-align: right;">0.0752</td>
+<td style="text-align: right;">0.0167</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">health_d</td>
+<td style="text-align: right;">-0.0226</td>
+<td style="text-align: right;">0.0466</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">black_d</td>
+<td style="text-align: right;">-0.1340</td>
+<td style="text-align: right;">0.0480</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">hisp_d</td>
+<td style="text-align: right;">0.0173</td>
+<td style="text-align: right;">0.0428</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-7-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* exper_win and exper_bar computed earlier via:                */</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">/*   bysort id: egen exper_bar = mean(exper)                    */</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">/*   gen exper_win = exper - exper_bar                          */</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>mixed wage exper_win exper_bar school <span class="co">///</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>      union_d married_d health_d black_d hisp_d || id:, <span class="kw">reml</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-5-mundlak-parameterisation" class="level3">
+<h3 class="anchored" data-anchor-id="model-5-mundlak-parameterisation">Model 5 — Mundlak Parameterisation</h3>
+<p>Algebraically equivalent to REWB. Uses raw <code>exper</code> rather than the demeaned form, and adds <code>exper_bar</code> as a control. The coefficient on <code>exper</code> is the within effect <span class="math inline">\(\hat{\beta}_W\)</span>; the coefficient on <code>exper_bar</code> is the contextual effect <span class="math inline">\(\hat{\beta}_{2C}\)</span>.</p>
+<p>The identity <span class="math inline">\(\hat{\beta}_W + \hat{\beta}_{2C} = \hat{\beta}_{2B}\)</span> (REWB between effect) must hold exactly.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-8-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-8-1" role="tab" aria-controls="tabset-8-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-8-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-8-2" role="tab" aria-controls="tabset-8-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-8-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-8-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>m_mndl <span class="ot">&lt;-</span> <span class="fu">lmer</span>(wage <span class="sc">~</span> exper <span class="sc">+</span> exper_bar <span class="sc">+</span> school <span class="sc">+</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                 union_d <span class="sc">+</span> married_d <span class="sc">+</span> health_d <span class="sc">+</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                 black_d <span class="sc">+</span> hisp_d <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> id),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> d, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>coefs <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">summary</span>(m_mndl)<span class="sc">$</span>coefficients[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">4</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(coefs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">0.2725</td>
+<td style="text-align: right;">0.1791</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exper</td>
+<td style="text-align: right;">0.0591</td>
+<td style="text-align: right;">0.0025</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">exper_bar</td>
+<td style="text-align: right;">-0.0259</td>
+<td style="text-align: right;">0.0114</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">school</td>
+<td style="text-align: right;">0.0946</td>
+<td style="text-align: right;">0.0107</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">union_d</td>
+<td style="text-align: right;">0.1104</td>
+<td style="text-align: right;">0.0179</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">married_d</td>
+<td style="text-align: right;">0.0752</td>
+<td style="text-align: right;">0.0167</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">health_d</td>
+<td style="text-align: right;">-0.0226</td>
+<td style="text-align: right;">0.0466</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">black_d</td>
+<td style="text-align: right;">-0.1340</td>
+<td style="text-align: right;">0.0480</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">hisp_d</td>
+<td style="text-align: right;">0.0173</td>
+<td style="text-align: right;">0.0428</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>bW  <span class="ot">&lt;-</span> <span class="fu">fixef</span>(m_mndl)[<span class="st">"exper"</span>]</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>b2C <span class="ot">&lt;-</span> <span class="fu">fixef</span>(m_mndl)[<span class="st">"exper_bar"</span>]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>b2B <span class="ot">&lt;-</span> <span class="fu">fixef</span>(m_rewb)[<span class="st">"exper_bar"</span>]</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Quantity          =</span> <span class="fu">c</span>(<span class="st">"β_W  (Mundlak, raw exper)"</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"β_2C (Mundlak, exper_bar)"</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"Sum  (β_W + β_2C)"</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"β_2B (REWB,    exper_bar)"</span>),</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimate =</span> <span class="fu">round</span>(<span class="fu">c</span>(bW, b2C, bW <span class="sc">+</span> b2C, b2B), <span class="dv">5</span>),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">check.names =</span> <span class="cn">FALSE</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Mundlak identity: β_W + β_2C = β_2B"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Mundlak identity: β_W + β_2C = β_2B</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Quantity</th>
+<th style="text-align: right;">Estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">β_W (Mundlak, raw exper)</td>
+<td style="text-align: right;">0.05905</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">β_2C (Mundlak, exper_bar)</td>
+<td style="text-align: right;">-0.02587</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sum (β_W + β_2C)</td>
+<td style="text-align: right;">0.03318</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">β_2B (REWB, exper_bar)</td>
+<td style="text-align: right;">0.03318</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-8-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-8-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">xtreg</span> wage exper exper_bar school <span class="co">///</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>      union_d married_d health_d black_d hisp_d, re</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">/* Verify identity manually:                                    */</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">scalar</span> bW  = _b[exper]</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">scalar</span> b2C = _b[exper_bar]</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="kw">di</span> <span class="st">"beta_W + beta_2C = "</span> bW + b2C</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co">/* Compare with beta_2B from the REWB mixed model above        */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-6-rewb-with-random-slopes" class="level3">
+<h3 class="anchored" data-anchor-id="model-6-rewb-with-random-slopes">Model 6 — REWB with Random Slopes</h3>
+<p>Allows the within-experience effect to vary across individuals. Bell et al.&nbsp;(2019, Section 4.1, Figure 1) show that omitting random slopes when they exist in the true DGP produces anti-conservative standard errors in both FE and RE models.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-9-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-9-1" role="tab" aria-controls="tabset-9-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-9-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-9-2" role="tab" aria-controls="tabset-9-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-9-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-9-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>m_rs <span class="ot">&lt;-</span> <span class="fu">lmer</span>(wage <span class="sc">~</span> exper_win <span class="sc">+</span> exper_bar <span class="sc">+</span> school <span class="sc">+</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>               union_d <span class="sc">+</span> married_d <span class="sc">+</span> health_d <span class="sc">+</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>               black_d <span class="sc">+</span> hisp_d <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> exper_win <span class="sc">|</span> id),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">data    =</span> d,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">REML    =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">control =</span> <span class="fu">lmerControl</span>(<span class="at">optimizer =</span> <span class="st">"bobyqa"</span>))</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed effects</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">summary</span>(m_rs)<span class="sc">$</span>coefficients[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">4</span>) <span class="sc">|&gt;</span> <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Fixed effects"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Fixed effects</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">0.2481</td>
+<td style="text-align: right;">0.1789</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exper_win</td>
+<td style="text-align: right;">0.0590</td>
+<td style="text-align: right;">0.0034</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">exper_bar</td>
+<td style="text-align: right;">0.0359</td>
+<td style="text-align: right;">0.0112</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">school</td>
+<td style="text-align: right;">0.0952</td>
+<td style="text-align: right;">0.0107</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">union_d</td>
+<td style="text-align: right;">0.1101</td>
+<td style="text-align: right;">0.0179</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">married_d</td>
+<td style="text-align: right;">0.0758</td>
+<td style="text-align: right;">0.0174</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">health_d</td>
+<td style="text-align: right;">-0.0507</td>
+<td style="text-align: right;">0.0451</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">black_d</td>
+<td style="text-align: right;">-0.1306</td>
+<td style="text-align: right;">0.0479</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">hisp_d</td>
+<td style="text-align: right;">0.0163</td>
+<td style="text-align: right;">0.0428</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Random effects variance components</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(m_rs))[, <span class="fu">c</span>(<span class="st">"grp"</span>,<span class="st">"var1"</span>,<span class="st">"var2"</span>,<span class="st">"vcov"</span>,<span class="st">"sdcor"</span>)] <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transform</span>(<span class="at">vcov  =</span> <span class="fu">round</span>(vcov,  <span class="dv">5</span>),</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sdcor =</span> <span class="fu">round</span>(sdcor, <span class="dv">5</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Random effects variance components"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Random effects variance components</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">grp</th>
+<th style="text-align: left;">var1</th>
+<th style="text-align: left;">var2</th>
+<th style="text-align: right;">vcov</th>
+<th style="text-align: right;">sdcor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">id</td>
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">0.10935</td>
+<td style="text-align: right;">0.33069</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">id</td>
+<td style="text-align: left;">exper_win</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">0.00318</td>
+<td style="text-align: right;">0.05635</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">id</td>
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: left;">exper_win</td>
+<td style="text-align: right;">0.00136</td>
+<td style="text-align: right;">0.07295</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Residual</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">0.10593</td>
+<td style="text-align: right;">0.32547</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="tabset-9-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-9-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>mixed wage exper_win exper_bar school <span class="co">///</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>      union_d married_d health_d black_d hisp_d <span class="co">///</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>      || id: exper_win, <span class="kw">reml</span> <span class="kw">covariance</span>(<span class="kw">unstructured</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="results-summary" class="level2">
+<h2 class="anchored" data-anchor-id="results-summary">Results Summary</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>make_row <span class="ot">&lt;-</span> <span class="cf">function</span>(model, w, b, sch, blk) {</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model =</span> model,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>             <span class="st">`</span><span class="at">exper within</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(w,   <span class="dv">4</span>),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>             <span class="st">`</span><span class="at">exper between</span><span class="st">`</span> <span class="ot">=</span> <span class="cf">if</span> (<span class="fu">is.na</span>(b)) <span class="cn">NA</span> <span class="cf">else</span> <span class="fu">round</span>(b, <span class="dv">4</span>),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">school         =</span> <span class="cf">if</span> (<span class="fu">is.na</span>(sch)) <span class="cn">NA</span> <span class="cf">else</span> <span class="fu">round</span>(sch, <span class="dv">4</span>),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">black_d        =</span> <span class="cf">if</span> (<span class="fu">is.na</span>(blk)) <span class="cn">NA</span> <span class="cf">else</span> <span class="fu">round</span>(blk, <span class="dv">4</span>),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">check.names    =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>summary_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_row</span>(<span class="st">"OLS"</span>,</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>           <span class="fu">coef</span>(m_ols)[<span class="st">"exper"</span>],       <span class="cn">NA</span>,</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>           <span class="fu">coef</span>(m_ols)[<span class="st">"school"</span>],</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>           <span class="fu">coef</span>(m_ols)[<span class="st">"black_d"</span>]),</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_row</span>(<span class="st">"Fixed Effects"</span>,</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>           <span class="fu">as.numeric</span>(<span class="fu">coef</span>(m_fe)[<span class="st">"exper"</span>]), <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>),</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_row</span>(<span class="st">"Standard RE"</span>,</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_re)[<span class="st">"exper"</span>],        <span class="cn">NA</span>,</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_re)[<span class="st">"school"</span>],</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_re)[<span class="st">"black_d"</span>]),</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_row</span>(<span class="st">"REWB"</span>,</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rewb)[<span class="st">"exper_win"</span>],</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rewb)[<span class="st">"exper_bar"</span>],</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rewb)[<span class="st">"school"</span>],</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rewb)[<span class="st">"black_d"</span>]),</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_row</span>(<span class="st">"Mundlak"</span>,</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_mndl)[<span class="st">"exper"</span>],</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_mndl)[<span class="st">"exper_bar"</span>],</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_mndl)[<span class="st">"school"</span>],</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_mndl)[<span class="st">"black_d"</span>]),</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_row</span>(<span class="st">"REWB + Random Slopes"</span>,</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rs)[<span class="st">"exper_win"</span>],</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rs)[<span class="st">"exper_bar"</span>],</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rs)[<span class="st">"school"</span>],</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>           <span class="fu">fixef</span>(m_rs)[<span class="st">"black_d"</span>])</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>summary_tbl <span class="sc">|&gt;</span></span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Key coefficients across models. FE cannot estimate time-invariant variables."</span>,</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Model"</span>, <span class="st">"exper (within/blend)"</span>,</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"exper_bar (between/contextual)"</span>,</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"school"</span>, <span class="st">"black_d"</span>),</span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="st">"lcccc"</span></span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">4</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f8ff"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_footnote</span>(<span class="fu">c</span>(</span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>    <span class="st">"OLS and Std RE: exper coefficient blends within and between effects."</span>,</span>
+<span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>    <span class="st">"FE: within effect only; time-invariant variables absorbed by person dummies."</span>,</span>
+<span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a>    <span class="st">"REWB (highlighted): separates both; within ≈ FE; between is new information."</span>,</span>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Mundlak: equivalent to REWB; exper_bar = contextual (not between) effect."</span>,</span>
+<span id="cb22-53"><a href="#cb22-53" aria-hidden="true" tabindex="-1"></a>    <span class="st">"For Mundlak: exper_bar column shows contextual effect β_2C, not β_2B."</span></span>
+<span id="cb22-54"><a href="#cb22-54" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">notation =</span> <span class="st">"alphabet"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small">
+<caption>Key coefficients across models. FE cannot estimate time-invariant variables.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Model</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">exper (within/blend)</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">exper_bar (between/contextual)</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">school</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">black_d</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">exper</td>
+<td style="text-align: left;">OLS</td>
+<td style="text-align: center;">0.0501</td>
+<td style="text-align: center;">NA</td>
+<td style="text-align: center;">0.1035</td>
+<td style="text-align: center;">-0.1428</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Fixed Effects</td>
+<td style="text-align: center;">0.0599</td>
+<td style="text-align: center;">NA</td>
+<td style="text-align: center;">NA</td>
+<td style="text-align: center;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">exper1</td>
+<td style="text-align: left;">Standard RE</td>
+<td style="text-align: center;">0.0580</td>
+<td style="text-align: center;">NA</td>
+<td style="text-align: center;">0.1081</td>
+<td style="text-align: center;">-0.1412</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-weight: bold; background-color: rgba(240, 248, 255, 1) !important;">exper_win</td>
+<td style="text-align: left; font-weight: bold; background-color: rgba(240, 248, 255, 1) !important;">REWB</td>
+<td style="text-align: center; font-weight: bold; background-color: rgba(240, 248, 255, 1) !important;">0.0591</td>
+<td style="text-align: center; font-weight: bold; background-color: rgba(240, 248, 255, 1) !important;">0.0332</td>
+<td style="text-align: center; font-weight: bold; background-color: rgba(240, 248, 255, 1) !important;">0.0946</td>
+<td style="text-align: center; font-weight: bold; background-color: rgba(240, 248, 255, 1) !important;">-0.1340</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">exper2</td>
+<td style="text-align: left;">Mundlak</td>
+<td style="text-align: center;">0.0591</td>
+<td style="text-align: center;">-0.0259</td>
+<td style="text-align: center;">0.0946</td>
+<td style="text-align: center;">-0.1340</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exper_win1</td>
+<td style="text-align: left;">REWB + Random Slopes</td>
+<td style="text-align: center;">0.0590</td>
+<td style="text-align: center;">0.0359</td>
+<td style="text-align: center;">0.0952</td>
+<td style="text-align: center;">-0.1306</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td style="text-align: left; padding: 0; border: 0;"><sup>a</sup> OLS and Std RE: exper coefficient blends within and between effects.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left; padding: 0; border: 0;"><sup>b</sup> FE: within effect only; time-invariant variables absorbed by person dummies.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; padding: 0; border: 0;"><sup>c</sup> REWB (highlighted): separates both; within ≈ FE; between is new information.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left; padding: 0; border: 0;"><sup>d</sup> Mundlak: equivalent to REWB; exper_bar = contextual (not between) effect.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; padding: 0; border: 0;"><sup>e</sup> For Mundlak: exper_bar column shows contextual effect β_2C, not β_2B.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tfoot>
+
+</table>
+</div>
+</div>
+<p><strong>Key findings:</strong></p>
+<ul>
+<li><strong>Within effect</strong> (REWB <code>exper_win</code> ≈ FE): each additional year of <em>own</em> experience raises wages by approximately <strong>5.9%</strong>. The small difference from FE (0.0599 vs 0.0591) reflects GLS vs OLS estimation, not a modelling difference.</li>
+<li><strong>Between effect</strong> (REWB <code>exper_bar</code>): workers with one more year of <em>average</em> experience earn <strong>3.3%</strong> more. This is materially smaller than the within effect — between-person experience differences are partly confounded with unobserved stable traits (ability, career selection) that also affect wages.</li>
+<li><strong>OLS</strong> blends both to ~5.0% — an uninterpretable weighted average.</li>
+<li><strong>Education</strong> (time-invariant): FE cannot estimate this; REWB recovers ~9.5% per year of schooling.</li>
+<li><strong>Black ethnicity</strong> (time-invariant): FE cannot estimate this; REWB estimates a wage penalty of approximately 13%.</li>
+</ul>
+</section>
+<section id="a-cautionary-note-nonstationarity" class="level2">
+<h2 class="anchored" data-anchor-id="a-cautionary-note-nonstationarity">A Cautionary Note: Nonstationarity</h2>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Are wages and experience stationary?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Standard FE, RE, and REWB models assume that the variables in the model are <strong>stationary</strong> (i.e., their statistical properties do not systematically change over time). If wages or key time-varying predictors follow a <strong>unit root</strong> (stochastic trend), estimates from level-based models can be spurious. This concern is worth investigating before interpreting the results above.</p>
+</div>
+</div>
+<section id="experience-as-a-deterministic-time-trend" class="level3">
+<h3 class="anchored" data-anchor-id="experience-as-a-deterministic-time-trend">Experience as a deterministic time trend</h3>
+<p>The most immediate issue is not stochastic at all. In the Cornwell–Rupert data, <code>exper</code> grows by exactly one year per person per year with no exceptions:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>d_sorted <span class="ot">&lt;-</span> d[<span class="fu">order</span>(d<span class="sc">$</span>id, d<span class="sc">$</span>year), ]</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>d_sorted<span class="sc">$</span>d_exper <span class="ot">&lt;-</span> <span class="fu">ave</span>(d_sorted<span class="sc">$</span>exper, d_sorted<span class="sc">$</span>id,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(x)))</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Year-to-year change in exper (Δexper):</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Year-to-year change in exper (Δexper):</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(d_sorted<span class="sc">$</span>d_exper, <span class="at">useNA =</span> <span class="st">"always"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+   1 &lt;NA&gt; 
+3815  545 </code></pre>
+</div>
+</div>
+<p>Because <span class="math inline">\(\Delta \text{exper}_{it} = 1\)</span> for every observation, <code>exper</code> is a <strong>deterministic linear time trend</strong> indexed to when each person entered the labour market. It is perfectly collinear with <code>year</code> within each person.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>What the within effect of experience actually identifies
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In a within-person (FE or REWB) regression of log wages on experience:</p>
+<p><span class="math display">\[y_{it} = \beta_0 + \beta_W \cdot \underbrace{(\text{exper}_{it} - \bar{\text{exper}}_i)}_{\text{exper\_win}} + \ldots\]</span></p>
+<p>because <span class="math inline">\(\text{exper}_{it} = \text{exper}_{i,t-1} + 1\)</span> always, the demeaned predictor <code>exper_win</code> is proportional to <span class="math inline">\((t - \bar{t})\)</span> — a person-centred time index. <span class="math inline">\(\hat{\beta}_W\)</span> therefore estimates the <strong>average annual wage growth rate</strong>, not the causal return to one additional year of a worker’s accumulated human capital.</p>
+<p>This matters for interpretation. The within estimate (≈ 5.9% per year) conflates genuine returns to experience with any systematic change in real wages over the 1980–1987 period (e.g., business cycle, labour-market shifts). Including year dummies would be a natural control, but since <code>exper</code> increments by exactly 1 each year, year dummies and <code>exper_win</code> are <strong>perfectly collinear within persons</strong> and cannot both be included.</p>
+<p>The <em>between</em> effect of <code>exper_bar</code> is also partly a life-cycle / cohort effect: workers who are older on average in 1980–1987 have more average experience, but may also differ in cohort-specific ways.</p>
+</div>
+</div>
+</section>
+<section id="panel-unit-root-tests-on-wages" class="level3">
+<h3 class="anchored" data-anchor-id="panel-unit-root-tests-on-wages">Panel unit root tests on wages</h3>
+<p>Even setting aside the experience issue, log wages themselves may contain a stochastic trend. We apply two panel unit root tests with opposite null hypotheses:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Im-Pesaran-Shin (2003): H0 = unit root in all panels</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>ips <span class="ot">&lt;-</span> <span class="fu">purtest</span>(pdat[, <span class="st">"wage"</span>], <span class="at">test =</span> <span class="st">"ips"</span>, <span class="at">exo =</span> <span class="st">"intercept"</span>, <span class="at">lags =</span> <span class="dv">1</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Hadri (2000) KPSS-type: H0 = stationarity in all panels</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>hadri <span class="ot">&lt;-</span> <span class="fu">purtest</span>(pdat[, <span class="st">"wage"</span>], <span class="at">test =</span> <span class="st">"hadri"</span>, <span class="at">exo =</span> <span class="st">"intercept"</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test       =</span> <span class="fu">c</span>(<span class="st">"Im–Pesaran–Shin (IPS)"</span>,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Hadri KPSS"</span>),</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">H₀</span><span class="st">`</span>       <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"All panels have a unit root"</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"All panels are stationary"</span>),</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Statistic  =</span> <span class="fu">c</span>(<span class="fu">round</span>(ips<span class="sc">$</span>statistic<span class="sc">$</span>statistic, <span class="dv">3</span>),</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">round</span>(hadri<span class="sc">$</span>statistic<span class="sc">$</span>statistic, <span class="dv">3</span>)),</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">p-value</span><span class="st">`</span>  <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">format.pval</span>(ips<span class="sc">$</span>statistic<span class="sc">$</span>p.value,   <span class="at">digits =</span> <span class="dv">3</span>),</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">format.pval</span>(hadri<span class="sc">$</span>statistic<span class="sc">$</span>p.value,  <span class="at">digits =</span> <span class="dv">3</span>)),</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">Decision   =</span> <span class="fu">c</span>(<span class="st">"Reject H₀ → stationary"</span>,</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Reject H₀ → unit root"</span>),</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">check.names =</span> <span class="cn">FALSE</span></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Conflicting panel unit root test results for log wages"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Conflicting panel unit root test results for log wages</caption>
+<colgroup>
+<col style="width: 6%">
+<col style="width: 22%">
+<col style="width: 28%">
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 23%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">Test</th>
+<th style="text-align: left;">H₀</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: left;">p-value</th>
+<th style="text-align: left;">Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Wtbar</td>
+<td style="text-align: left;">Im–Pesaran–Shin (IPS)</td>
+<td style="text-align: left;">All panels have a unit root</td>
+<td style="text-align: right;">-25.378</td>
+<td style="text-align: left;">&lt;2e-16</td>
+<td style="text-align: left;">Reject H₀ → stationary</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">z</td>
+<td style="text-align: left;">Hadri KPSS</td>
+<td style="text-align: left;">All panels are stationary</td>
+<td style="text-align: right;">36.010</td>
+<td style="text-align: left;">&lt;2e-16</td>
+<td style="text-align: left;">Reject H₀ → unit root</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The tests give <strong>contradictory conclusions</strong> — a common finding in short panels:</p>
+<ul>
+<li><strong>IPS</strong> rejects the unit root null, suggesting stationarity.</li>
+<li><strong>Hadri KPSS</strong> rejects the stationarity null, suggesting a unit root.</li>
+</ul>
+<p>This contradiction is unsurprising given the very short time dimension (T = 8). Both tests have well-known size and power problems in small T settings (Harris &amp; Tzavalis 1999; Hlouskova &amp; Wagner 2006), and with only 8 observations per individual, individual-level ADF tests are uninformative.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check whether first-differenced wages are more clearly stationary</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>ips_fd <span class="ot">&lt;-</span> <span class="fu">purtest</span>(<span class="fu">diff</span>(pdat[, <span class="st">"wage"</span>]), <span class="at">test =</span> <span class="st">"ips"</span>,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">exo =</span> <span class="st">"intercept"</span>, <span class="at">lags =</span> <span class="dv">1</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"IPS on Δwage: statistic = %.3f, p = %.2e</span><span class="sc">\n</span><span class="st"> → %s</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  ips_fd<span class="sc">$</span>statistic<span class="sc">$</span>statistic,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  ips_fd<span class="sc">$</span>statistic<span class="sc">$</span>p.value,</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (ips_fd<span class="sc">$</span>statistic<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>) <span class="st">"Rejects unit root (Δwage stationary)"</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="st">"Cannot reject unit root"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>IPS on Δwage: statistic = -63.897, p = 0.00e+00
+ → Rejects unit root (Δwage stationary)</code></pre>
+</div>
+</div>
+<p>First-differenced wages strongly reject the unit root null, consistent with wages being integrated of order one, I(1) — i.e., the <em>level</em> of wages is non-stationary but the <em>change</em> in wages is stationary.</p>
+</section>
+<section id="implications-and-practical-remedies" class="level3">
+<h3 class="anchored" data-anchor-id="implications-and-practical-remedies">Implications and practical remedies</h3>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>When does nonstationarity matter most?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The concern is most acute for <strong>cross-sectional (between) estimates</strong>. If wages are I(1) and individual means <span class="math inline">\(\bar{y}_i\)</span> vary systematically (as they do when T is small and wages have trends), the between-person regression can be spurious. The <strong>within estimator</strong> is more robust because the within transformation removes a large portion of trending variation, though it does not guarantee consistency under all unit root specifications.</p>
+</div>
+</div>
+<p><strong>Practical options, in order of preference:</strong></p>
+<ol type="1">
+<li><strong>Include year dummies (two-way FE/REWB).</strong> Control for any common time trend in wages. However, as noted above, year dummies and <code>exper_win</code> are perfectly collinear within persons in this dataset — so one must be omitted. A reasonable choice is to replace <code>exper</code> with a <strong>quadratic in age</strong> or a <strong>time counter</strong> and include year fixed effects.</li>
+</ol>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-10-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-10-1" role="tab" aria-controls="tabset-10-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-10-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-10-2" role="tab" aria-controls="tabset-10-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-10-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-10-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Two-way FE: person + year dummies (year_f as factor)</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>year_f <span class="ot">&lt;-</span> <span class="fu">factor</span>(d<span class="sc">$</span>year)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># REWB with year dummies but WITHOUT exper_win (collinear with year_f within person)</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>m_twoway <span class="ot">&lt;-</span> <span class="fu">lmer</span>(wage <span class="sc">~</span> year_f <span class="sc">+</span> exper_bar <span class="sc">+</span> school <span class="sc">+</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>                   union_d <span class="sc">+</span> married_d <span class="sc">+</span> health_d <span class="sc">+</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                   black_d <span class="sc">+</span> hisp_d <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> id),</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> d, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Show year fixed effects and between effect of experience</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>fe_coefs <span class="ot">&lt;-</span> <span class="fu">fixef</span>(m_twoway)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Year effects (relative to 1980):</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Year effects (relative to 1980):</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(fe_coefs[<span class="fu">grepl</span>(<span class="st">"year_f"</span>, <span class="fu">names</span>(fe_coefs))], <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>year_f1981 year_f1982 year_f1983 year_f1984 year_f1985 year_f1986 year_f1987 
+    0.1121     0.1649     0.2071     0.2738     0.3227     0.3820     0.4402 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Between effect of experience (exper_bar): %.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>            fe_coefs[<span class="st">"exper_bar"</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Between effect of experience (exper_bar): 0.0333</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-10-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-10-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Two-way FE: absorb person and year effects                   */</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co">/* exper_win omitted -- collinear with year dummies within id   */</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">tabulate</span> <span class="fu">year</span>, <span class="kw">gen</span>(yr)   <span class="co">/* year dummies               */</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>mixed wage yr2-yr8 exper_bar school <span class="co">///</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>      union_d married_d health_d black_d hisp_d || id:, <span class="kw">reml</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="co">/* Or equivalently: xtreg wage yr2-yr8 exper_bar ..., re       */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<ol start="2" type="1">
+<li><strong>First-difference the outcome.</strong> Regress <span class="math inline">\(\Delta \text{wage}_{it}\)</span> on time-varying changes. Since <span class="math inline">\(\Delta \text{exper} = 1\)</span> always, experience is absorbed into the intercept (average wage growth). This is principled but loses the ability to estimate level effects.</li>
+</ol>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-11-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-11-1" role="tab" aria-controls="tabset-11-1" aria-selected="true" href="">R</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-11-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-11-2" role="tab" aria-controls="tabset-11-2" aria-selected="false" href="">Stata</a></li></ul>
+<div class="tab-content">
+<div id="tabset-11-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-11-1-tab">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># First-difference model</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>d_fd <span class="ot">&lt;-</span> d[<span class="fu">order</span>(d<span class="sc">$</span>id, d<span class="sc">$</span>year), ]</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>d_fd<span class="sc">$</span>d_wage    <span class="ot">&lt;-</span> <span class="fu">ave</span>(d_fd<span class="sc">$</span>wage,    d_fd<span class="sc">$</span>id, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(x)))</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>d_fd<span class="sc">$</span>d_union   <span class="ot">&lt;-</span> <span class="fu">ave</span>(d_fd<span class="sc">$</span>union_d, d_fd<span class="sc">$</span>id, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(x)))</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>d_fd<span class="sc">$</span>d_married <span class="ot">&lt;-</span> <span class="fu">ave</span>(d_fd<span class="sc">$</span>married_d, d_fd<span class="sc">$</span>id, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(x)))</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>d_fd<span class="sc">$</span>d_health  <span class="ot">&lt;-</span> <span class="fu">ave</span>(d_fd<span class="sc">$</span>health_d,  d_fd<span class="sc">$</span>id, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(x)))</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>d_fd <span class="ot">&lt;-</span> d_fd[<span class="sc">!</span><span class="fu">is.na</span>(d_fd<span class="sc">$</span>d_wage), ]</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="co"># OLS on first differences (exper absorbed into intercept)</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>m_fd <span class="ot">&lt;-</span> <span class="fu">lm</span>(d_wage <span class="sc">~</span> d_union <span class="sc">+</span> d_married <span class="sc">+</span> d_health, <span class="at">data =</span> d_fd)</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"First-difference model (Δwage ~ Δcontrols):</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>First-difference model (Δwage ~ Δcontrols):</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">summary</span>(m_fd)<span class="sc">$</span>coefficients[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">4</span>) <span class="sc">|&gt;</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">0.0648</td>
+<td style="text-align: right;">0.0073</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">d_union</td>
+<td style="text-align: right;">0.0418</td>
+<td style="text-align: right;">0.0197</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">d_married</td>
+<td style="text-align: right;">0.0426</td>
+<td style="text-align: right;">0.0229</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">d_health</td>
+<td style="text-align: right;">-0.0507</td>
+<td style="text-align: right;">0.0429</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Intercept = average annual wage growth rate: "</span>,</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">coef</span>(m_fd)[<span class="st">"(Intercept)"</span>], <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Intercept = average annual wage growth rate:  0.0648 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"(experience absorbed into intercept since Δexper = 1 always)</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(experience absorbed into intercept since Δexper = 1 always)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-11-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-11-2-tab">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* First-difference estimator                                   */</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="co">/* exper drops out since Δexper = 1 (absorbed by _cons)        */</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>xtset id <span class="fu">year</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> d_wage    = D.wage</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> d_union   = D.union_d</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> d_married = D.married_d</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="kw">gen</span> d_health  = D.health_d</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> d_wage d_union d_married d_health</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a><span class="co">/* Intercept = average annual log-wage growth rate              */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<ol start="3" type="1">
+<li><p><strong>Test for cointegration.</strong> If wages and predictors are all I(1) but cointegrated, the level-based REWB model remains valid as an error-correction representation. Pedroni (1999) panel cointegration tests are available in R via the <code>cointReg</code> package and in Stata via <code>xtpedroni</code>.</p></li>
+<li><p><strong>Interpret cautiously.</strong> With T = 8, the evidence on stationarity is genuinely ambiguous. The most defensible position is to report the REWB estimates in levels alongside the two-way FE and first-difference specifications as robustness checks, and note that the within-person estimate of experience captures <strong>average annual wage growth</strong> rather than the structural return to human capital accumulation.</p></li>
+</ol>
+</section>
+<section id="summary-of-the-nonstationarity-issue" class="level3">
+<h3 class="anchored" data-anchor-id="summary-of-the-nonstationarity-issue">Summary of the nonstationarity issue</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 24%">
+<col style="width: 29%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>Mechanism</th>
+<th>Practical effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>exper</code> is a deterministic time trend</td>
+<td><span class="math inline">\(\Delta\text{exper} = 1\)</span> always</td>
+<td>Within effect ≡ average annual wage growth; collinear with year dummies</td>
+</tr>
+<tr class="even">
+<td>Wages may be I(1)</td>
+<td>Stochastic trend in log wages</td>
+<td>Level-based regressions potentially spurious</td>
+</tr>
+<tr class="odd">
+<td>Short T (= 8)</td>
+<td>Low power of unit root tests</td>
+<td>Cannot reliably distinguish I(0) from I(1)</td>
+</tr>
+<tr class="even">
+<td>Conflicting test results</td>
+<td>IPS rejects unit root; Hadri rejects stationarity</td>
+<td>Model specification uncertainty</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bottom line:</strong> the REWB results are informative and internally consistent, but the within-person estimate of the experience effect should be interpreted as an <strong>average annual wage growth rate</strong> rather than a pure return to experience. Year fixed effects (in place of <code>exper_win</code>) are a straightforward robustness check when the goal is to separate individual wage growth from common macroeconomic trends.</p>
+<hr>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Bell, A., Fairbrother, M. &amp; Jones, K. (2019). Fixed and random effects models: making an informed choice. <em>Quality &amp; Quantity</em>, 53, 1051–1074. <a href="https://doi.org/10.1007/s11135-018-0802-x" class="uri">https://doi.org/10.1007/s11135-018-0802-x</a></p>
+<p>Bell, A. &amp; Jones, K. (2015). Explaining fixed effects: random effects modelling of time-series cross-sectional and panel data. <em>Political Science Research and Methods</em>, 3(1), 133–153. Replication files: <a href="https://doi.org/10.7910/DVN/23415" class="uri">https://doi.org/10.7910/DVN/23415</a></p>
+<p>Cornwell, C. &amp; Rupert, P. (1988). Efficient estimation with panel data: an empirical comparison of instrumental variables estimators. <em>Journal of Applied Econometrics</em>, 3, 149–155.</p>
+<p>Hadri, K. (2000). Testing for stationarity in heterogeneous panel data. <em>Econometrics Journal</em>, 3(2), 148–161.</p>
+<p>Im, K. S., Pesaran, M. H. &amp; Shin, Y. (2003). Testing for unit roots in heterogeneous panels. <em>Journal of Econometrics</em>, 115(1), 53–74.</p>
+<p>Jordan, S. &amp; Philips, A. Q. (2023). Improving the interpretation of random effects regression results. <em>Political Studies Review</em>, 21(1), 210–220. Code: <a href="https://github.com/andyphilips/qdmean" class="uri">https://github.com/andyphilips/qdmean</a></p>
+<p>Mundlak, Y. (1978). Pooling of time-series and cross-section data. <em>Econometrica</em>, 46(1), 69–85.</p>
+<p>Vella, F. &amp; Verbeek, M. (1998). Whose wages do unions raise? A dynamic model of unionism and wage rate determination for young men. <em>Journal of Applied Econometrics</em>, 13(2), 163–183.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

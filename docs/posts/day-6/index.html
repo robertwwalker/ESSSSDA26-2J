@@ -306,6 +306,30 @@ window.Quarto = {
  <span class="menu-text">Day 6: Panel Data</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-7/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 7: Missing Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-8/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 8: Panel Models for Limited Outcomes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-9/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 9: DPD and GMM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../posts/day-10/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Day 10: Causal Inference in Panels and TWFE</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -344,6 +368,8 @@ window.Quarto = {
 <li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day6/">A reveal presentation</a></li>
 <li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-REWB/">A reveal presentation on REWB</a></li>
 <li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-TWFE-Models/">A reveal presentation on TWFE Models</a></li>
+<li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-CFRTSP/">A reveal presentation on Common Factor Restrictions</a></li>
+<li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-FE-Danger/">A reveal presentation on Dangers in FE Models</a></li>
 </ul>
 </section>
 <section id="panelr" class="level2">
@@ -472,44 +498,44 @@ FE
 X.FE
 </td>
 <td>
--3.031<sup>***</sup>
+-2.054<sup>***</sup>
 </td>
 <td>
-0.954<sup>***</sup>
+0.940<sup>***</sup>
 </td>
 <td>
-0.877<sup>***</sup>
+0.865<sup>***</sup>
 </td>
 <td>
-0.955<sup>***</sup>
+0.942<sup>***</sup>
 </td>
 <td>
--3.031<sup>***</sup>
+-2.995<sup>***</sup>
 </td>
 <td>
-0.959<sup>***</sup>
+0.946<sup>***</sup>
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
 <td>
-(0.540)
-</td>
-<td>
-(0.152)
-</td>
-<td>
-(0.175)
+(0.495)
 </td>
 <td>
 (0.151)
 </td>
 <td>
-(0.540)
+(0.174)
 </td>
 <td>
-(0.151)
+(0.150)
+</td>
+<td>
+(0.534)
+</td>
+<td>
+(0.150)
 </td>
 </tr>
 <tr>
@@ -533,19 +559,19 @@ X.FE
 Constant
 </td>
 <td>
--4.057<sup>***</sup>
+-3.093<sup>***</sup>
 </td>
 <td>
--0.072
+-0.099
 </td>
 <td>
--0.148
+-0.174
 </td>
 <td>
--0.070
+-0.097
 </td>
 <td>
--4.057<sup>***</sup>
+-4.035<sup>***</sup>
 </td>
 <td>
 </td>
@@ -554,19 +580,19 @@ Constant
 <td style="text-align:left">
 </td>
 <td>
-(0.665)
+(0.642)
 </td>
 <td>
-(2.944)
+(2.908)
 </td>
 <td>
-(0.898)
+(0.889)
 </td>
 <td>
-(3.634)
+(3.590)
 </td>
 <td>
-(0.665)
+(0.657)
 </td>
 <td>
 </td>
@@ -619,22 +645,22 @@ Observations
 R<sup>2</sup>
 </td>
 <td>
+0.124
+</td>
+<td>
+0.243
+</td>
+<td>
+0.170
+</td>
+<td>
+0.246
+</td>
+<td>
 0.207
 </td>
 <td>
-0.245
-</td>
-<td>
-0.172
-</td>
-<td>
-0.248
-</td>
-<td>
-0.207
-</td>
-<td>
-0.252
+0.250
 </td>
 </tr>
 <tr>
@@ -642,22 +668,22 @@ R<sup>2</sup>
 Adjusted R<sup>2</sup>
 </td>
 <td>
-0.200
+0.117
+</td>
+<td>
+0.237
+</td>
+<td>
+0.164
 </td>
 <td>
 0.239
 </td>
 <td>
-0.165
-</td>
-<td>
-0.241
-</td>
-<td>
 0.200
 </td>
 <td>
-0.233
+0.231
 </td>
 </tr>
 <tr>
@@ -665,22 +691,22 @@ Adjusted R<sup>2</sup>
 F Statistic
 </td>
 <td>
-31.510<sup>***</sup>
+17.184<sup>***</sup>
 </td>
 <td>
-39.350<sup>***</sup>
+38.925<sup>***</sup>
 </td>
 <td>
-25.085<sup>***</sup>
+24.859<sup>***</sup>
 </td>
 <td>
-39.843<sup>***</sup>
+39.414<sup>***</sup>
 </td>
 <td>
-31.510<sup>***</sup> (df = 1; 121)
+31.503<sup>***</sup> (df = 1; 121)
 </td>
 <td>
-40.109<sup>***</sup> (df = 1; 119)
+39.679<sup>***</sup> (df = 1; 119)
 </td>
 </tr>
 <tr>
