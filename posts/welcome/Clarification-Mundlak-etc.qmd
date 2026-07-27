@@ -3,6 +3,7 @@ title: "A Clarification on Mundlak and Related Things"
 author: "Robert W. Walker"
 categories: [panel data, time series, code, analysis]
 image: "thumbnail.png"
+draft: true
 ---
 
 My discussion of two-way fixed effects and the Mundlak estimator on Friday merits backfilling and rendering clear some things I have previously  said or noted throughout the last week and to some degree for the two weeks that I should have been more explicit in combining.
@@ -80,6 +81,7 @@ and changes in $x$ have to be accounted precisely.  We will typically (though im
 Counterfactual <- data.frame(Case=c(1,1,2,2), Time=c(1,2,1,2), x0=c(0,0,0,0), xT=c(1,1,1,0))
 Counterfactual
 ```
+
 Suppose a 2 way Mundlak regression or 2 way fixed effects with a regression model setting all regression parameters to 1, the expected value in the first case is 0.  When the counterfactual is implemented, we can account for it as follows.  What changes?  The pooled regression coefficient will increase y by 1.  That's really the easy part.
 
 The new unit mean -- expected value of $x_i$ -- should be 1 because of the change for case 1.  As an algerbraic matter,   Case 2 is just a shock so perhaps no change in expectation.  The new time mean for both increases proportionally by the same $\frac{1}{N}$ -- expected value of x -- in that period.  The change continues for Case 1 but vanishes for Case 2.

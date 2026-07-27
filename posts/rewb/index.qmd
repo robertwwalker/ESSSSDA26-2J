@@ -212,6 +212,8 @@ m_re <- lmer(wage ~ exper + school + union_d + married_d +
                health_d + black_d + hisp_d + (1 | id),
              data = d, REML = FALSE)
 round(summary(m_re)$coefficients[, 1:2], 4) |> kable()
+# plm_re <- plm(wage ~ exper + school + union_d + married_d + health_d + black_d + hisp_d, data = pdat, model="random")
+# summary(plm_re) nearly identical
 ```
 
 #### Stata
