@@ -4,12 +4,13 @@ author: "Robert W. Walker"
 date: "07/27/2026"
 categories: [panel data, code, analysis]
 image: "image.png"
-draft: true
 ---
 
 ## Slides
 
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day6/)
+- [A reveal presentation on REWB](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-REWB/)
+- [A reveal presentation on TWFE Models](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-TWFE-Models/)
 
 ## `panelr`
 

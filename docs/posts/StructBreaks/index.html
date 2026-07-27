@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Robert W. Walker">
-<meta name="dcterms.date" content="2026-07-27">
+<meta name="dcterms.date" content="2026-07-25">
 
-<title>Day 6: Panel Data – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
+<title>Structural Breaks ala Jong Hee Park – ESSSSDA 2026 2J: Time Series and Collections of Them</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -106,35 +106,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -187,7 +158,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../posts/day-6/index.html">Week 2</a></li><li class="breadcrumb-item"><a href="../../posts/day-6/index.html">Day 6: Panel Data</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Structural Breaks ala Jong Hee Park</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -199,8 +170,8 @@ window.Quarto = {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-body"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../posts/day-6/index.html">Week 2</a></li><li class="breadcrumb-item"><a href="../../posts/day-6/index.html">Day 6: Panel Data</a></li></ol></nav>
-      <h1 class="title">Day 6: Panel Data</h1>
+    <div class="quarto-title column-body">
+      <h1 class="title">Structural Breaks ala Jong Hee Park</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">panel data</div>
                 <div class="quarto-category">code</div>
@@ -222,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">July 27, 2026</p>
+        <p class="date">July 25, 2026</p>
       </div>
     </div>
     
@@ -300,12 +271,6 @@ window.Quarto = {
           </a> 
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../posts/day-6/index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Day 6: Panel Data</span></a>
-  </div>
-</li>
       </ul>
   </li>
     </ul>
@@ -318,16 +283,11 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#slides" id="toc-slides" class="nav-link active" data-scroll-target="#slides">Slides</a></li>
-  <li><a href="#panelr" id="toc-panelr" class="nav-link" data-scroll-target="#panelr"><code>panelr</code></a></li>
-  <li><a href="#some-simulated-data" id="toc-some-simulated-data" class="nav-link" data-scroll-target="#some-simulated-data">Some Simulated Data</a></li>
-  <li><a href="#three-models" id="toc-three-models" class="nav-link" data-scroll-target="#three-models">Three Models</a></li>
-  <li><a href="#omitted-fixed-effects-can-be-very-bad" id="toc-omitted-fixed-effects-can-be-very-bad" class="nav-link" data-scroll-target="#omitted-fixed-effects-can-be-very-bad">Omitted Fixed Effects can be Very Bad</a>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
   <ul class="collapse">
-  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#draw-picture-of-the-posterior-regime-probability" id="toc-draw-picture-of-the-posterior-regime-probability" class="nav-link" data-scroll-target="#draw-picture-of-the-posterior-regime-probability">draw picture of the posterior regime probability</a></li>
   </ul></li>
-  <li><a href="#plm-things" id="toc-plm-things" class="nav-link" data-scroll-target="#plm-things"><code>plm</code> things</a></li>
-  <li><a href="#the-plm-vignette" id="toc-the-plm-vignette" class="nav-link" data-scroll-target="#the-plm-vignette">The <code>plm</code> vignette</a></li>
   </ul>
 </nav>
     </div>
@@ -338,407 +298,317 @@ window.Quarto = {
 
 
 
-<section id="slides" class="level2">
-<h2 class="anchored" data-anchor-id="slides">Slides</h2>
-<ul>
-<li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day6/">A reveal presentation</a></li>
-<li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-REWB/">A reveal presentation on REWB</a></li>
-<li><a href="https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-TWFE-Models/">A reveal presentation on TWFE Models</a></li>
-</ul>
-</section>
-<section id="panelr" class="level2">
-<h2 class="anchored" data-anchor-id="panelr"><code>panelr</code></h2>
-<p><a href="https://cran.r-project.org/web/packages/panelr/vignettes/wbm.html">The panelr package vignette on between-within</a></p>
-<p>Starting the panel data, or the generalization to multiple time series, perhaps the most famous question in the generic literature is a question about fixed and random effects, more precisely, do we estimate specific unobserved constants or do we seek only the distribution of these constants. The implications of this basic issue are substantial.</p>
-</section>
-<section id="some-simulated-data" class="level2">
-<h2 class="anchored" data-anchor-id="some-simulated-data">Some Simulated Data</h2>
-<p>Random effects and pooled regressions can be terribly wrong when the pooled and random effects moment condition fails. Let’s show some data here to illustrate the point. The true model here is <span class="math display">\[ y_{it} = \alpha_{i} + X_{it}\beta + \epsilon_{it} \]</span> where the <span class="math inline">\(\beta=1\)</span> and <span class="math inline">\(\alpha_{i}=\{6,0,-6\}\)</span> and <span class="math inline">\(\epsilon \sim \mathcal{N}(0,1)\)</span>. Here is the plot.</p>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>X.FE <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>,<span class="sc">-</span><span class="fl">0.5</span>,<span class="at">by=</span><span class="fl">0.05</span>),<span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>,<span class="dv">0</span>,<span class="at">by=</span><span class="fl">0.05</span>),<span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span>,<span class="fl">0.5</span>,<span class="at">by=</span><span class="fl">0.05</span>))</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y.FE <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">3</span><span class="sc">*</span><span class="fu">c</span>(<span class="fu">rep</span>(<span class="sc">-</span><span class="dv">2</span>,<span class="dv">41</span>),<span class="fu">rep</span>(<span class="dv">0</span>,<span class="dv">41</span>),<span class="fu">rep</span>(<span class="dv">2</span>,<span class="dv">41</span>))<span class="sc">+</span>X.FE <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">123</span>,<span class="dv">0</span>,<span class="dv">1</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>FE.data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(y.FE,X.FE,<span class="at">unit=</span><span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">1</span>,<span class="dv">41</span>),<span class="fu">rep</span>(<span class="dv">2</span>,<span class="dv">41</span>),<span class="fu">rep</span>(<span class="dv">3</span>,<span class="dv">41</span>)), <span class="at">time=</span><span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">41</span>,<span class="dv">1</span>),<span class="dv">3</span>))</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(foreign)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write.dta</span>(FE.data, <span class="st">"FEData-2.dta"</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(FE.data, <span class="fu">plot</span>(X.FE,y.FE, <span class="at">bty=</span><span class="st">"n"</span>, <span class="at">main=</span><span class="st">"Pooled"</span>))</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(FE.data, <span class="fu">abline</span>(<span class="fu">lm</span>(y.FE<span class="sc">~</span>X.FE), <span class="at">lty=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"brown"</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(FE.data, <span class="fu">plot</span>(X.FE,y.FE, <span class="at">bty=</span><span class="st">"n"</span>, <span class="at">col=</span>unit, <span class="at">main=</span><span class="st">"Fixed Effects"</span>))</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a=</span><span class="sc">-</span><span class="dv">6</span>,<span class="at">b=</span><span class="dv">1</span>, <span class="at">col=</span><span class="st">"blue"</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a=</span><span class="dv">0</span>,<span class="at">b=</span><span class="dv">1</span>, <span class="at">col=</span><span class="st">"blue"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a=</span><span class="dv">6</span>,<span class="at">b=</span><span class="dv">1</span>, <span class="at">col=</span><span class="st">"blue"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MCMCpack)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(zoo)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## The original data set is from </span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="do">## "Bank Rate Policy Under the Interwar Gold Standard: A Dynamic</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Probit Model" by Barry Eichengreen, Mark Watson and Richard Grossman, The</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Economic Journal, Vol. 95, Spetember 1985, pp 725-745.</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Available at http://www.princeton.edu/~mwatson/publi.html</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="do">##############################################################################</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"./data/EWG.RData"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>BRold <span class="ot">&lt;-</span> BR[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>),<span class="dv">1</span>][<span class="sc">-</span><span class="fu">c</span>(<span class="dv">329</span><span class="sc">:</span><span class="dv">330</span>)] <span class="do">## Make it comparable to EWG time frame: May 28, 1925 - Sep 13, 1931</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>BRraw <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(EWG<span class="sc">$</span>dBR) <span class="sc">+</span> <span class="dv">5</span> <span class="do">## restore raw data</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>BRord <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(EWG)) <span class="do">## ordinal data</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(EWG)){</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (BRraw[i]<span class="sc">&lt;</span><span class="dv">3</span>){</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    BRord[i] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (BRraw[i]<span class="sc">&gt;=</span><span class="dv">6</span>){</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    BRord[i] <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (BRraw[i]<span class="sc">&gt;=</span><span class="dv">5</span><span class="sc">&amp;</span>BRraw[i]<span class="sc">&lt;=</span><span class="fl">5.5</span>){</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    BRord[i] <span class="ot">&lt;-</span> <span class="dv">4</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (BRraw[i]<span class="sc">&gt;=</span><span class="dv">4</span><span class="sc">&amp;</span>BRraw[i]<span class="sc">&lt;=</span><span class="fl">4.5</span>){</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    BRord[i] <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (BRraw[i]<span class="sc">&gt;=</span><span class="dv">3</span><span class="sc">&amp;</span>BRraw[i]<span class="sc">&lt;=</span><span class="fl">3.5</span>){</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    BRord[i] <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span>{</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    BRord[i] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>BRord <span class="ot">&lt;-</span> BRord</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="do">## centering</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>dGfall.cen <span class="ot">&lt;-</span> (EWG<span class="sc">$</span>dGfall <span class="sc">-</span> <span class="fu">mean</span>(EWG<span class="sc">$</span>dGfall))<span class="sc">/</span><span class="fu">sd</span>(EWG<span class="sc">$</span>dGfall)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>dGrise.cen <span class="ot">&lt;-</span> (EWG<span class="sc">$</span>dGrise <span class="sc">-</span> <span class="fu">mean</span>(EWG<span class="sc">$</span>dGrise))<span class="sc">/</span><span class="fu">sd</span>(EWG<span class="sc">$</span>dGrise)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>goldstock <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(EWG<span class="sc">$</span>dG)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>gold.cen <span class="ot">&lt;-</span> (EWG<span class="sc">$</span>goldstock <span class="sc">-</span> <span class="fu">mean</span>(EWG<span class="sc">$</span>goldstock))<span class="sc">/</span><span class="fu">sd</span>(EWG<span class="sc">$</span>goldstock)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>dummyBRhigh <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(EWG<span class="sc">$</span>BRhigh<span class="sc">==</span><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>indicator <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(EWG<span class="sc">$</span>dBRMRplus<span class="sc">==</span><span class="dv">0</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>dBRMRminus <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">length</span>(BRord))</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span> (<span class="fu">length</span>(BRord)<span class="sc">-</span><span class="dv">1</span>)){dBRMRminus[i<span class="sc">+</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">diff</span>(EWG<span class="sc">$</span>dBRMR)[i]<span class="sc">&lt;</span><span class="dv">0</span>, EWG<span class="sc">$</span>dBRMR[i<span class="sc">+</span><span class="dv">1</span>], <span class="dv">0</span>)}</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>dBRMRminus <span class="ot">&lt;-</span> dBRMRminus</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>MR <span class="ot">&lt;-</span> EWG<span class="sc">$</span>BRold <span class="sc">-</span> EWG<span class="sc">$</span>dBRMR <span class="do">## Market rate</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>dMR <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(EWG<span class="sc">$</span>MR))</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>time.week <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">13</span><span class="sc">:</span><span class="dv">52</span>, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">52</span>, <span class="dv">5</span>), <span class="dv">1</span><span class="sc">:</span><span class="dv">28</span>)</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>EWG<span class="sc">$</span>time.year <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">1925</span>, <span class="fu">length</span>(<span class="dv">13</span><span class="sc">:</span><span class="dv">52</span>)), <span class="fu">rep</span>(<span class="dv">1926</span><span class="sc">:</span><span class="dv">1930</span>, <span class="at">each=</span><span class="dv">52</span>), <span class="fu">rep</span>(<span class="dv">1931</span>, <span class="fu">length</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">28</span>)))</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="do">## Parameter estimation</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="fu">attach</span>(EWG)</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>formula <span class="ot">&lt;-</span> BRord <span class="sc">~</span> dGfall <span class="sc">+</span> dGrise <span class="sc">+</span> dBRMRminus <span class="sc">+</span> dBRMRplus <span class="sc">+</span> LDNY <span class="sc">+</span> dTB  <span class="sc">+</span>  Ex</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>K <span class="ot">=</span> <span class="dv">8</span>; b0 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, K); B0 <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">10</span>, K)</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">dim</span>(EWG)[<span class="dv">1</span>]</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>m<span class="ot">=</span><span class="dv">1</span>; ns <span class="ot">=</span> m <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="fu">detach</span>(EWG)</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>change <span class="ot">&lt;-</span> <span class="fu">MCMCoprobitChange</span>(formula, <span class="at">data =</span> EWG, <span class="at">m=</span>m,</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>                            <span class="at">b0=</span><span class="dv">0</span>, <span class="at">B0=</span><span class="dv">10</span>, <span class="at">a=</span><span class="fu">floor</span>(N<span class="sc">/</span>ns), <span class="at">b=</span><span class="dv">1</span>, <span class="at">tune=</span><span class="fu">c</span>(.<span class="dv">1</span>, .<span class="dv">5</span>), </span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mcmc=</span><span class="dv">10000</span>, <span class="at">burnin=</span><span class="dv">10000</span>, <span class="at">thin=</span><span class="dv">1</span>, <span class="at">verbose=</span><span class="dv">2000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+
+MCMCoprobitChange iteration 2001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53400 
+
+
+ Acceptance rate for state 2 is    0.41000 
+
+ The number of observations in state 1 is      00249
+ The number of observations in state 2 is      00079
+ beta 0 =   -0.06818  -0.01613   0.22216   0.20938   0.46054   0.63366  -0.00943   0.49317
+ beta 1 =    0.02029  -0.03101  -0.31909  -0.21273  -0.35007   0.15412   0.01074   0.26392
+ gamma 0 =    0.21381   2.74269   4.75029
+ gamma 1 =    2.38844  15.39177  28.40335
+
+MCMCoprobitChange iteration 4001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.54125 
+
+
+ Acceptance rate for state 2 is    0.43675 
+
+ The number of observations in state 1 is      00250
+ The number of observations in state 2 is      00078
+ beta 0 =    0.25474  -0.20074   0.12962   0.54483   0.69213   0.74164  -0.01047   0.66294
+ beta 1 =    0.32348  -0.01505  -0.11264   0.22983   0.27722   0.51752  -0.03006   0.08621
+ gamma 0 =    0.62972   3.85288   6.05743
+ gamma 1 =    3.13803  20.92688  29.06703
+
+MCMCoprobitChange iteration 6001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53283 
+
+
+ Acceptance rate for state 2 is    0.44567 
+
+ The number of observations in state 1 is      00250
+ The number of observations in state 2 is      00078
+ beta 0 =   -0.22012  -0.16413   0.14503   0.45529   0.41054   0.67066   0.00946   0.55512
+ beta 1 =    0.43296   0.05311  -0.10654  -0.37047  -0.02500   0.56132   0.00075   0.22004
+ gamma 0 =    0.22586   2.85715   4.87699
+ gamma 1 =    3.34402  31.40030  42.94427
+
+MCMCoprobitChange iteration 8001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53250 
+
+
+ Acceptance rate for state 2 is    0.45075 
+
+ The number of observations in state 1 is      00249
+ The number of observations in state 2 is      00079
+ beta 0 =   -0.15679  -0.03670   0.12881   0.18843   0.44715   0.61289  -0.02784   0.61680
+ beta 1 =    0.63001  -0.05512  -0.55185   0.10660   0.00383   0.60817  -0.00900   0.15347
+ gamma 0 =    0.34370   3.05740   5.09322
+ gamma 1 =    2.58508  14.42322  44.02439
+
+MCMCoprobitChange iteration 10001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53730 
+
+
+ Acceptance rate for state 2 is    0.45470 
+
+ The number of observations in state 1 is      00244
+ The number of observations in state 2 is      00084
+ beta 0 =    0.27029  -0.12249   0.14590   0.43006   0.65605   1.05815  -0.00261   0.47406
+ beta 1 =    0.10488  -0.17043  -0.33159   0.22112   0.05060   0.59058  -0.04146   0.24535
+ gamma 0 =    0.60558   3.06734   5.17529
+ gamma 1 =    3.00555   8.50475  70.83479
+
+MCMCoprobitChange iteration 12001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53767 
+
+
+ Acceptance rate for state 2 is    0.45733 
+
+ The number of observations in state 1 is      00249
+ The number of observations in state 2 is      00079
+ beta 0 =    0.10047  -0.15432   0.19107   0.01510   0.31761   0.45437  -0.00700   0.53657
+ beta 1 =    0.33612  -0.09438  -0.23707   0.32611   0.25640   0.08145  -0.02559   0.18483
+ gamma 0 =    0.51287   2.94322   4.90706
+ gamma 1 =    2.74068  25.74449  84.49184
+
+MCMCoprobitChange iteration 14001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53507 
+
+
+ Acceptance rate for state 2 is    0.45750 
+
+ The number of observations in state 1 is      00249
+ The number of observations in state 2 is      00079
+ beta 0 =    0.14809  -0.05322   0.04532  -0.05231   0.47895   0.67765  -0.01162   0.56080
+ beta 1 =   -0.09841  -0.09466  -0.15649   0.14347   0.75264   0.46024  -0.06510   0.12063
+ gamma 0 =    0.59130   3.19554   5.04141
+ gamma 1 =    1.90567  17.18872 104.93629
+
+MCMCoprobitChange iteration 16001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53856 
+
+
+ Acceptance rate for state 2 is    0.46006 
+
+ The number of observations in state 1 is      00250
+ The number of observations in state 2 is      00078
+ beta 0 =    0.67525  -0.11530   0.04808   0.53810   0.35696   0.54432  -0.02480   0.49587
+ beta 1 =   -0.11790  -0.20828  -0.29578   0.01350  -0.16170   0.25763  -0.05923   0.29803
+ gamma 0 =    0.43011   3.33289   4.97938
+ gamma 1 =    2.96491   7.65293  90.00330
+
+MCMCoprobitChange iteration 18001 of 20000 
+
+
+ Acceptance rate for state 1 is    0.53967 
+
+
+ Acceptance rate for state 2 is    0.46044 
+
+ The number of observations in state 1 is      00251
+ The number of observations in state 2 is      00077
+ beta 0 =   -0.03218  -0.20265   0.23399   0.71228   0.73318   1.00530  -0.04380   0.90458
+ beta 1 =    0.57432  -0.08535  -0.22417  -0.35572  -0.44800   0.54517  -0.05727   0.10745
+ gamma 0 =    1.19450   4.99270   7.58066
+ gamma 1 =    3.80293  17.52985  93.18674</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(change)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Iterations = 1:10000
+Thinning interval = 1 
+Number of chains = 1 
+Sample size per chain = 10000 
+
+1. Empirical mean and standard deviation for each variable,
+   plus standard error of the mean:
+
+                         Mean      SD  Naive SE Time-series SE
+(Intercept)_regime1  0.150005 0.31142 0.0031142      0.0031142
+dGfall_regime1      -0.122353 0.07842 0.0007842      0.0010708
+dGrise_regime1       0.151983 0.09775 0.0009775      0.0013327
+dBRMRminus_regime1   0.217226 0.23086 0.0023086      0.0028175
+dBRMRplus_regime1    0.362069 0.21397 0.0021397      0.0026784
+LDNY_regime1         0.685722 0.14389 0.0014389      0.0024178
+dTB_regime1         -0.006561 0.02003 0.0002003      0.0002798
+Ex_regime1           0.669490 0.14143 0.0014143      0.0288761
+(Intercept)_regime2  0.048746 0.31014 0.0031014      0.0032567
+dGfall_regime2      -0.067696 0.06066 0.0006066      0.0009786
+dGrise_regime2      -0.237594 0.13278 0.0013278      0.0019201
+dBRMRminus_regime2   0.071535 0.27227 0.0027227      0.0031498
+dBRMRplus_regime2   -0.074425 0.26303 0.0026303      0.0032207
+LDNY_regime2         0.422526 0.15105 0.0015105      0.0026108
+dTB_regime2         -0.018966 0.03655 0.0003655      0.0005594
+Ex_regime2           0.222082 0.08346 0.0008346      0.0012338
+gamma3_regime1       0.674291 0.52808 0.0052808      0.0832459
+gamma4_regime1       3.758298 0.63233 0.0063233      0.1617985
+gamma5_regime1       5.890259 0.66608 0.0066608      0.1749004
+gamma3_regime2       2.831611 0.33459 0.0033459      0.0104207
+gamma4_regime2      16.393400 7.85131 0.0785131      3.4990751
+gamma5_regime2      88.552898 9.00288 0.0900288      4.1647557
+
+2. Quantiles for each variable:
+
+                        2.5%      25%       50%       75%     97.5%
+(Intercept)_regime1 -0.47745 -0.05504  0.147445  0.357830   0.75526
+dGfall_regime1      -0.27589 -0.17496 -0.121287 -0.069609   0.03043
+dGrise_regime1      -0.03867  0.08670  0.151193  0.218952   0.34429
+dBRMRminus_regime1  -0.23296  0.06339  0.217104  0.373655   0.66689
+dBRMRplus_regime1   -0.05071  0.21777  0.359418  0.504370   0.78443
+LDNY_regime1         0.40464  0.58832  0.684372  0.781449   0.96698
+dTB_regime1         -0.04548 -0.02015 -0.006487  0.007206   0.03296
+Ex_regime1           0.42341  0.57202  0.656125  0.753577   0.97646
+(Intercept)_regime2 -0.56913 -0.15807  0.048319  0.258299   0.65847
+dGfall_regime2      -0.18917 -0.10737 -0.066272 -0.026188   0.04642
+dGrise_regime2      -0.50094 -0.32665 -0.235467 -0.148030   0.01987
+dBRMRminus_regime2  -0.45695 -0.11445  0.070466  0.252524   0.60669
+dBRMRplus_regime2   -0.58493 -0.25091 -0.077081  0.106277   0.44058
+LDNY_regime2         0.12699  0.31947  0.421561  0.523459   0.71583
+dTB_regime2         -0.09020 -0.04379 -0.018942  0.006109   0.05255
+Ex_regime2           0.05593  0.16613  0.222129  0.278746   0.38731
+gamma3_regime1       0.05408  0.27768  0.524918  0.917466   2.03387
+gamma4_regime1       2.71199  3.33171  3.678765  4.072113   5.18808
+gamma5_regime1       4.76899  5.45195  5.800262  6.233119   7.41657
+gamma3_regime2       2.21162  2.60493  2.818689  3.047037   3.53269
+gamma4_regime2       4.73454  9.87092 15.363716 23.104061  30.58271
+gamma5_regime2      72.15228 84.10519 89.105297 92.642352 107.03834</code></pre>
+</div>
+</div>
+<p>Plot the regimes</p>
+</section>
+<section id="draw-picture-of-the-posterior-regime-probability" class="level2">
+<h2 class="anchored" data-anchor-id="draw-picture-of-the-posterior-regime-probability">draw picture of the posterior regime probability</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>prob.state <span class="ot">&lt;-</span> <span class="fu">attr</span>(change, <span class="st">"prob.state"</span>)    </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(zoo)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>x.Date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(<span class="st">"1925-05-28"</span>) <span class="sc">+</span> <span class="dv">7</span><span class="sc">*</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">328</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>Pchange <span class="ot">&lt;-</span> <span class="fu">zoo</span>(<span class="fu">c</span>(<span class="dv">0</span>,prob.state[,<span class="dv">2</span>]), x.Date)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>newUNEMP <span class="ot">&lt;-</span> <span class="fu">zoo</span>(unemp, x.Date)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">cbind</span>(Pchange, newUNEMP)[<span class="sc">-</span><span class="dv">329</span>,]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(y) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"prob"</span>,<span class="st">"unemp"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Pchange)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/SimData-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-</section>
-<section id="three-models" class="level2">
-<h2 class="anchored" data-anchor-id="three-models">Three Models</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plm)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>FE.pdata <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(FE.data, <span class="fu">c</span>(<span class="st">"unit"</span>,<span class="st">"time"</span>))</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mod.RE <span class="ot">&lt;-</span> <span class="fu">plm</span>(y.FE<span class="sc">~</span>X.FE, <span class="at">data=</span>FE.pdata, <span class="at">model=</span><span class="st">"random"</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>mod.RE2 <span class="ot">&lt;-</span> <span class="fu">plm</span>(y.FE<span class="sc">~</span>X.FE, <span class="at">data=</span>FE.pdata, <span class="at">model=</span><span class="st">"random"</span>, <span class="at">random.method =</span> <span class="st">"amemiya"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>mod.RE3 <span class="ot">&lt;-</span> <span class="fu">plm</span>(y.FE<span class="sc">~</span>X.FE, <span class="at">data=</span>FE.pdata, <span class="at">model=</span><span class="st">"random"</span>, <span class="at">random.method =</span> <span class="st">"walhus"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>mod.RE4 <span class="ot">&lt;-</span> <span class="fu">plm</span>(y.FE<span class="sc">~</span>X.FE, <span class="at">data=</span>FE.pdata, <span class="at">model=</span><span class="st">"random"</span>, <span class="at">random.method =</span> <span class="st">"nerlove"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>mod.FE <span class="ot">&lt;-</span> <span class="fu">plm</span>(y.FE<span class="sc">~</span>X.FE, <span class="at">data=</span>FE.pdata, <span class="at">model=</span><span class="st">"within"</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>mod.pool <span class="ot">&lt;-</span> <span class="fu">plm</span>(y.FE<span class="sc">~</span>X.FE, <span class="at">data=</span>FE.pdata, <span class="at">model=</span><span class="st">"pooling"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(newUNEMP)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
-</section>
-<section id="omitted-fixed-effects-can-be-very-bad" class="level2">
-<h2 class="anchored" data-anchor-id="omitted-fixed-effects-can-be-very-bad">Omitted Fixed Effects can be Very Bad</h2>
-<p>As we can see, the default random effects model in R [and Stata] is actually pretty horrible.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stargazer)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">stargazer</span>(mod.RE,mod.RE2,mod.RE3,mod.RE4,mod.pool,mod.FE, <span class="at">type=</span><span class="st">"html"</span>, <span class="at">column.labels=</span><span class="fu">c</span>(<span class="st">"RE"</span>,<span class="st">"RE-WalHus"</span>,<span class="st">"RE-Amemiya"</span>,<span class="st">"RE-Nerlove"</span>,<span class="st">"Pooled"</span>,<span class="st">"FE"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<table style="text-align:center">
-<tbody><tr>
-<td colspan="7" style="border-bottom: 1px solid black">
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td colspan="6">
-<em>Dependent variable:</em>
-</td>
-</tr>
-<tr>
-<td>
-</td>
-<td colspan="6" style="border-bottom: 1px solid black">
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td colspan="6">
-y.FE
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td>
-RE
-</td>
-<td>
-RE-WalHus
-</td>
-<td>
-RE-Amemiya
-</td>
-<td>
-RE-Nerlove
-</td>
-<td>
-Pooled
-</td>
-<td>
-FE
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td>
-(1)
-</td>
-<td>
-(2)
-</td>
-<td>
-(3)
-</td>
-<td>
-(4)
-</td>
-<td>
-(5)
-</td>
-<td>
-(6)
-</td>
-</tr>
-<tr>
-<td colspan="7" style="border-bottom: 1px solid black">
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-X.FE
-</td>
-<td>
--3.031<sup>***</sup>
-</td>
-<td>
-0.954<sup>***</sup>
-</td>
-<td>
-0.877<sup>***</sup>
-</td>
-<td>
-0.955<sup>***</sup>
-</td>
-<td>
--3.031<sup>***</sup>
-</td>
-<td>
-0.959<sup>***</sup>
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td>
-(0.540)
-</td>
-<td>
-(0.152)
-</td>
-<td>
-(0.175)
-</td>
-<td>
-(0.151)
-</td>
-<td>
-(0.540)
-</td>
-<td>
-(0.151)
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-Constant
-</td>
-<td>
--4.057<sup>***</sup>
-</td>
-<td>
--0.072
-</td>
-<td>
--0.148
-</td>
-<td>
--0.070
-</td>
-<td>
--4.057<sup>***</sup>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td>
-(0.665)
-</td>
-<td>
-(2.944)
-</td>
-<td>
-(0.898)
-</td>
-<td>
-(3.634)
-</td>
-<td>
-(0.665)
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td colspan="7" style="border-bottom: 1px solid black">
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-Observations
-</td>
-<td>
-123
-</td>
-<td>
-123
-</td>
-<td>
-123
-</td>
-<td>
-123
-</td>
-<td>
-123
-</td>
-<td>
-123
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-R<sup>2</sup>
-</td>
-<td>
-0.207
-</td>
-<td>
-0.245
-</td>
-<td>
-0.172
-</td>
-<td>
-0.248
-</td>
-<td>
-0.207
-</td>
-<td>
-0.252
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-Adjusted R<sup>2</sup>
-</td>
-<td>
-0.200
-</td>
-<td>
-0.239
-</td>
-<td>
-0.165
-</td>
-<td>
-0.241
-</td>
-<td>
-0.200
-</td>
-<td>
-0.233
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-F Statistic
-</td>
-<td>
-31.510<sup>***</sup>
-</td>
-<td>
-39.350<sup>***</sup>
-</td>
-<td>
-25.085<sup>***</sup>
-</td>
-<td>
-39.843<sup>***</sup>
-</td>
-<td>
-31.510<sup>***</sup> (df = 1; 121)
-</td>
-<td>
-40.109<sup>***</sup> (df = 1; 119)
-</td>
-</tr>
-<tr>
-<td colspan="7" style="border-bottom: 1px solid black">
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-<em>Note:</em>
-</td>
-<td colspan="6" style="text-align:right">
-<sup><em></em></sup><em>p&lt;0.1; <sup><strong></strong></sup><strong>p&lt;0.05; <sup></sup></strong></em>p&lt;0.01
-</td>
-</tr>
-</tbody></table>
-<section id="discussion" class="level3">
-<h3 class="anchored" data-anchor-id="discussion">Discussion</h3>
-<p>The random method matters quite a bit though; many of them are very close to the truth. Models containing much or all of the between information are wrong.</p>
-<p>If the X and unit effects are dependent, then there are serious threats to proper inference.</p>
-</section>
-</section>
-<section id="plm-things" class="level2">
-<h2 class="anchored" data-anchor-id="plm-things"><code>plm</code> things</h2>
-<p>Beck and Katz (1995) standard errors are provided with <code>vcovBK()</code>. The key argument is <code>cluster</code> which averages over groups or time. The Beck and Katz paper would involve <code>cluster="time"</code>.</p>
-<p><strong>Almost all panel unit root testing goes on with <code>purtest</code>. The <code>test=</code> argument is key for IPS, Levin, et al., Maddala-Wu, Hadri, and various tests proposed by Choi (2001).</strong> A few others are specified individually below.</p>
-<ul>
-<li><p>The test of serial correlation for panel models is given by <code>pbgtest(model)</code>.</p></li>
-<li><p>The Baltagi and Li test of serial correlation in panel models with random effects is given by <code>pbltest(model)</code>. The various alternatives are specified in <code>alternative</code>.</p></li>
-<li><p>The Baltagi-Wu statistic for AR(1) disturbances is given by <code>pbnftest(model, test="lbi")</code> while a BNF (1982) statistic is the default for this test for fixed effects models.</p></li>
-</ul>
-<pre><code># replicate Baltagi (2013), p. 101, table 5.1:
-re &lt;- plm(inv ~ value + capital, data = Grunfeld, model = "random")
-pbnftest(re, test = "lbi")</code></pre>
-<ul>
-<li><p><code>pbsytest(model)</code> gives the joint test of Baltagi and Li and a variant owing to Bera, et. al (2001) and Sosa-Escudero and Bera (2008) – the latter is a paper in Stata journal with companion software to be installed.</p></li>
-<li><p><code>pcdtest(formula, data)</code> gives the Pesaran test for cross-sectional dependence.</p></li>
-<li><p><code>pdwtest(model)</code> gives a panel Durbin-Watson statistic.</p></li>
-<li><p><code>pFtest</code> gives the F-test of fixed effects.</p></li>
-<li><p><code>pggls</code> gives GLS estimators for panel data specifying the effect and a model of <code>within, pooling, fd</code>.</p></li>
-<li><p><code>phansitest(purtest object)</code> combines unit root tests in the method proposed by Hanck (2013).</p></li>
-<li><p><code>phtest(model1, model2)</code> is the Hausman test for panel data models. This one has robust options detailed in the last section of <code>?phtest</code>.</p></li>
-<li><p><code>piest(formula, data)</code> performs Chamberlain’s tests on the <code>within</code> regression.</p></li>
-<li><p>Another test of unit/time effects is given in <code>plmtest()</code>.</p></li>
-<li><p>Chow tests of <code>poolability</code> are given by <code>pooltest()</code> applied to a pooled or within regression.</p></li>
-<li><p><code>pvar</code> ensures variation along dimensions.</p></li>
-<li><p><code>pvcm</code> will estimate variable coefficients models ala Swamy (1970).</p></li>
-<li><p>Joint tests of coefficients are constructed using <code>pwaldtest</code>.</p></li>
-<li><p>Wooldridge’s test for serial correlation in <code>within</code> models is <code>pwartest(model)</code></p></li>
-<li><p>Wooldridge’s test for AR(1) errors in level or differenced panel models is given by <code>pwfdtest(model)</code>. The underlying idea is clever; if the levels are independent then the errors in first-differences will be correlated as -0.5. The test can be implemented against either within/fe or first-difference alternatives.</p></li>
-<li><p><code>pwtest(pooling model)</code> gives a semi-parametric test for the presence of (individual or time) unobserved effects in panel models that owes to Wooldridge.</p></li>
-<li><p><code>ranef</code> and <code>fixef</code> extract the random and fixed effects, respectively.</p></li>
-</ul>
-</section>
-<section id="the-plm-vignette" class="level2">
-<h2 class="anchored" data-anchor-id="the-plm-vignette">The <code>plm</code> vignette</h2>
-<p>The <code>plm</code> package contains an <a href="https://cran.r-project.org/web/packages/plm/vignettes/A_plmPackage.html">excellent syntactical vignette</a> for the functions it provides.</p>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span> (<span class="at">mar=</span><span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">1</span>), <span class="at">mgp=</span><span class="fu">c</span>(<span class="dv">2</span>,.<span class="dv">7</span>,<span class="dv">0</span>), <span class="at">tck=</span>.<span class="dv">02</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y<span class="sc">$</span>prob,  y<span class="sc">$</span>unemp, <span class="at">xlab=</span><span class="st">"Probability of Regime 2"</span>, <span class="at">ylab=</span><span class="st">"Unemployment"</span>, <span class="at">cex=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
