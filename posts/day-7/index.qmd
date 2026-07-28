@@ -1571,22 +1571,4 @@ When addressing missing outcome variables in panel data, researchers should adhe
 * Liu, L., Wang, Y., & Xu, Y. (2023). A practical guide to counterfactual estimators for causal inference with time-series cross-sectional data. *American Journal of Political Science*, 67(1), 184-199.
 * Quartagno, M., & Carpenter, J. R. (2016). Multiple imputation for IPD meta-analysis: allowing for heterogeneity and theoretical integrity in the imputation model. *Statistics in Medicine*, 35(17), 2930-2943.
 * Stekhoven, D. J., & Bühlmann, P. (2012). MissForest—non-parametric missing value imputation for mixed-type data. *Bioinformatics*, 28(1), 112-118.
-
-::: {.callout-note}
-## Reproducibility
-
-This document was rendered with:
-
-```{r}
-#| label: session
-#| echo: true
-#| cache: false
-si <- sessioninfo::session_info(
-  pkgs = c("Amelia","plm","tidyverse","broom","gt",
-           "naniar","visdat","haven","patchwork","sessioninfo")
-)
-print(si, locale = FALSE)
-```
-:::
-
-* von H
+* von Hippel, P. T. (2007). Regression with missing $Y$s: An improved strategy for analyzing multiply imputed data. *Sociological Methodology*, 37(1), 83-117.
