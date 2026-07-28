@@ -1,0 +1,1146 @@
+---
+title: "Multiple Imputation for Cross-Sectional Time Series Data"
+subtitle: "Implementing Honaker & King (2010) with `Amelia II`, `plm`, and Stata `mi`/`xtreg`"
+author: "Robert W. Walker"
+date: "07/28/2026"
+categories: [panel data, code, analysis]
+image: "image.png"
+execute:
+  warning: false
+  message: false
+  cache: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(Amelia)
+library(plm)
+library(tidyverse)
+library(broom)
+library(gt)
+library(naniar)
+library(patchwork)
+library(sessioninfo)  # session_info() for reproducibility note
+```
+
+## Background and Motivation
+
+Cross-sectional time series (TSCS) data — also called panel or longitudinal data — pose
+particular challenges for multiple imputation. Standard imputation methods treat
+observations as exchangeable, discarding two structural features that TSCS data possess
+in abundance:
+
+1. **Temporal autocorrelation**: an observation for unit $i$ at time $t$ is predictable
+   from observations for the same unit at $t \pm 1, t \pm 2, \ldots$
+2. **Unit-specific trajectories**: each cross-sectional unit follows its own trend over
+   time, so a pooled time polynomial is too restrictive.
+
+Honaker and King (2010, *AJPS* 54:561–581) adapt the EM algorithm to exploit both
+features. Their software — **Amelia II** — augments every imputation equation with
+polynomial functions of time interacted with unit indicators, letting the model borrow
+information from temporal neighbours within each unit. This recovers much of the
+information discarded by listwise deletion, which in TSCS settings tends to cluster
+in time and across units (making the MCAR assumption implausible).
+
+### The Missing-Data Taxonomy
+
+| Mechanism | Condition | Consequence for estimators |
+|-----------|-----------|---------------------------|
+| **MCAR** | $P(\mathbf{M} \mid \mathbf{Y}) = P(\mathbf{M})$ | Listwise deletion is unbiased but inefficient |
+| **MAR** | $P(\mathbf{M} \mid \mathbf{Y}) = P(\mathbf{M} \mid \mathbf{Y}_\text{obs})$ | MI is consistent and efficient |
+| **MNAR** | Depends on unobserved values | No off-the-shelf solution; sensitivity analysis required |
+
+Honaker and King argue that the MAR assumption is more defensible in TSCS data than it
+first appears: temporal neighbours of a missing value act as proxies for what was not
+observed, so the probability of missingness depends primarily on observed quantities.
+
+### Rubin's Combining Rules
+
+Given $M$ imputed datasets, estimate the quantity of interest $Q$ in each dataset,
+obtaining $\hat{Q}_m$ with estimated variance $\hat{U}_m$. Rubin (1987) shows valid
+frequentist inference follows from:
+
+$$\bar{Q} = \frac{1}{M}\sum_{m=1}^{M}\hat{Q}_m$$
+
+$$\bar{U} = \frac{1}{M}\sum_{m=1}^{M}\hat{U}_m \qquad \text{(within-imputation variance)}$$
+
+$$B = \frac{1}{M-1}\sum_{m=1}^{M}(\hat{Q}_m - \bar{Q})^2 \qquad \text{(between-imputation variance)}$$
+
+$$T = \bar{U} + \left(1 + \frac{1}{M}\right)B \qquad \text{(total variance)}$$
+
+The **fraction of missing information** summarises how much the missing data inflate
+posterior uncertainty:
+
+$$\hat{\gamma} = \frac{(1 + 1/M)\,B}{T}$$
+
+The Barnard–Rubin (1999) small-sample degrees of freedom are:
+
+$$\nu = (M-1)\!\left[1 + \frac{M\bar{U}}{(M+1)B}\right]^{2}$$
+
+These are what `mi estimate` in Stata and `mi.meld()` in R implement.
+
+---
+
+## Data: *freetrade*
+
+We use the `freetrade` dataset shipped with the `Amelia` package. It covers nine Asian
+countries over 1980–1999 and was assembled to study the determinants of trade
+liberalisation. The dependent variable of interest is **`tariff`** (average tariff rate
+in percent), and key covariates are:
+
+| Variable | Description | Scale |
+|----------|-------------|-------|
+| `tariff` | Average tariff rate (%) | Continuous |
+| `polity` | Democracy score (Polity IV) | −10 to +10 |
+| `pop` | Population | Continuous (right-skewed) |
+| `gdp.pc` | GDP per capita | Continuous (right-skewed) |
+| `intresmi` | Real interest rate | Continuous |
+| `signed` | IMF agreement signed | Binary |
+| `fiveop` | Five-year trade openness | Continuous |
+| `usheg` | US trade hegemony | Continuous |
+
+The dataset is also available as the Stata example dataset **`webuse freetrade`**,
+enabling exact replication across platforms.
+
+::: {.panel-tabset}
+
+### R
+
+```{r}
+#| label: load-data
+data("freetrade", package = "Amelia")
+glimpse(freetrade)
+```
+
+### Stata
+
+```stata
+* freetrade ships as a Stata example dataset — no installation needed
+webuse freetrade, clear
+describe
+label list   // country labels if stored as value-labelled numeric
+```
+
+:::
+
+### Missingness Patterns
+
+::: {.panel-tabset}
+
+#### R
+
+```{r}
+#| label: miss-map
+#| fig-width: 8
+#| fig-height: 4.5
+# Classic Amelia missingness map
+missmap(freetrade,
+        main   = "Missingness map: freetrade",
+        col    = c("tomato", "steelblue"),
+        legend = FALSE,
+        margins = c(8, 4))
+```
+
+```{r}
+#| label: miss-summary
+miss_var_summary(freetrade) |>
+  filter(n_miss > 0) |>
+  gt() |>
+  tab_header(title = "Missing data summary") |>
+  fmt_number(columns = pct_miss, decimals = 1) |>
+  cols_label(variable = "Variable", n_miss = "N missing", pct_miss = "% missing")
+```
+
+```{r}
+#| label: miss-time
+#| fig-width: 8
+#| fig-height: 4
+# Missingness over time for tariff by country
+freetrade |>
+  mutate(tariff_missing = is.na(tariff)) |>
+  ggplot(aes(x = year, y = country, fill = tariff_missing)) +
+  geom_tile(colour = "white", linewidth = 0.3) +
+  scale_fill_manual(values = c("steelblue", "tomato"),
+                    labels = c("Observed", "Missing"),
+                    name   = "tariff") +
+  labs(title = "Temporal pattern of missingness in tariff",
+       x = "Year", y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+#### Stata
+
+```stata
+* Summary of missing values
+misstable summarize tariff polity intresmi
+misstable patterns tariff polity intresmi, frequency
+
+* Visualise missingness over time for tariff (requires tabplot from SSC)
+* ssc install tabplot, replace
+tabplot country year if missing(tariff), ///
+    title("Missing tariff by country and year") scheme(s2color)
+```
+
+:::
+
+---
+
+## Imputation with Amelia
+
+Amelia fits an expectation-maximisation with importance sampling (EMis) model under the
+assumption of approximate multivariate normality. For TSCS data, Honaker and King (2010)
+recommend the following additional options:
+
+| Argument | Purpose |
+|----------|---------|
+| `ts = "year"` | Identifies the time variable |
+| `cs = "country"` | Identifies the cross-sectional unit |
+| `polytime = 2` | Adds quadratic polynomial in time to each imputation equation |
+| `intercs = TRUE` | Interacts the time polynomial with unit dummies (unit-specific trends) |
+| `lags = "tariff"` | Adds $\text{tariff}_{t-1}$ as a predictor (AR structure) |
+| `leads = "tariff"` | Adds $\text{tariff}_{t+1}$ as a predictor (forward-looking borrowing) |
+| `logs = c("pop","gdp.pc")` | Log-transforms right-skewed variables before imputation |
+
+The combination of `polytime` and `intercs = TRUE` is the key innovation: it means each
+country gets its own quadratic time trend in every imputation equation, so a missing
+tariff for Thailand in 1992 is informed primarily by Thailand's own trajectory rather
+than a cross-country average.
+
+::: {.panel-tabset}
+
+### R
+
+```{r}
+#| label: impute
+#| cache: true
+set.seed(20240601)
+
+a.out <- amelia(
+  x        = freetrade,
+  m        = 20,              # 20 imputations; ≈ % missing is a useful heuristic
+  ts       = "year",
+  cs       = "country",
+  polytime = 2,               # quadratic within-unit time trend
+  intercs  = TRUE,            # unit × trend interactions (key Honaker-King innovation)
+  lags     = "tariff",        # AR(1) borrowing
+  leads    = "tariff",        # forward borrowing
+  logs     = c("pop", "gdp.pc"),  # log-transform before EMis
+  p2s      = 0                # suppress iteration-by-iteration output
+)
+
+summary(a.out)
+```
+
+### Stata
+
+```stata
+* ── Prepare data ────────────────────────────────────────────────────────────
+encode country, gen(cid)         // mi requires numeric cross-section id
+xtset cid year
+
+* Log-transform skewed covariates
+gen lpop   = log(pop)
+gen lgdppc = log(gdppc)          // NB: Stata's webuse spells this gdppc
+
+* ── Approximate Honaker-King TSCS structure ─────────────────────────────────
+* Create within-unit polynomial time trends (≈ polytime=2, intercs=TRUE)
+bysort cid (year): gen t_trend  = _n
+gen t_trend2 = t_trend ^ 2
+
+* Lags and leads for AR structure (≈ lags="tariff", leads="tariff")
+bysort cid (year): gen L1_tariff = tariff[_n - 1]
+bysort cid (year): gen F1_tariff = tariff[_n + 1]
+
+* ── Declare MI structure and impute ─────────────────────────────────────────
+mi set mlong
+
+* Multivariate normal imputation (EMis) — closest Stata equivalent to Amelia
+mi impute mvn tariff polity intresmi =                  ///
+    lpop lgdppc signed fiveop usheg                     ///  substantive vars
+    i.cid c.t_trend##c.t_trend                          ///  unit-specific trends
+    L1_tariff F1_tariff,                                ///  temporal borrowing
+    add(20) rseed(20240601) iterate(500)
+
+mi describe
+
+* Note: Stata's mi impute chained is also possible and may handle
+* non-normal variables better, but requires specifying each variable's
+* imputation model separately.
+```
+
+:::
+
+### Imputation Diagnostics
+
+Good imputation practice requires checking that imputed values are plausible. Honaker
+and King (2010) suggest two primary diagnostics.
+
+#### Density overlap
+
+Imputed values (red) should be broadly consistent with observed values (black): the
+same support and rough shape. Systematic divergence suggests model misspecification.
+
+::: {.panel-tabset}
+
+##### R
+
+```{r}
+#| label: density-tariff
+#| fig-width: 7
+#| fig-height: 4
+plot(a.out, which.vars = "tariff",
+     main = "Observed vs imputed: tariff")
+```
+
+```{r}
+#| label: density-polity
+#| fig-width: 7
+#| fig-height: 4
+plot(a.out, which.vars = "polity",
+     main = "Observed vs imputed: polity")
+```
+
+##### Stata
+
+```stata
+* Overlay kernel densities of observed vs imputed tariff across imputations
+mi convert wide, clear
+
+* Use twoway plot over all m datasets
+local cmd ""
+forvalues m = 1/20 {
+    local cmd `cmd' (kdensity tariff_`m', lcolor(red%30) lwidth(thin))
+}
+twoway (kdensity tariff, lcolor(black) lwidth(medium) lpattern(solid)) ///
+    `cmd', ///
+    legend(order(1 "Observed" 2 "Imputed (m=1..20)")) ///
+    title("Density: observed vs imputed tariff") xtitle("Tariff rate")
+
+mi convert mlong, clear   // restore long format
+```
+
+:::
+
+#### Over-imputation (model checking)
+
+Artificially set observed values to missing, re-impute them, and check that the 90%
+imputation intervals cover the true observed values at the expected rate (~90%). A
+systematic over- or under-coverage pattern reveals model misspecification.
+
+::: {.panel-tabset}
+
+##### R
+
+```{r}
+#| label: overimpute
+#| fig-width: 7
+#| fig-height: 5
+#| cache: true
+overimpute(a.out, var = "tariff")
+```
+
+##### Stata
+
+```stata
+* Over-imputation is not available in Stata's native mi suite.
+*
+* Recommended workflow: impute in R with Amelia, run overimpute() there
+* for diagnostics, then export to Stata for analysis:
+*
+*   # In R:
+*   overimpute(a.out, var = "tariff")           # check model
+*   write.amelia(a.out, file.stem = "ft_imp",   # export
+*                format = "dta")
+*
+* See Section 7 for the full export/import workflow.
+```
+
+:::
+
+---
+
+## Panel Data Analysis
+
+We now pool across imputations using Rubin's combining rules. The model is a standard
+panel specification:
+
+$$\text{tariff}_{it} = \alpha_i + \beta_1\,\text{polity}_{it} + \beta_2\,\ln(\text{pop}_{it}) + \beta_3\,\ln(\text{gdp.pc}_{it}) + \varepsilon_{it}$$
+
+where $\alpha_i$ are country fixed effects (absorbed by the within transformation in the
+FE estimator, or modelled as random draws in the RE estimator).
+
+### Pooling helper function
+
+::: {.panel-tabset}
+
+#### R
+
+The key function pools `plm` estimates across imputations using `mi.meld()` from
+Amelia and appends the Barnard–Rubin degrees of freedom and fraction of missing
+information for each coefficient.
+
+```{r}
+#| label: pool-fn
+#' Pool plm estimates across Amelia imputations (Rubin's combining rules)
+#'
+#' @param amelia_out  An object of class 'amelia' (output of amelia())
+#' @param formula     Model formula passed to plm()
+#' @param index       Panel index, e.g. c("country", "year")
+#' @param model       "within" (FE) or "random" (RE)
+#' @param ...         Additional arguments passed to plm()
+#' @return A tibble with pooled estimates, Rubin SE, B-R df, and FMI
+pool_plm <- function(amelia_out, formula, index, model, ...) {
+
+  # 1. Fit plm to each imputed dataset
+  fits <- lapply(amelia_out$imputations, function(d) {
+    plm(formula, data = d, index = index, model = model, ...)
+  })
+
+  # 2. Extract Q̂ (M × K) and SE (M × K)
+  Q  <- do.call(rbind, lapply(fits, coef))
+  SE <- do.call(rbind, lapply(fits, function(f) sqrt(diag(vcov(f)))))
+
+  # 3. Rubin's combining rules via mi.meld()
+  pooled <- mi.meld(q = Q, se = SE)          # returns 1×K matrices
+  est    <- as.numeric(pooled$q.mi)
+  se_mi  <- as.numeric(pooled$se.mi)
+
+  # 4. Barnard-Rubin (1999) degrees of freedom
+  M    <- nrow(Q)
+  Ubar <- colMeans(SE^2)                     # within-imputation variance
+  B    <- apply(Q, 2, var)                   # between-imputation variance
+  T_   <- Ubar + (1 + 1/M) * B              # total variance
+  gamma <- (1 + 1/M) * B / T_               # fraction of missing information
+  df_BR <- (M - 1) * (1 + Ubar / ((1 + 1/M) * B))^2
+
+  # 5. Assemble tidy tibble
+  tibble(
+    term      = colnames(Q),
+    estimate  = est,
+    std.error = se_mi,
+    statistic = est / se_mi,
+    df        = df_BR,
+    p.value   = 2 * pt(-abs(est / se_mi), df = df_BR),
+    fmi       = gamma,
+    W_var     = Ubar,
+    B_var     = B,
+    T_var     = T_
+  )
+}
+```
+
+#### Stata
+
+```stata
+* In Stata, mi estimate pools automatically — no helper function needed.
+* It implements Rubin's combining rules and the Barnard-Rubin df adjustment.
+*
+* mi estimate stores the between- and within-imputation variance matrices:
+*   e(V_Ubar)  — within-imputation covariance matrix
+*   e(V_B)     — between-imputation covariance matrix
+*   e(V_Q)     — total (Rubin) covariance matrix
+*   e(fmi)     — fraction of missing information (vector)
+```
+
+:::
+
+### Fixed-Effects Model
+
+The within estimator removes all time-invariant confounding. Under FE, the coefficient
+on `polity` identifies the effect of *within-country changes* in democracy on tariff rates.
+
+::: {.panel-tabset}
+
+#### R
+
+```{r}
+#| label: fe-model
+panel_formula <- tariff ~ polity + log(pop) + log(gdp.pc)
+
+res_fe <- pool_plm(
+  amelia_out = a.out,
+  formula    = panel_formula,
+  index      = c("country", "year"),
+  model      = "within"
+)
+
+res_fe |>
+  select(term, estimate, std.error, statistic, df, p.value, fmi) |>
+  gt() |>
+  tab_header(
+    title    = "Fixed-Effects Model — MI Pooled (M = 20)",
+    subtitle = "Dependent variable: tariff rate (%)"
+  ) |>
+  fmt_number(columns = c(estimate, std.error, statistic, p.value, fmi),
+             decimals = 4) |>
+  fmt_number(columns = df, decimals = 1) |>
+  cols_label(
+    term      = "Coefficient",
+    estimate  = "Q̄",
+    std.error = "SE (Rubin)",
+    statistic = "t",
+    df        = "df (B–R)",
+    p.value   = "p",
+    fmi       = "FMI"
+  ) |>
+  tab_style(
+    style     = cell_fill(color = "#fef9c3"),
+    locations = cells_body(rows = p.value < 0.05)
+  )
+```
+
+#### Stata
+
+```stata
+* ── Fixed effects ────────────────────────────────────────────────────────────
+mi estimate, dots notable: xtreg tariff polity lpop lgdppc, fe
+
+* The notable option prints the between- and within-variance components.
+* mi estimate output includes:
+*   - Pooled estimates (Q̄)
+*   - Rubin standard errors (√T)
+*   - Barnard-Rubin degrees of freedom
+*   - Fraction of missing information per coefficient
+*   - Relative efficiency = 1 / (1 + FMI/M)
+
+* Store for later comparison
+estimates store mi_fe
+```
+
+:::
+
+### Random-Effects Model
+
+The GLS random-effects estimator assumes $\alpha_i \perp \mathbf{X}_{it}$. It is more
+efficient than FE when this assumption holds, because it exploits between-unit variation
+as well as within-unit variation.
+
+::: {.panel-tabset}
+
+#### R
+
+```{r}
+#| label: re-model
+res_re <- pool_plm(
+  amelia_out = a.out,
+  formula    = panel_formula,
+  index      = c("country", "year"),
+  model      = "random"
+)
+
+res_re |>
+  select(term, estimate, std.error, statistic, df, p.value, fmi) |>
+  gt() |>
+  tab_header(
+    title    = "Random-Effects Model — MI Pooled (M = 20)",
+    subtitle = "Dependent variable: tariff rate (%)"
+  ) |>
+  fmt_number(columns = c(estimate, std.error, statistic, p.value, fmi),
+             decimals = 4) |>
+  fmt_number(columns = df, decimals = 1) |>
+  cols_label(
+    term      = "Coefficient",
+    estimate  = "Q̄",
+    std.error = "SE (Rubin)",
+    statistic = "t",
+    df        = "df (B–R)",
+    p.value   = "p",
+    fmi       = "FMI"
+  ) |>
+  tab_style(
+    style     = cell_fill(color = "#fef9c3"),
+    locations = cells_body(rows = p.value < 0.05)
+  )
+```
+
+#### Stata
+
+```stata
+* ── Random effects ───────────────────────────────────────────────────────────
+mi estimate, dots notable: xtreg tariff polity lpop lgdppc, re
+estimates store mi_re
+```
+
+:::
+
+### Complete-Case Comparison
+
+How much does listwise deletion distort our estimates? We fit the same FE and RE models
+on the complete cases and plot all four sets of estimates side-by-side.
+
+::: {.panel-tabset}
+
+#### R
+
+```{r}
+#| label: cc-compare
+#| fig-width: 8
+#| fig-height: 5
+
+# Complete-case models on the raw data
+cc_fe_tidy <- plm(panel_formula, data = freetrade,
+                  index = c("country", "year"), model = "within") |>
+  tidy(conf.int = TRUE) |>
+  mutate(method = "Complete case – FE")
+
+cc_re_tidy <- plm(panel_formula, data = freetrade,
+                  index = c("country", "year"), model = "random") |>
+  tidy(conf.int = TRUE) |>
+  mutate(method = "Complete case – RE")
+
+# Tidy MI results — use z ≈ 1.96 for wide CIs; exact via qt(0.975, df)
+mi_fe_tidy <- res_fe |>
+  mutate(
+    conf.low  = estimate - qt(0.975, df) * std.error,
+    conf.high = estimate + qt(0.975, df) * std.error,
+    method    = "MI (Amelia) – FE"
+  )
+
+mi_re_tidy <- res_re |>
+  mutate(
+    conf.low  = estimate - qt(0.975, df) * std.error,
+    conf.high = estimate + qt(0.975, df) * std.error,
+    method    = "MI (Amelia) – RE"
+  )
+
+# Stack for plotting
+plot_df <- bind_rows(
+  cc_fe_tidy |> select(term, estimate, conf.low, conf.high, method),
+  cc_re_tidy |> select(term, estimate, conf.low, conf.high, method),
+  mi_fe_tidy |> select(term, estimate, conf.low, conf.high, method),
+  mi_re_tidy |> select(term, estimate, conf.low, conf.high, method)
+) |>
+  mutate(
+    estimator = if_else(str_detect(method, "FE"), "FE", "RE"),
+    imputed   = if_else(str_detect(method, "MI"), "MI", "Complete case")
+  )
+
+ggplot(plot_df,
+       aes(x = estimate, y = term,
+           colour = imputed, shape = estimator,
+           xmin = conf.low, xmax = conf.high)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_pointrange(position = position_dodge(width = 0.55), size = 0.55) +
+  scale_colour_manual(values = c("Complete case" = "tomato",
+                                 "MI"            = "steelblue"),
+                      name = NULL) +
+  scale_shape_manual(values = c("FE" = 16, "RE" = 17), name = NULL) +
+  labs(
+    x       = "Coefficient estimate (95% CI)",
+    y       = NULL,
+    title   = "Complete-case vs multiple imputation",
+    subtitle = "Horizontal bars are 95% confidence intervals"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "bottom")
+```
+
+#### Stata
+
+```stata
+* ── Complete-case ────────────────────────────────────────────────────────────
+xtreg tariff polity lpop lgdppc, fe
+estimates store cc_fe
+
+xtreg tariff polity lpop lgdppc, re
+estimates store cc_re
+
+* ── Coefficient table ────────────────────────────────────────────────────────
+esttab cc_fe cc_re mi_fe mi_re,                              ///
+    b(4) se(4) star(* 0.10 ** 0.05 *** 0.01)                 ///
+    title("Complete-case vs MI estimates: tariff")            ///
+    mtitles("CC–FE" "CC–RE" "MI–FE" "MI–RE")                 ///
+    note("Rubin SE for MI models. Barnard-Rubin df.")
+
+* ── Coefficient plot (requires coefplot, ssc install coefplot) ───────────────
+coefplot (cc_fe, label("Complete case FE") msymbol(O) mcolor(tomato))  ///
+         (mi_fe, label("MI FE")            msymbol(D) mcolor(navy)),    ///
+    drop(_cons) xline(0) bycoefs                                         ///
+    title("Complete-case vs MI: Fixed effects") legend(rows(1))
+```
+
+:::
+
+---
+
+## Variance Decomposition and Missing-Information Diagnostics
+
+### Rubin's Between–Within Decomposition
+
+The between-imputation variance $B$ and within-imputation variance $\bar{U}$ tell us
+qualitatively different things:
+
+- **Large $\bar{U}$** with small $B$: the sample itself is small or noisy; more data
+  would help more than better imputation.
+- **Large $B$** with small $\bar{U}$: the coefficient is well-estimated in each
+  imputed dataset, but the imputed values vary a lot across datasets — the missing
+  data are doing heavy lifting.
+
+::: {.panel-tabset}
+
+#### R
+
+```{r}
+#| label: bw-decomp
+bw_table <- bind_rows(
+  res_fe |> mutate(model = "Fixed Effects"),
+  res_re |> mutate(model = "Random Effects")
+) |>
+  select(model, term, W_var, B_var, T_var, fmi) |>
+  mutate(
+    pct_between = round(100 * B_var / T_var, 1),
+    across(c(W_var, B_var, T_var), ~ round(.x, 6)),
+    fmi = round(fmi, 4)
+  )
+
+bw_table |>
+  gt(groupname_col = "model") |>
+  tab_header(
+    title    = "Between–Within Variance Decomposition (Rubin)",
+    subtitle = "M = 20 imputations"
+  ) |>
+  cols_label(
+    term        = "Coefficient",
+    W_var       = "Within (Ū)",
+    B_var       = "Between (B)",
+    T_var       = "Total (T)",
+    fmi         = "FMI",
+    pct_between = "% due to MI"
+  ) |>
+  tab_footnote(
+    footnote  = "FMI: fraction of missing information = (1 + 1/M)B / T",
+    locations = cells_column_labels(columns = fmi)
+  )
+```
+
+```{r}
+#| label: fmi-plot
+#| fig-width: 7
+#| fig-height: 4
+bind_rows(
+  res_fe |> mutate(model = "FE"),
+  res_re |> mutate(model = "RE")
+) |>
+  ggplot(aes(x = fmi, y = term, fill = model)) +
+  geom_col(position = "dodge", width = 0.55) +
+  geom_vline(xintercept = 0.3, linetype = "dashed", colour = "grey50") +
+  scale_fill_manual(values = c("FE" = "steelblue", "RE" = "tomato"),
+                    name = "Model") +
+  annotate("text", x = 0.31, y = 0.6, label = "FMI = 0.3\n(high sensitivity)",
+           hjust = 0, size = 3, colour = "grey40") +
+  labs(
+    x       = "Fraction of missing information (FMI)",
+    y       = NULL,
+    title   = "How sensitive is each coefficient to imputed values?",
+    subtitle = "Higher FMI → estimate more dependent on imputation model"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "bottom")
+```
+
+#### Stata
+
+```stata
+* ── Retrieve stored variance matrices after mi estimate ──────────────────────
+mi estimate, dots: xtreg tariff polity lpop lgdppc, fe
+
+matrix W  = e(V_Ubar)     // within-imputation covariance
+matrix B  = e(V_B)        // between-imputation covariance
+matrix T  = e(V_Q)        // total (Rubin) covariance
+matrix fmi = e(fmi)       // vector of FMI values
+
+matrix list W
+matrix list B
+matrix list fmi
+
+* Fraction due to between-imputation variance for each coefficient:
+* pct_between = diag(B) ./ diag(T) * 100   (element-wise)
+local M = 20
+matrix adj_B = (`M' + 1) / `M' * B    // (1 + 1/M)*B
+* Compare to diag(T) = diag(W) + diag(adj_B)
+```
+
+:::
+
+---
+
+## FE vs RE: The Hausman Test under Multiple Imputation {#sec-hausman}
+
+The standard Hausman test is a quadratic form in the difference $\hat{\beta}_{FE} - \hat{\beta}_{RE}$
+and does not pool straightforwardly under Rubin's rules. Two tractable alternatives exist.
+
+### Option A: Per-Imputation Hausman Tests
+
+Run the Hausman test in each of the $M$ imputed datasets and inspect the distribution
+of $\chi^2$ statistics or $p$-values.
+
+::: {.panel-tabset}
+
+#### R
+
+```{r}
+#| label: hausman-per-m
+haus_stats <- lapply(seq_along(a.out$imputations), function(m) {
+  d  <- a.out$imputations[[m]]
+  fe <- plm(panel_formula, data = d, index = c("country", "year"), model = "within")
+  re <- plm(panel_formula, data = d, index = c("country", "year"), model = "random")
+  ht <- phtest(fe, re)
+  tibble(m = m, statistic = ht$statistic, p.value = ht$p.value, df = ht$parameter)
+})
+
+haus_df <- bind_rows(haus_stats)
+
+haus_df |>
+  summarise(
+    mean_chi2 = round(mean(statistic), 3),
+    sd_chi2   = round(sd(statistic), 3),
+    pct_reject = round(mean(p.value < 0.05) * 100, 1)
+  ) |>
+  gt() |>
+  tab_header(title = "Hausman test across M = 20 imputations",
+             subtitle = "H₀: RE consistent (random effects ≡ fixed effects)") |>
+  cols_label(mean_chi2  = "Mean χ²",
+             sd_chi2    = "SD χ²",
+             pct_reject = "% reject at α=0.05")
+```
+
+```{r}
+#| label: hausman-dist
+#| fig-width: 7
+#| fig-height: 4
+ggplot(haus_df, aes(x = p.value)) +
+  geom_histogram(bins = 10, fill = "steelblue", colour = "white") +
+  geom_vline(xintercept = 0.05, linetype = "dashed", colour = "tomato") +
+  labs(
+    x       = "p-value",
+    y       = "Count",
+    title   = "Distribution of Hausman test p-values across imputations",
+    subtitle = "Dashed line: α = 0.05"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+#### Stata
+
+```stata
+* ── Hausman across imputations ────────────────────────────────────────────────
+* Store FE and RE in each imputed dataset and run hausman
+local reject = 0
+forvalues m = 1/20 {
+    quietly xtreg tariff polity lpop lgdppc if _mi_m == `m', fe
+    estimates store fe_`m'
+    quietly xtreg tariff polity lpop lgdppc if _mi_m == `m', re
+    estimates store re_`m'
+    quietly hausman fe_`m' re_`m'
+    if r(p) < 0.05 local reject = `reject' + 1
+    display "m=`m': chi2=" r(chi2) "  p=" r(p)
+}
+display "Rejections at 5%: `reject' / 20"
+```
+
+:::
+
+### Option B: Mundlak Device (Recommended)
+
+The Mundlak (1978) device adds the **within-unit means** of all time-varying regressors
+to the RE specification. The RE–FE choice becomes a test of whether these group means
+are jointly zero — a linear restriction that pools straightforwardly under Rubin's rules.
+The joint test is implemented below using the **D2 statistic** of Li, Meng, Raghunathan
+& Rubin (1991), which combines the $M$ per-imputation Wald chi-squared statistics into a
+single $F$ reference distribution rather than simply averaging them.
+
+::: {.panel-tabset}
+
+#### R
+
+```{r}
+#| label: mundlak
+# Compute group means in each imputed dataset and add to the data
+add_group_means <- function(d) {
+  d |>
+    group_by(country) |>
+    mutate(
+      m_polity = mean(polity,    na.rm = TRUE),
+      m_lpop   = mean(log(pop),  na.rm = TRUE),
+      m_lgdppc = mean(log(gdp.pc), na.rm = TRUE)
+    ) |>
+    ungroup()
+}
+
+a_mundlak <- a.out
+a_mundlak$imputations <- lapply(a.out$imputations, add_group_means)
+
+mundlak_formula <- tariff ~ polity + log(pop) + log(gdp.pc) +
+                             m_polity + m_lpop + m_lgdppc
+
+res_mundlak <- pool_plm(
+  amelia_out = a_mundlak,
+  formula    = mundlak_formula,
+  index      = c("country", "year"),
+  model      = "random"
+)
+
+# The group-mean terms test RE consistency
+res_mundlak |>
+  select(term, estimate, std.error, statistic, df, p.value) |>
+  mutate(role = if_else(str_starts(term, "m_"), "Mundlak term", "Structural")) |>
+  gt(groupname_col = "role") |>
+  tab_header(
+    title    = "Mundlak (1978) RE model — MI Pooled",
+    subtitle = "H₀: group-mean coefficients = 0 ↔ RE is consistent"
+  ) |>
+  fmt_number(columns = c(estimate, std.error, statistic, p.value), decimals = 4) |>
+  fmt_number(columns = df, decimals = 1) |>
+  tab_style(
+    style     = cell_fill(color = "#fef9c3"),
+    locations = cells_body(rows = p.value < 0.05)
+  )
+```
+
+```{r}
+#| label: mundlak-ftest
+# ── D2 pooled test (Li, Meng, Raghunathan & Rubin 1991, Stat. Sin. 1:65-92) ──
+#
+# Given M Wald chi-squared statistics W_1,...,W_M each with k df under H0,
+# the D2 statistic is:
+#
+#   W̄   = mean(W_m)
+#   b   = var(W_m)           sample variance across imputations
+#
+#   r2  = (1 + 1/M) * b / (2k)
+#          ↑ between-imputation variance relative to the null variance
+#            of chi2(k), which equals 2k (standardises the scale)
+#
+#   D2  = (W̄/k - r2) / (1 + r2)   ~ F(k, v2) under H0
+#
+#   v2  = (M - 1) * (1 + 1/r2)^2
+#          → ∞ when r2 → 0 (no MI uncertainty: reduces to chi2(k)/k)
+#          → (M-1) when r2 → ∞ (test overwhelmed by imputation variance)
+
+d2_test <- function(chi2_vals, k) {
+  M    <- length(chi2_vals)
+  Wbar <- mean(chi2_vals)
+  b    <- var(chi2_vals)
+
+  r2   <- (1 + 1/M) * b / (2 * k)
+  D2   <- (Wbar / k - r2) / (1 + r2)
+
+  # Guard: if all imputations give identical statistics r2 = 0 exactly,
+  # v2 → ∞ and the test reduces to the standard chi-squared
+  v2   <- if (r2 < .Machine$double.eps * 100) Inf else (M - 1) * (1 + 1/r2)^2
+  p    <- pf(D2, df1 = k, df2 = v2, lower.tail = FALSE)
+
+  tibble(
+    D2        = D2,
+    df1       = k,
+    df2       = v2,
+    p.value   = p,
+    r2        = r2,
+    chi2_bar  = Wbar,
+    chi2_var  = b,
+    M         = M
+  )
+}
+
+# ── Step 1: per-imputation Wald chi-squared ───────────────────────────────────
+mundlak_terms <- c("m_polity", "m_lpop", "m_lgdppc")
+k             <- length(mundlak_terms)    # 3 restrictions
+
+chi2_vals <- vapply(a_mundlak$imputations, function(d) {
+  fit <- plm(mundlak_formula, data = d,
+             index = c("country", "year"), model = "random")
+  bvec <- coef(fit)[mundlak_terms]
+  Vmat <- vcov(fit)[mundlak_terms, mundlak_terms]
+  as.numeric(t(bvec) %*% solve(Vmat) %*% bvec)    # W_m ~ chi2(k) under H0
+}, numeric(1))
+
+cat(sprintf(
+  "Per-imputation Wald chi2(%d): mean = %.3f  SD = %.3f  range = [%.3f, %.3f]\n",
+  k, mean(chi2_vals), sd(chi2_vals), min(chi2_vals), max(chi2_vals)
+))
+
+# ── Step 2: D2 pooled test ────────────────────────────────────────────────────
+d2_result <- d2_test(chi2_vals, k = k)
+
+d2_result |>
+  gt() |>
+  tab_header(
+    title    = "D2 Pooled Test — Joint Significance of Mundlak Terms",
+    subtitle = "H₀: m_polity = m_lpop = m_lgdppc = 0  (RE is consistent with FE)"
+  ) |>
+  fmt_number(columns = c(D2, r2, chi2_bar, chi2_var), decimals = 4) |>
+  fmt_number(columns = df2, decimals = 1) |>
+  fmt_number(columns = p.value, decimals = 4) |>
+  cols_label(
+    D2       = "D₂",
+    df1      = "df₁ (k)",
+    df2      = "df₂ (v₂)",
+    p.value  = "p",
+    r2       = "r₂",
+    chi2_bar = "W̄",
+    chi2_var = "Var(W)",
+    M        = "M"
+  ) |>
+  tab_footnote(
+    footnote  = "r₂ = (1 + 1/M) · Var(W) / (2k): relative between-imputation variance.",
+    locations = cells_column_labels(columns = r2)
+  ) |>
+  tab_footnote(
+    footnote  = "v₂ = (M − 1)(1 + 1/r₂)²: shrinks toward M − 1 as MI uncertainty grows.",
+    locations = cells_column_labels(columns = df2)
+  )
+```
+
+#### Stata
+
+```stata
+* ── Mundlak device ───────────────────────────────────────────────────────────
+* mi passive computes group means within each imputed dataset
+mi passive: bysort cid: egen m_polity = mean(polity)
+mi passive: bysort cid: egen m_lpop   = mean(lpop)
+mi passive: bysort cid: egen m_lgdppc = mean(lgdppc)
+
+* RE model with group means
+mi estimate, dots: xtreg tariff polity lpop lgdppc ///
+    m_polity m_lpop m_lgdppc, re
+
+* ── D2 pooled joint test (Li et al. 1991) ────────────────────────────────────
+* Stata's mi test implements D2 automatically after mi estimate.
+* It computes the per-imputation Wald statistics and pools them
+* using the same formula: D2 = (W̄/k - r2)/(1 + r2) ~ F(k, v2).
+
+mi test m_polity m_lpop m_lgdppc
+
+* Output includes:
+*   D2 statistic, numerator df (k=3), denominator df (v2), and p-value.
+*   r2 (between-imputation relative variance) is stored in r(r2).
+*
+* Significant result → reject H0: group means ≠ 0 → prefer FE.
+* Note: mi test is strictly equivalent to running mi estimate and then
+*       using test only when the post-estimation test is linear; for
+*       nonlinear combinations, use mi testtransform instead.
+```
+
+:::
+
+---
+
+## Exporting Amelia Imputations to Stata
+
+If you prefer to impute in R (for the TSCS-specific features) and analyse in Stata,
+`write.amelia()` exports all imputed datasets as `.dta` files.
+
+::: {.panel-tabset}
+
+### R
+
+```{r}
+#| label: export
+#| eval: false
+# Export: creates freetrade_imp0.dta (original) and
+#         freetrade_imp1.dta … freetrade_imp20.dta
+write.amelia(a.out,
+             file.stem     = "freetrade_imp",
+             format        = "dta",
+             original.data = TRUE)
+```
+
+### Stata
+
+```stata
+* ── Import Amelia imputations into Stata's mi framework ──────────────────────
+* (run after write.amelia() in R)
+
+* Option A — manual long stack then mi import
+clear
+forvalues m = 0/20 {
+    append using freetrade_imp`m'.dta
+    replace _mi_m = `m' if _mi_m == .   // tag imputation number
+}
+* Declare as flong (stacked) MI data
+mi import flong, m(_mi_m) id(country year)
+
+* Recode string country to numeric if needed
+encode country, gen(cid)
+mi xtset cid year
+
+* ── Replicate FE and RE from R ───────────────────────────────────────────────
+gen lpop   = log(pop)
+gen lgdppc = log(gdppc)
+
+mi estimate, dots: xtreg tariff polity lpop lgdppc, fe
+mi estimate, dots: xtreg tariff polity lpop lgdppc, re
+
+* ── Option B — use mi import directly (Stata 14+) ────────────────────────────
+* If write.amelia() outputs a numbered series, mi import can read them:
+* mi import flong using freetrade_imp, m(1/20) id(country year) clear
+```
+
+:::
+
+---
+
+## Summary and Recommended Workflow
+
+This document has illustrated a complete workflow for multiple imputation of TSCS data:
+
+**1. Diagnose missingness** — use `missmap()` / `misstable` to check patterns; look for
+temporal clustering that would violate MCAR.
+
+**2. Specify the imputation model** — include `polytime`, `intercs`, `lags`, and `leads`
+in Amelia to exploit TSCS structure. In Stata, approximate these manually with within-unit
+time polynomials and lagged/led variables.
+
+**3. Choose $M$** — a common heuristic is $M \approx$ percentage of missing cases
+(Bodner 2008, White et al. 2011). With ~23% missingness in `tariff`, $M = 20$ is
+appropriate.
+
+**4. Check diagnostics** — density overlap and over-imputation plots. Systematic
+departures indicate imputation model misspecification.
+
+**5. Pool with Rubin's rules** — use `mi.meld()` in R or `mi estimate` in Stata.
+Report FMI alongside standard errors; coefficients with FMI > 0.30 are sensitive to
+imputation model choice.
+
+**6. Handle FE vs RE** — use the Mundlak device rather than the Hausman test under MI;
+the Mundlak joint $F$-test on group means pools straightforwardly.
+
+### Key References
+
+- **Honaker, J. & King, G. (2010).** What to Do about Missing Values in Time-Series
+  Cross-Section Data. *American Journal of Political Science*, 54(2), 561–581.
+- **King, G., Honaker, J., Joseph, A. & Scheve, K. (2001).** Analyzing Incomplete
+  Political Science Data: An Alternative Algorithm for Multiple Imputation.
+  *American Political Science Review*, 95(1), 49–69. *(Earlier treatment of MI for
+  political science; the 2010 AJPS paper extends this specifically to TSCS data.)*
+- **Honaker, J., King, G. & Blackwell, M. (2011).** Amelia II: A Program for Missing
+  Data. *Journal of Statistical Software*, 45(7), 1–47.
+- **Rubin, D.B. (1987).** *Multiple Imputation for Nonresponse in Surveys*. Wiley.
+- **Li, K.H., Meng, X.L., Raghunathan, T.E. & Rubin, D.B. (1991).** Significance Levels
+  from Repeated p-Values with Multiply-Imputed Data. *Statistica Sinica*, 1(1), 65–92.
+  *(The D2 pooled test for combining chi-squared statistics across imputations.)*
+- **Barnard, J. & Rubin, D.B. (1999).** Small-Sample Degrees of Freedom with Multiple
+  Imputation. *Biometrika*, 86(4), 948–955.
+- **Mundlak, Y. (1978).** On the Pooling of Time Series and Cross Section Data.
+  *Econometrica*, 46(1), 69–85.
+- **Bodner, T.E. (2008).** What Improves with Increased Missing Data Imputations?
+  *Structural Equation Modeling*, 15(4), 651–675.
+
+---
+
+::: {.callout-note}
+## Reproducibility
+
+This document was rendered with:
+
+```{r}
+#| label: session
+#| echo: true
+#| cache: false
+si <- sessioninfo::session_info(pkgs = c("Amelia","plm","tidyverse","broom","gt",
+                                          "naniar","patchwork","sessioninfo"))
+print(si, locale = FALSE)
+```
+:::
