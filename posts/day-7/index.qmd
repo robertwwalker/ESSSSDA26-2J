@@ -9,6 +9,7 @@ image: "image.png"
 ## Slides
 
 - [A reveal presentation for Day 6](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day6/)
+- [A reveal presentation on CFR's](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-CFR/)
 - [A reveal presentation on Multiple Imputation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day7/)
 
 
