@@ -3,13 +3,14 @@ title: "Day 8: Panel Models for Limited Outcomes"
 author: "Robert W. Walker"
 date: "07/29/2026"
 categories: [panel data, code, analysis]
-image: "image.jpg"
-draft: true
+image: "image.png"
 ---
 
 ## Slides
 
-- [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day8/)
+- [A reveal presentation on Panel GLMs](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day8/)
+- [A reveal presentation on GEE](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-GEE/)
+- [A reveal presentation on Robust Standard Errors and Such](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-RobustSE/)
 
 Two core issues remain: the spatial and the temporal.  There are fewer well worked diagnostics for this than for the pure linear case owing to **partial observability and/or coarse measurement** in some fashion or other.
 
