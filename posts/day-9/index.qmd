@@ -4,7 +4,6 @@ author: "Robert W. Walker"
 date: "07/30/2026"
 categories: [panel data, code, analysis]
 image: "image.jpg"
-draft: true
 ---
 
 ## Slides
@@ -17,4 +16,1079 @@ draft: true
 
 ## R and GMM
 
-There are a number of packages for estimating GMM models in R.  `pgmm` does many of the most basic models, though Stata is the industry leader in this.  That said, there is a relatively new and highly customizable package for this: `pdynmc` which is [described here in a pdf vignette](https://cran.r-project.org/web/packages/pdynmc/vignettes/pdynmc-intro.pdf).
+There are a number of packages for estimating GMM models in R.  `pgmm` does many of the most basic models, though Stata is the industry leader in this.  That said, there is a relatively new and highly customizable package for this: `pdynmc` which is [described here in a pdf vignette](https://cran.r-project.org/web/packages/pdynmc/vignettes/pdynmc-intro.pdf).  What follows is a detailed example with a software guide.
+
+# Software Guide and Example
+
+A (hopefully) practical reference for estimating dynamic panel data (DPD) and generalized method of moments (GMM) models. It covers the full range of estimators discussed in the course, from basic difference GMM through slope-heterogeneity tests and nonlinear dynamic models. Where one environment handles something the other cannot, that is noted explicitly.
+
+```{r setup, include=FALSE}
+# ── Load packages ──────────────────────────────────────────────────────────
+library(plm)
+library(lme4)
+library(dplyr)
+library(kableExtra)
+# panelvar, fixest used in specific sections; install via install.packages() if needed
+
+# ── Critical: restore plm::lag for pgmm formula parsing ───────────────────
+# dplyr masks lag() with a version that rejects vector k (e.g. 1:2).
+# Setting lag <- plm::lag here makes pgmm() formulas work globally.
+# IMPORTANT: use dplyr::lag() explicitly in any dplyr pipeline — plm::lag
+# applied to a plain vector inside mutate() returns the input unchanged,
+# not a positional lag.
+lag <- plm::lag
+
+# ── Load and transform data ────────────────────────────────────────────────
+data(EmplUK)
+EmplUK <- EmplUK |>
+  mutate(
+    n  = log(emp),
+    w  = log(wage),
+    k  = log(capital),
+    ys = log(output)
+  )
+pdat <- pdata.frame(EmplUK, index = c("firm", "year"))
+
+# Precompute lag columns for plm(model = "random") formulas.
+# Using lag() in a RE formula with lag <- plm::lag causes swar_Between_check()
+# to fail (between-transform of lagged DV ≈ between-transform of level →
+# singular between variance matrix). Precomputed columns sidestep this.
+pdat$n_lag1 <- plm::lag(pdat$n, 1)
+pdat$n_lag2 <- plm::lag(pdat$n, 2)
+pdat$w_lag1 <- plm::lag(pdat$w, 1)
+
+# ── Panel variance decomposition utility ───────────────────────────────────
+panel_summary <- function(x, id) {
+  grand  <- mean(x, na.rm = TRUE)
+  btw    <- tapply(x, id, mean, na.rm = TRUE)
+  within <- x - btw[as.character(id)]
+  c(
+    Grand_mean    = round(grand, 3),
+    SD_total      = round(sd(x,      na.rm = TRUE), 3),
+    SD_between    = round(sd(btw,    na.rm = TRUE), 3),
+    SD_within     = round(sd(within, na.rm = TRUE), 3),
+    Pct_within    = round(100 * var(within, na.rm=TRUE) / var(x, na.rm=TRUE), 1)
+  )
+}
+```
+
+This page is a practical reference for estimating dynamic panel data (DPD) and
+generalized method of moments (GMM) models. It covers the full range of estimators
+discussed in the course, from basic difference GMM through slope-heterogeneity tests
+and nonlinear dynamic models. Where one environment handles something the other
+cannot, that is noted explicitly.
+
+## Package and command ecosystem
+
+### R packages
+
+Install once; load at the top of each script.
+
+```{r packages, eval=FALSE}
+install.packages(c(
+  "plm",             # core panel estimators: pgmm, pmg, pcdtest
+  "panelvar",        # panel VAR with impulse responses
+  "lme4",            # mixed models for nonlinear DPD (CRE logit, Poisson)
+  "fixest",          # fast FE Poisson and high-dimensional FE
+  "marginaleffects", # average partial effects from nonlinear models
+  "dplyr",           # data manipulation (also in tidyverse)
+  "kableExtra"       # formatted output tables
+))
+```
+
+::: {.callout-important}
+## The `lag()` conflict between `plm` and `dplyr`
+
+`dplyr` exports `lag()` with a scalar-only `n` argument. `plm` exports `lag()` that
+accepts vector ranges like `1:2`, which `pgmm()` formulas require. Loading both
+packages without intervention causes:
+
+```
+Error in lag(): ! n must be a whole number, not an integer vector.
+```
+
+**Fix**: add `lag <- plm::lag` once after loading both packages. This is done in
+the hidden setup chunk for this document.
+
+**Separate issue**: `plm::lag` applied to a plain numeric vector inside
+`dplyr::mutate()` returns the input **unchanged** — it does not compute a
+positional lag. Always use `dplyr::lag()` explicitly in pipeline code:
+
+```r
+df |> group_by(id) |> mutate(y_lag = dplyr::lag(y, 1))  # correct
+df |> group_by(id) |> mutate(y_lag = lag(y, 1))          # wrong when lag <- plm::lag
+```
+:::
+
+### Stata commands
+
+Built-in commands ship with Stata. Community-contributed commands must be
+installed once via `ssc install`.
+
+```stata
+* ---------- built-in commands ----------
+* xtabond      Arellano-Bond difference GMM (one- or two-step)
+* xtdpdsys     System GMM (Arellano-Bover / Blundell-Bond)
+* xtdpd        General DPD — most flexible built-in specification
+* xtregar      AR(1) FE/RE (not GMM; included for comparison)
+* xtivreg      Panel IV (not full GMM)
+* xtprobit     Random-effects probit
+* xtpoisson    Random-effects Poisson / fixed-effects Poisson
+* xtset id year  -- always declare panel structure first
+
+* ---------- community commands (install once) ----------
+ssc install xtabond2    // Roodman (2009): collapse, orthog. devs., diff-in-Hansen
+ssc install xtlsdvc     // Bruno (2005): bias-corrected LSDV
+ssc install xtpmg       // Pesaran-Shin-Smith (1999): MG and PMG estimators
+ssc install xtdcce2     // Ditzen (2021): dynamic CCE
+ssc install xtcd2       // Ditzen (2021): Pesaran CD test
+ssc install xtslope     // Eberhardt (2012): Pesaran-Yamagata slope homogeneity
+ssc install panelhet    // alternative slope homogeneity tests
+ssc install pvar        // Abrigo-Love (2016): panel VAR
+ssc install ivreg2      // extended IV/GMM (often needed alongside xtabond2)
+```
+
+---
+
+## Data preparation
+
+Both environments use the Layard-Nickell UK manufacturing employment data
+(`abdata` in Stata; `EmplUK` in the `plm` package).
+
+::: {.panel-tabset}
+
+### R
+
+```{r data-r}
+library(plm)
+library(dplyr)
+data(EmplUK)
+
+# Log-transform and declare panel structure
+EmplUK <- EmplUK |>
+  mutate(n = log(emp), w = log(wage), k = log(capital), ys = log(output))
+pdat <- pdata.frame(EmplUK, index = c("firm", "year"))
+
+# Set lag <- plm::lag for pgmm formula parsing (done in setup; shown here
+# so the code is explicit when copying chunks to a standalone script)
+lag <- plm::lag
+
+# Precompute lag columns used by plm(model = "random") formulas.
+# These must live in pdat so they are available to static-r.
+# (Using lag() inside a RE formula with lag <- plm::lag causes
+# swar_Between_check() to fail; precomputed columns avoid this.)
+pdat$n_lag1 <- plm::lag(pdat$n, 1)
+pdat$n_lag2 <- plm::lag(pdat$n, 2)
+pdat$w_lag1 <- plm::lag(pdat$w, 1)
+
+pdim(pdat)   # panel dimensions: N, T, balanced?
+```
+
+### Stata
+
+```stata
+use abdata, clear   // ships with Stata; n w k ys already logged
+
+xtset id year       // declare panel structure; always do this first
+xtdescribe          // shows panel balance / gaps
+xtsum n w k ys      // within / between / overall variance decomposition
+```
+
+:::
+
+---
+
+## Within and between variation
+
+::: {.panel-tabset}
+
+### R
+
+```{r variance-decomp}
+# panel_summary() defined in the setup chunk; apply to each log variable
+result <- sapply(c("n","w","k","ys"), function(v)
+  panel_summary(EmplUK[[v]], EmplUK$firm))
+t(result) |>
+  kbl(caption = "Variance decomposition: 140 UK firms, 1976-1984") |>
+  kable_styling(font_size = 13)
+```
+
+### Stata
+
+```stata
+xtsum n w k ys
+```
+
+:::
+
+---
+
+## Static panel baseline (for comparison)
+
+Always estimate pooled OLS and fixed effects before GMM. They bracket the true
+$\gamma$: OLS is upward-biased (omitted $\alpha_i$); FE is downward-biased
+(Nickell). GMM estimates should lie between them.
+
+::: {.panel-tabset}
+
+### R
+
+```{r static-r}
+# Use precomputed lag columns (n_lag1, n_lag2, w_lag1 from setup).
+# Avoids swar_Between_check() failure that occurs when lag <- plm::lag is
+# active and lag() appears inside a random-effects formula.
+
+# Pooled OLS (upward-biased gamma)
+ols <- plm(n ~ n_lag1 + n_lag2 + w + w_lag1 + k + ys,
+           data = pdat, model = "pooling")
+
+# Two-way fixed effects (downward Nickell bias)
+fe  <- plm(n ~ n_lag1 + n_lag2 + w + w_lag1 + k + ys,
+           data = pdat, model = "within", effect = "twoways")
+
+# Random effects — individual effects only.
+# Two-way RE with a lagged DV is numerically fragile (Swamy-Arora
+# between-estimator fails when between-transform of lag(n) ≈ between-transform
+# of n itself). Individual RE is the sensible baseline comparison.
+re  <- plm(n ~ n_lag1 + n_lag2 + w + w_lag1 + k + ys,
+           data = pdat, model = "random", effect = "individual")
+
+# Hausman test: FE vs RE
+phtest(fe, re)
+
+summary(fe)
+```
+
+### Stata
+
+```stata
+* Pooled OLS
+reg n L(1/2).n w L.w k ys i.year
+
+* Two-way fixed effects
+xtreg n L(1/2).n w L.w k ys i.year, fe
+
+* Random effects (individual only — see note on two-way RE above)
+xtreg n L(1/2).n w L.w k ys, re
+
+* Hausman test
+estimates store re_est
+xtreg n L(1/2).n w L.w k ys i.year, fe
+hausman . re_est
+```
+
+:::
+
+---
+
+## Anderson-Hsiao: IV estimator
+
+Anderson and Hsiao (1981) first-difference to remove fixed effects, then
+instrument $\Delta y_{i,t-1}$ with $y_{i,t-2}$ (level) or $\Delta y_{i,t-2}$
+(difference). Useful pedagogically as the conceptual predecessor to AB.
+
+::: {.panel-tabset}
+
+### R
+
+```{r ah-r}
+# First-difference by hand.
+# MUST use dplyr::lag() explicitly here — plm::lag() on a plain vector
+# inside mutate() returns the input unchanged, not a positional lag.
+pdat_fd <- EmplUK |>
+  group_by(firm) |> arrange(year) |>
+  mutate(
+    Dn   = n  - dplyr::lag(n, 1),       # Delta y_t
+    DLn  = dplyr::lag(n,1) - dplyr::lag(n,2),  # Delta y_{t-1}  (endogenous)
+    Dw   = w  - dplyr::lag(w, 1),
+    ln2  = dplyr::lag(n, 2),             # y_{t-2}: level instrument
+    DLn2 = dplyr::lag(n,2) - dplyr::lag(n,3)   # Delta y_{t-2}: diff instrument
+  ) |>
+  ungroup() |> filter(!is.na(DLn2))
+
+pdat_fd_p <- pdata.frame(pdat_fd, index = c("firm","year"))
+
+# AH estimator using plm() IV formula syntax: y ~ endog | instruments
+# Level instrument y_{t-2}
+ah_level <- plm(Dn ~ DLn + Dw | ln2  + Dw, data = pdat_fd_p, model = "pooling")
+summary(ah_level)
+
+# Difference instrument Delta y_{t-2}
+ah_diff  <- plm(Dn ~ DLn + Dw | DLn2 + Dw, data = pdat_fd_p, model = "pooling")
+summary(ah_diff)
+```
+
+### Stata
+
+```stata
+* First-difference; instrument with lagged level y_{t-2}
+ivregress 2sls D.n (D.L.n = L2.n) D.w, vce(robust)
+
+* Instrument with lagged difference Delta y_{t-2}
+ivregress 2sls D.n (D.L.n = LD.n) D.w, vce(robust)
+
+* ivreg2 gives first-stage F, Cragg-Donald, Kleibergen-Paap weak instrument tests
+ivreg2 D.n (D.L.n = L2.n) D.w, robust first
+```
+
+:::
+
+---
+
+## Arellano-Bond: difference GMM
+
+Arellano and Bond (1991) use all valid lagged levels as GMM instruments.
+The global `lag <- plm::lag` (set in the setup chunk) makes `pgmm()` formulas
+work correctly throughout.
+
+### Formula syntax for `pgmm()`
+
+Left of `|`: model covariates with lag structure. Right of `|`: GMM-type
+instruments via `lag(var, min:max)`, where `2:99` means all available lags
+from 2 onward.
+
+### One-step Arellano-Bond
+
+::: {.panel-tabset}
+
+### R
+
+```{r ab1-r}
+# Replicates Arellano-Bond (1991) Table 4(a1)
+# lag() resolves to plm::lag (set globally in setup) -- pgmm formulas work
+ab_one <- pgmm(
+  log(emp) ~ lag(log(emp), 1:2) +
+             lag(log(wage), 0:1) +
+             lag(log(capital), 0:2) +
+             lag(log(output), 0:2) |
+             lag(log(emp), 2:99),
+  data   = EmplUK,
+  effect = "twoways",
+  model  = "onestep"
+)
+summary(ab_one)
+```
+
+### Stata
+
+```stata
+* Built-in command
+xtabond n L(0/1).w L(0/2).(k ys) yr1980-yr1984, lags(2) vce(robust)
+estat abond
+estat sargan
+
+* xtabond2 — generally preferred
+xtabond2 n L(1/2).n L(0/1).w L(0/2).(k ys) yr1980-yr1984,     ///
+    gmm(L.n, lag(2 99))                                          ///
+    iv(L(0/1).w L(0/2).(k ys) yr1980-yr1984)                    ///
+    twostep robust small
+```
+
+:::
+
+### Two-step with Windmeijer-corrected standard errors
+
+::: {.panel-tabset}
+
+### R
+
+```{r ab2-r}
+# Replicates AB (1991) Table 4(b)
+ab_two <- pgmm(
+  log(emp) ~ lag(log(emp), 1:2) +
+             lag(log(wage), 0:1) +
+             log(capital) +
+             lag(log(output), 0:1) |
+             lag(log(emp), 2:99),
+  data   = EmplUK,
+  effect = "twoways",
+  model  = "twosteps"
+)
+
+# robust = TRUE applies Windmeijer (2005) correction — always use this
+summary(ab_two, robust = TRUE)
+
+# Compare naive two-step SEs (too small) vs Windmeijer
+summary(ab_two, robust = FALSE)
+```
+
+### Stata
+
+```stata
+xtabond n L(0/1).w k L(0/1).ys yr1980-yr1984, lags(2) twostep vce(robust)
+
+xtabond2 n L(1/2).n L(0/1).w k L(0/1).ys yr1980-yr1984,        ///
+    gmm(L.n, lag(2 99))                                          ///
+    iv(L(0/1).w k L(0/1).ys yr1980-yr1984)                      ///
+    twostep robust small
+```
+
+:::
+
+### Instrument management: lag depth and collapsing
+
+::: {.panel-tabset}
+
+### R
+
+```{r instr-r}
+# Limit lag depth: lags 2 through 4 only
+ab_limited <- pgmm(
+  log(emp) ~ lag(log(emp), 1:2) + lag(log(wage), 0:1) +
+             log(capital) + lag(log(output), 0:1) |
+             lag(log(emp), 2:4),
+  data = EmplUK, effect = "twoways", model = "twosteps"
+)
+summary(ab_limited, robust = TRUE)
+
+# Instrument count: Sargan df = L - K
+cat("Instruments:", length(ab_limited$coefficients) + ab_limited$df.residual, "\n")
+cat("Groups (firms):", pdim(pdat)$nT$n, "\n")
+```
+
+**R limitation**: `plm::pgmm()` does not support instrument collapsing. Use
+`xtabond2` in Stata for the `collapse` option.
+
+### Stata
+
+```stata
+* Limit lag depth
+xtabond2 n L(1/2).n L(0/1).w k L(0/1).ys yr1980-yr1984,        ///
+    gmm(L.n, lag(2 4))                                           ///
+    iv(L(0/1).w k L(0/1).ys yr1980-yr1984)                      ///
+    twostep robust small
+
+* Collapse instrument matrix (reduces O(T^2) to O(T) instruments)
+xtabond2 n L(1/2).n L(0/1).w k L(0/1).ys yr1980-yr1984,        ///
+    gmm(L.n, lag(2 99) collapse)                                 ///
+    iv(L(0/1).w k L(0/1).ys yr1980-yr1984)                      ///
+    twostep robust small
+```
+
+:::
+
+---
+
+## System GMM: Arellano-Bover / Blundell-Bond
+
+::: {.panel-tabset}
+
+### R
+
+```{r bb-r}
+# Replicates Blundell-Bond (1998) Table 4
+# transformation = "ld" stacks levels + differences
+bb <- pgmm(
+  log(emp) ~ lag(log(emp), 1) +
+             lag(log(wage), 0:1) +
+             lag(log(capital), 0:1) |
+             lag(log(emp), 2:99) +
+             lag(log(wage), 2:99) +
+             lag(log(capital), 2:99),
+  data           = EmplUK,
+  effect         = "twoways",
+  model          = "onestep",
+  transformation = "ld"
+)
+summary(bb, robust = TRUE)
+```
+
+### Stata
+
+```stata
+* Built-in system GMM command
+xtdpdsys n L(0/1).w L(0/1).k yr1980-yr1984, lags(1) twostep vce(robust)
+estat abond
+estat sargan
+
+* xtabond2 (preferred — adds collapse, orthogonal, diff-in-Hansen)
+xtabond2 n L.n L(0/1).w L(0/1).k yr1980-yr1984,                 ///
+    gmm(L.n, lag(2 99) collapse)                                 ///
+    gmm(L.w L.k, lag(2 99) collapse)                             ///
+    iv(yr1980-yr1984)                                            ///
+    twostep robust small
+
+* xtdpd: most general, requires explicit instrument specification
+xtdpd n L(1/2).n L(0/1).w L(0/1).k yr1980-yr1984,              ///
+    dgmmiv(n, lagrange(2 99)) lgmmiv(n) iv(yr1980-yr1984)       ///
+    twostep vce(robust)
+```
+
+:::
+
+---
+
+## Post-estimation: specification tests
+
+### Arellano-Bond serial correlation tests
+
+::: {.panel-tabset}
+
+### R
+
+```{r ar-tests-r}
+# ab_two created in the ab2-r chunk above
+mtest(ab_two, order = 1)   # should reject (mechanical from differencing)
+mtest(ab_two, order = 2)   # should NOT reject — key identification check
+```
+
+### Stata
+
+```stata
+estat abond              // after xtabond, xtdpdsys, xtdpd
+estat abond, lags(3)     // extend to AR(3) if needed
+```
+
+:::
+
+### Sargan / Hansen overidentification test
+
+::: {.panel-tabset}
+
+### R
+
+```{r sargan-r}
+# summary() prints Sargan/Hansen automatically
+s1 <- summary(ab_one)              # Sargan (one-step, non-robust)
+s2 <- summary(ab_two, robust=TRUE) # Hansen J (two-step, Windmeijer)
+
+# Extract the statistic directly
+cat("One-step Sargan:  statistic =", round(s1$sargan$statistic, 2),
+    " df =", s1$sargan$parameter,
+    " p =", round(s1$sargan$p.value, 3), "\n")
+cat("Two-step Hansen:  statistic =", round(s2$sargan$statistic, 2),
+    " df =", s2$sargan$parameter,
+    " p =", round(s2$sargan$p.value, 3), "\n")
+```
+
+### Stata
+
+```stata
+estat sargan       // after xtabond / xtdpdsys / xtdpd
+                   // xtabond2 prints Hansen automatically
+```
+
+:::
+
+### Difference-in-Hansen test
+
+::: {.panel-tabset}
+
+### R
+
+```{r dih-r}
+# Not implemented in plm::pgmm() or any current CRAN package.
+# This test is only available via xtabond2 in Stata.
+message("Difference-in-Hansen test: use xtabond2 in Stata (see Stata tab).")
+```
+
+### Stata
+
+```stata
+* xtabond2 computes difference-in-Hansen automatically when multiple
+* gmm() blocks are specified — tests each instrument subset separately
+xtabond2 n L.n L(0/1).w L(0/1).k yr1980-yr1984,                 ///
+    gmm(L.n,         lag(2 99) collapse)                         ///
+    gmm(L(0/1).w L(0/1).k, lag(2 99) collapse)                  ///
+    iv(yr1980-yr1984)                                            ///
+    twostep robust small
+* Output: "Difference-in-Hansen tests of exogeneity of instrument subsets"
+```
+
+:::
+
+---
+
+## Bias-corrected LSDV (LSDVC)
+
+::: {.panel-tabset}
+
+### R
+
+```{r lsdvc-r}
+# LSDVC (Bruno 2005) has no maintained CRAN implementation.
+# Best approach in R: triangulate FE (lower bound) and AB (consistent).
+fe_est <- plm(n ~ n_lag1 + n_lag2 + w + w_lag1 + k + ys,
+              data = pdat, model = "within", effect = "twoways")
+ab_est <- pgmm(
+  log(emp) ~ lag(log(emp),1:2) + lag(log(wage),0:1) +
+             log(capital) | lag(log(emp),2:4),
+  data = EmplUK, effect = "twoways", model = "twosteps"
+)
+
+cat("FE  gamma1:", round(coef(fe_est)["n_lag1"], 4), " [downward-biased]\n")
+cat("AB  gamma1:", round(coef(ab_est)[1],        4), " [consistent]\n")
+cat("LSDVC lies between these; use xtlsdvc in Stata for the bias-corrected point estimate\n")
+```
+
+**R limitation**: Bruno (2005) LSDVC is Stata-only. Use `xtlsdvc` for the
+actual bias-corrected estimate.
+
+### Stata
+
+```stata
+* initial() options: ah, ab, bb
+xtlsdvc n L.n L(0/1).w L(0/1).k yr1980-yr1984, initial(ab) vcov(500) lags(1)
+xtlsdvc n L.n L(0/1).w L(0/1).k yr1980-yr1984, initial(bb) vcov(500) lags(1)
+
+foreach init in ah ab bb {
+    di "--- Initialization: `init' ---"
+    xtlsdvc n L.n L(0/1).w L(0/1).k yr1980-yr1984, ///
+        initial(`init') vcov(200) lags(1)
+}
+```
+
+:::
+
+---
+
+## Unbalanced panels and orthogonal deviations
+
+::: {.panel-tabset}
+
+### R
+
+```{r orthog-r, eval=FALSE}
+library(panelvar)
+# data(EmplUK)
+if (!"n" %in% names(EmplUK)) EmplUK$n <- log(EmplUK$emp)
+
+# pvargmm() looks up column names literally; "n" must exist in data
+pvgmm_fod <- pvargmm(
+  dependent_vars           = c("n"),
+  lags                     = 1,
+  transformation           = "fod",    # forward orthogonal deviations
+  data                     = EmplUK,
+  panel_identifier         = c("firm", "year"),
+  steps                    = "twosteps",
+  system_instruments       = FALSE,
+  max_instr_dependent_vars = 4,
+  min_instr_dependent_vars = 2
+)
+summary(pvgmm_fod)
+```
+
+**R limitation**: `plm::pgmm()` does not support orthogonal deviations.
+Use `panelvar::pvargmm()` with `transformation = "fod"`.
+
+### Stata
+
+```stata
+xtabond2 n L.n L(0/1).w L(0/1).k yr1980-yr1984,                 ///
+    gmm(L.n, lag(2 99) collapse)                                 ///
+    iv(L(0/1).w L(0/1).k yr1980-yr1984)                         ///
+    twostep robust small                                         ///
+    orthogonal
+```
+
+:::
+
+---
+
+## Panel VAR
+
+::: {.panel-tabset}
+
+### R
+
+```{r pvar-r, eval=FALSE}
+library(panelvar)
+# data(EmplUK)
+EmplUK$n <- log(EmplUK$emp)
+EmplUK$w <- log(EmplUK$wage)
+
+# Panel VAR: employment and wages jointly endogenous
+# Use transformation = "fod" to handle EmplUK's unbalanced structure
+pvar_mod <- pvargmm(
+  dependent_vars           = c("n", "w"),
+  lags                     = 1,
+  transformation           = "fod",
+  data                     = EmplUK,
+  panel_identifier         = c("firm", "year"),
+  steps                    = "twosteps",
+  system_instruments       = FALSE,
+  max_instr_dependent_vars = 4,
+  min_instr_dependent_vars = 2
+)
+summary(pvar_mod)
+
+# Stability: characteristic roots inside unit circle
+stability(pvar_mod)
+
+# Generalised impulse response functions
+pvar_irf <- girf(pvar_mod, n.ahead = 8, ma_approx_steps = 8)
+plot(pvar_irf)
+```
+
+### Stata
+
+```stata
+* ssc install pvar
+pvar n w, lags(1) fod twostep
+pvarstable
+pvarirf, oirf mc(500) step(8)
+pvargranger
+```
+
+:::
+
+**Software note**: R's `panelvar` provides richer IRF, stability diagnostics,
+and forecast-error variance decomposition than Stata's `pvar`. Point estimates
+are comparable.
+
+---
+
+## Slope heterogeneity: testing and estimation
+
+### Step 1: Cross-sectional dependence
+
+::: {.panel-tabset}
+
+### R
+
+```{r cd-test-r}
+# Fit a baseline FE model, then test residuals for cross-sectional dependence
+fe_cd <- plm(n ~ n_lag1 + n_lag2 + w + w_lag1 + k + ys,
+             data = pdat, model = "within", effect = "twoways")
+pcdtest(fe_cd, test = "cd")   # Pesaran (2015) CD test
+pcdtest(fe_cd, test = "lm")   # LM version (better for small T)
+```
+
+### Stata
+
+```stata
+xtreg n L(1/2).n w L.w k ys i.year, fe
+xtcd2   // Ditzen (2021); ssc install xtcd2
+```
+
+:::
+
+### Step 2: Slope homogeneity test
+
+::: {.panel-tabset}
+
+### R
+
+```{r slope-test-r}
+# The formal Pesaran-Yamagata (2008) Delta-tilde test is not on CRAN.
+# Approximation: run unit-by-unit OLS, inspect coefficient dispersion.
+unit_coefs <- lapply(split(EmplUK, EmplUK$firm), function(d) {
+  d <- d |> arrange(year) |>
+    mutate(n_l1 = dplyr::lag(n,1), n_l2 = dplyr::lag(n,2),
+           w_l1 = dplyr::lag(w,1)) |>
+    filter(!is.na(n_l2))
+  if (nrow(d) < 5) return(NULL)
+  tryCatch(coef(lm(n ~ n_l1 + n_l2 + w + w_l1 + k + ys, data=d)),
+           error = function(e) NULL)
+})
+unit_coefs <- do.call(rbind, Filter(Negate(is.null), unit_coefs))
+cat("Coefficient of variation across units (informal heterogeneity check):\n")
+round(apply(unit_coefs, 2, function(x) sd(x, na.rm=TRUE) /
+              abs(mean(x, na.rm=TRUE))), 3)
+```
+
+**R limitation**: Use `xtslope` in Stata for the formal Pesaran-Yamagata
+$\tilde\Delta$ test statistic with correct inference.
+
+### Stata
+
+```stata
+* ssc install xtslope
+xtslope n L.n w L.w k ys    // Delta and Delta-tilde statistics + p-values
+```
+
+:::
+
+### Mean Group and Common Correlated Effects MG
+
+::: {.panel-tabset}
+
+### R
+
+```{r mg-pmg-r}
+# plm::pmg() supports: "mg" (Mean Group), "cmg" (CCE-MG), "dmg" (Demeaned MG)
+# The Pooled Mean Group (PMG) estimator of Pesaran-Shin-Smith (1999) is
+# NOT available in plm — use xtpmg in Stata for that.
+
+mg_mod  <- pmg(n ~ w + k + ys, data = pdat, model = "mg")   # Mean Group
+cmg_mod <- pmg(n ~ w + k + ys, data = pdat, model = "cmg")  # CCE Mean Group
+
+summary(mg_mod)
+summary(cmg_mod)
+
+# Hausman-type test: MG vs CMG
+# H0: common factors not needed (CMG = MG asymptotically)
+# Rejection suggests unobserved common factors are important
+phtest(mg_mod, cmg_mod)
+```
+
+**R note**: `plm::pmg(model = "cmg")` is the Common Correlated Effects MG
+(Pesaran 2006) — it augments each unit regression with cross-sectional means.
+Pooled Mean Group (Pesaran-Shin-Smith 1999) is only available via `xtpmg` in
+Stata.
+
+### Stata
+
+```stata
+* xtpmg: Pesaran-Shin-Smith (1999)
+xtpmg d.n d.w d.k d.ys, lr(L.n w k ys) ec(ec_term) full mg
+estimates store mg
+
+xtpmg d.n d.w d.k d.ys, lr(L.n w k ys) ec(ec_term) full pmg
+estimates store pmg
+
+* Hausman: H0 = long-run slopes homogeneous (PMG efficient under H0)
+hausman mg pmg, sigmamore
+```
+
+:::
+
+### Dynamic CCE for cross-sectional dependence
+
+::: {.panel-tabset}
+
+### R
+
+```{r dcce-r}
+# Dynamic CCE via cross-sectional mean augmentation (manual CCE-MG).
+# xtdcce2 is Stata-only; no equivalent on CRAN.
+# This approximates CCE-MG but does not compute correct inferential SEs.
+
+EmplUK_aug <- EmplUK |>
+  group_by(year) |>
+  mutate(
+    n_bar  = mean(n,  na.rm = TRUE),
+    w_bar  = mean(w,  na.rm = TRUE),
+    k_bar  = mean(k,  na.rm = TRUE),
+    ys_bar = mean(ys, na.rm = TRUE)
+  ) |> ungroup()
+
+# Unit-by-unit CCE-MG: augment each unit regression with cross-sectional means
+ccemg_coefs <- lapply(split(EmplUK_aug, EmplUK_aug$firm), function(d) {
+  d <- d |> arrange(year) |>
+    mutate(n_l1 = dplyr::lag(n,1), n_l2 = dplyr::lag(n,2),
+           w_l1 = dplyr::lag(w,1)) |>
+    filter(!is.na(n_l2))
+  if (nrow(d) < 5) return(NULL)
+  tryCatch(
+    coef(lm(n ~ n_l1 + n_l2 + w + w_l1 + k + ys +
+              n_bar + w_bar + k_bar + ys_bar, data = d)),
+    error = function(e) NULL)
+})
+ccemg_coefs <- do.call(rbind, Filter(Negate(is.null), ccemg_coefs))
+cat("CCE-MG point estimates (SEs not valid — use xtdcce2 in Stata):\n")
+round(colMeans(ccemg_coefs, na.rm = TRUE), 4)
+```
+
+**R limitation**: A production-quality DCCE estimator with correct SEs is not
+on CRAN. Use `xtdcce2` in Stata.
+
+### Stata
+
+```stata
+* ssc install xtdcce2
+xtdcce2 n L.n w k ys, cr(n w k ys) cr_lags(1)     // pooled CCE
+xtdcce2 n L.n w k ys, cr(n w k ys) cr_lags(1) mg  // CCE-MG (heterogeneous)
+```
+
+:::
+
+---
+
+## Nonlinear dynamic panel models: binary and count outcomes
+
+### Data construction
+
+::: {.panel-tabset}
+
+### R
+
+```{r nonlin-setup-r}
+# Create a binary DV and compute Mundlak / Wooldridge (2005) terms.
+# MUST use dplyr::lag() explicitly — plm::lag() on a plain vector
+# inside mutate() does not compute a positional lag.
+panel_df <- EmplUK |>
+  mutate(n_hi = as.integer(n > median(n, na.rm = TRUE))) |>
+  group_by(firm) |> arrange(year) |>
+  mutate(
+    n_hi_lag = dplyr::lag(n_hi, 1),   # lagged binary DV
+    y_init   = first(n_hi),            # initial condition y_{i1}
+    w_bar    = mean(w,  na.rm = TRUE), # unit mean of wage (Mundlak term)
+    k_bar    = mean(k,  na.rm = TRUE)
+  ) |>
+  ungroup() |>
+  filter(!is.na(n_hi_lag))
+
+cat("Observations after setup:", nrow(panel_df), "\n")
+cat("Binary DV mean:", round(mean(panel_df$n_hi), 3), "\n")
+```
+
+### Stata
+
+```stata
+xtile n_hi = n, nq(2)
+replace n_hi = (n_hi == 2)
+
+bysort id (year): gen y_init = n_hi[1]
+bysort id: egen w_bar = mean(w)
+bysort id: egen k_bar = mean(k)
+```
+
+:::
+
+### Dynamic logit: Wooldridge (2005) CRE approach
+
+Wooldridge (2005) conditions on the initial value $y_{i1}$ to proxy the
+distribution of $\alpha_i$, yielding a standard RE logit (or probit)
+augmented with $y_{i1}$ and unit-means $\bar{x}_i$ as additional covariates.
+Logit is used here rather than probit for numerical stability; the approach
+and interpretation are identical.
+
+::: {.panel-tabset}
+
+### R
+
+```{r dynlogit-r}
+library(lme4)
+
+# Wooldridge (2005) CRE dynamic logit
+# y_init proxies distribution of alpha_i; w_bar, k_bar are Mundlak terms
+mod_logit <- glmer(
+  n_hi ~ n_hi_lag + w + k + y_init + w_bar + k_bar + (1 | firm),
+  data    = panel_df,
+  family  = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
+)
+summary(mod_logit)
+
+# Average Partial Effects (APEs) — interpret these, not the latent coefficients
+# Requires marginaleffects package:
+# avg_slopes(mod_logit, variables = c("n_hi_lag","w","k"), re.form = NA)
+
+# Test: is initial condition significant? Confirms initial-conditions problem.
+cat("\nWald test for y_init (psi_1 != 0):\n")
+print(car::linearHypothesis(mod_logit, "y_init = 0"))
+```
+
+### Stata
+
+```stata
+* RE probit (Stata convention; probit and logit give equivalent inferences)
+xtprobit n_hi L.n_hi w k y_init w_bar k_bar, re
+
+* APEs
+margins, dydx(L.n_hi w k) predict(pu0)
+
+* Test initial condition
+test y_init
+
+* RE logit
+xtlogit n_hi L.n_hi w k y_init w_bar k_bar, re
+margins, dydx(L.n_hi w k) predict(pr)
+```
+
+:::
+
+### Dynamic Poisson / count models
+
+::: {.panel-tabset}
+
+### R
+
+```{r dynpois-r, eval=FALSE}
+# CRE Poisson: Wooldridge (2005) / Blundell-Griffith-Windmeijer (2002) approach
+# Use emp (count) as outcome; include y_init as initial-condition control
+pois_df <- EmplUK |>
+  group_by(firm) |> arrange(year) |>
+  mutate(
+    emp_lag = dplyr::lag(emp, 1),
+    y_init  = first(emp),
+    w_bar   = mean(w, na.rm = TRUE),
+    k_bar   = mean(k, na.rm = TRUE)
+  ) |>
+  ungroup() |> filter(!is.na(emp_lag))
+
+mod_pois <- glmer(
+  emp ~ emp_lag + w + k + y_init + w_bar + k_bar + (1 | firm),
+  data    = pois_df,
+  family  = poisson,
+  control = glmerControl(optimizer = "bobyqa")
+)
+summary(mod_pois)
+
+# FE Poisson via fixest (consistent, no incidental-parameters bias for Poisson)
+# library(fixest)
+# fe_pois <- fepois(emp ~ emp_lag + w + k | firm + year, data = pois_df)
+```
+
+### Stata
+
+```stata
+* CRE Poisson
+xtpoisson emp L.emp w k y_init w_bar k_bar, re
+margins, dydx(*) predict(nu0)
+
+* FE Poisson (Hausman-Hall-Griliches 1984 — no incidental-parameters problem)
+xtpoisson emp L.emp w k, fe
+```
+
+:::
+
+---
+
+## Capability matrix
+
+| Estimator / Feature | R (`plm`) | R (other) | Stata built-in | Stata (`ssc`) |
+|---|:---:|:---:|:---:|:---:|
+| Anderson-Hsiao IV | `plm` IV formula | — | `ivregress` | `ivreg2` |
+| AB one-step diff. GMM | ✅ `pgmm` | `panelvar` | `xtabond` | `xtabond2` |
+| AB two-step + Windmeijer | ✅ `pgmm` | `panelvar` | `xtabond` | `xtabond2` |
+| System GMM (BB) | ✅ `pgmm(ld)` | `panelvar` | `xtdpdsys` | `xtabond2` |
+| Collapse instrument matrix | ❌ | Partial `panelvar` | ❌ | ✅ `xtabond2` |
+| Orthogonal deviations | ❌ | ✅ `panelvar` | ❌ | ✅ `xtabond2` |
+| Difference-in-Hansen test | ❌ | ❌ | ❌ | ✅ `xtabond2` |
+| Sargan / Hansen $J$-test | ✅ `summary(pgmm)` | — | `estat sargan` | ✅ `xtabond2` |
+| Arellano-Bond AR tests | ✅ `mtest()` | — | `estat abond` | ✅ `xtabond2` |
+| LSDVC (Bruno 2005) | ❌ | ❌ CRAN | ❌ | ✅ `xtlsdvc` |
+| Panel VAR + IRFs | — | ✅ `panelvar` | ❌ | ✅ `pvar` |
+| Pesaran CD test | ✅ `pcdtest()` | — | ❌ | ✅ `xtcd2` |
+| Pesaran-Yamagata $\tilde\Delta$ | Manual only | ❌ CRAN | ❌ | ✅ `xtslope` |
+| Mean Group (MG) | ✅ `pmg("mg")` | — | ❌ | ✅ `xtpmg` |
+| CCE Mean Group (CMG) | ✅ `pmg("cmg")` | — | ❌ | ✅ `xtdcce2 mg` |
+| Pooled Mean Group (PMG) | ❌ | ❌ | ❌ | ✅ `xtpmg` |
+| Dynamic CCE (`xtdcce2`) | Manual (no SEs) | ❌ CRAN | ❌ | ✅ `xtdcce2` |
+| CRE dynamic logit | ✅ `lme4::glmer` | — | ✅ `xtlogit,re` | — |
+| CRE dynamic probit | ✅ `lme4::glmer` | — | ✅ `xtprobit,re` | — |
+| CRE Poisson | ✅ `lme4::glmer` | ✅ `fixest::fepois` | ✅ `xtpoisson,re` | — |
+| FE Poisson (H-H-G) | — | ✅ `fixest::fepois` | ✅ `xtpoisson,fe` | — |
+| Average partial effects | ✅ `marginaleffects` | — | ✅ `margins` | — |
+
+**Legend**: ✅ well-supported; Partial = implemented but less complete; Manual =
+user code required, inference not automatic; ❌ not available.
+
+---
+
+## Key cross-software notes
+
+**`xtabond2` is the recommended Stata command** for nearly all GMM DPD work.
+It supersedes `xtabond`, `xtdpdsys`, and `xtdpd` and is the only command
+with collapsed instruments, orthogonal deviations, and difference-in-Hansen.
+
+**`plm::pgmm()` is the R workhorse** but has three hard gaps: no collapsed
+instruments, no orthogonal deviations, no difference-in-Hansen. For panels
+where these matter, call `xtabond2` via Stata.
+
+**LSDVC and PMG belong to Stata**. Bruno (2005) bias-corrected LSDV
+(`xtlsdvc`) and Pesaran-Shin-Smith (1999) Pooled Mean Group (`xtpmg`) have
+no maintained CRAN implementations.
+
+**Slope heterogeneity diagnostics are Stata-favoured**. The formal
+Pesaran-Yamagata $\tilde\Delta$ test (`xtslope`) and Dynamic CCE (`xtdcce2`)
+have no direct CRAN equivalents. `plm::pmg(model = "cmg")` provides CCE-MG
+estimation but without the full DCCE workflow.
+
+**Nonlinear DPD is well-handled in both** environments via the Wooldridge
+(2005) CRE approach. `lme4::glmer()` in R and `xtlogit/xtprobit/xtpoisson, re`
+in Stata implement the same estimator. Use `marginaleffects::avg_slopes()` in
+R and `margins` in Stata for average partial effects — always report APEs, not
+latent-index coefficients.
