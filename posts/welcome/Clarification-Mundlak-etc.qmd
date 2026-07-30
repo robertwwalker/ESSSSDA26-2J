@@ -52,7 +52,7 @@ The model is instructive.  If we suppose a counterfactual in some variable $x$, 
 
 The most common formulation and estimated functional form of the two-way Mundlak model is given by [Baltagi](https://www.tandfonline.com/doi/pdf/10.1080/07474938.2023.2178139).
 
-Wooldridge showed that once all the time averaged regressors and all the individual averaged regressors are included in the regression along with the original regressors, the resulting OLS estimator is the two-way Öxed effects or Within estimator.
+Wooldridge showed that once all the time averaged regressors and all the individual averaged regressors are included in the regression along with the original regressors, the resulting OLS estimator is the two-way fixed effects or Within estimator.
 
 The effect we are estimating `within` is net of the over time and across-unit averages.
 
