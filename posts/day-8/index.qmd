@@ -10,7 +10,7 @@ image: "image.png"
 
 - [A reveal presentation on Panel GLMs](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day8/)
 - [A reveal presentation on GEE](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-GEE/)
-- [A reveal presentation on Robust Standard Errors and Such](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-RobustSE/)
+- [A reveal presentation on Robust Standard Errors and Such](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-RobustSEs/)
 
 Two core issues remain: the spatial and the temporal.  There are fewer well worked diagnostics for this than for the pure linear case owing to **partial observability and/or coarse measurement** in some fashion or other.
 
