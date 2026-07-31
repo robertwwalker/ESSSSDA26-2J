@@ -1,15 +1,18 @@
 ---
-title: "Day 10: Causal Inference in Panels and TWFE"
+title: "Day 10: Wrapping Up, Causal Models, and Related Things"
 author: "Robert W. Walker"
 date: "07/31/2026"
 categories: [panel data, code, analysis]
 image: "image.jpg"
-draft: true
 ---
 
 ## Slides
 
 - [A reveal presentation](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-Day10/)
+- [A reveal presentation on Two-Way Fixed Effects](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-TWFE-Models/)
+- [A reveal presentation on Two-Way Mundlaks](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-TWM/)
+- [A reveal presentation on Two-Way Mundlaks](https://robertwwalker.github.io/Essex26-2J-Slides/ESSSSDA26-CompData/)
+
 
 ## Wrapping Up
 
